@@ -1,0 +1,22 @@
+﻿<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="100" x2="860" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF0F5"/>
+      <stop offset="1" stop-color="#FFB8CA"/>
+    </linearGradient>
+    <linearGradient id="moon" x1="310" y1="240" x2="700" y2="760" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF9E8"/>
+      <stop offset="1" stop-color="#FFE2B7"/>
+    </linearGradient>
+    <linearGradient id="heart" x1="470" y1="430" x2="650" y2="650" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF7EA6"/>
+      <stop offset="1" stop-color="#FFB4C8"/>
+    </linearGradient>
+  </defs>
+  <rect x="80" y="80" width="864" height="864" rx="220" fill="url(#bg)"/>
+  <path d="M668 246C529 246 416 359 416 498C416 634 525 746 660 750C578 714 522 620 522 514C522 397 590 296 688 253C681 248 675 246 668 246Z" fill="url(#moon)"/>
+  <path d="M512 574C542 524 611 517 638 572C663 624 610 679 551 730C491 680 438 624 463 572C490 518 559 524 589 574" fill="url(#heart)"/>
+  <circle cx="724" cy="364" r="18" fill="#FFF8EA"/>
+  <path d="M770 450L780 480L810 490L780 500L770 530L760 500L730 490L760 480L770 450Z" fill="#FFF8EA"/>
+  <circle cx="326" cy="314" r="12" fill="#FFF7FA"/>
+</svg>

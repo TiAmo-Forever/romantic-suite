@@ -1,0 +1,691 @@
+<template>
+	<view class="page app-page-shell app-page-shell-tabbed home-page" :style="themeStyle">
+		<view class="home-noise"></view>
+		<view class="home-ribbon home-ribbon-a"></view>
+		<view class="home-ribbon home-ribbon-b"></view>
+		<view class="home-halo home-halo-a"></view>
+		<view class="home-halo home-halo-b"></view>
+
+		<view class="hero-stage app-fade-up app-delay-1">
+			<view class="hero-topline">{{ text.heroTopline }}</view>
+			<view class="hero-main">
+				<view class="hero-copy">
+					<view class="hero-tag">{{ text.heroTag }}</view>
+					<view class="hero-title">{{ text.heroTitle }}</view>
+					<view class="hero-desc">{{ text.heroDesc }}</view>
+					<view class="hero-actions">
+						<view class="hero-action hero-action-primary" hover-class="hero-action-active" hover-stay-time="70" @click="goCountdown">
+							<text class="hero-action-label">{{ text.heroPrimaryAction }}</text>
+							<text class="hero-action-arrow">{{ text.arrow }}</text>
+						</view>
+						<view class="hero-action hero-action-secondary" hover-class="hero-action-active" hover-stay-time="70" @click="goAnniversary">
+							<text class="hero-action-label">{{ text.heroSecondaryAction }}</text>
+							<text class="hero-action-arrow">{{ text.arrow }}</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="hero-poster">
+					<view class="poster-card poster-card-main">
+						<view class="poster-kicker">{{ text.posterKicker }}</view>
+						<view class="poster-title">{{ text.posterTitle }}</view>
+						<view class="poster-desc">{{ text.posterDesc }}</view>
+						<view class="poster-badge">{{ text.posterBadge }}</view>
+					</view>
+					<view class="poster-card poster-card-float">
+						<view class="poster-float-label">{{ text.posterFloatLabel }}</view>
+						<view class="poster-float-value">{{ text.posterFloatValue }}</view>
+					</view>
+				</view>
+			</view>
+		</view>
+
+		<view class="curation-grid app-fade-up app-delay-2">
+			<view class="spotlight-card spotlight-card-countdown app-card">
+				<view class="spotlight-head">
+					<view>
+						<view class="spotlight-kicker">{{ text.spotlightKicker }}</view>
+						<view class="spotlight-title">{{ text.spotlightTitle }}</view>
+					</view>
+					<view class="spotlight-index">01</view>
+				</view>
+				<view class="spotlight-copy">{{ text.spotlightCopy }}</view>
+				<view class="spotlight-metrics">
+					<view v-for="metric in text.spotlightMetrics" :key="metric" class="metric-pill">{{ metric }}</view>
+				</view>
+				<view class="spotlight-foot" hover-class="spotlight-foot-active" hover-stay-time="70" @click="goCountdown">
+					<text>{{ text.spotlightAction }}</text>
+					<text>{{ text.arrow }}</text>
+				</view>
+			</view>
+
+			<view class="side-stack">
+				<view class="stack-card memory-card app-card-soft" hover-class="stack-card-active" hover-stay-time="70" @click="goAnniversary">
+					<view class="stack-badge">{{ text.memoryBadge }}</view>
+					<view class="stack-title">{{ text.memoryTitle }}</view>
+					<view class="stack-desc">{{ text.memoryDesc }}</view>
+					<view class="stack-cta">{{ text.memoryAction }}</view>
+				</view>
+
+				<view class="stack-card teaser-card app-card-soft">
+					<view class="teaser-topline">{{ text.teaserTopline }}</view>
+					<view class="teaser-list">
+						<view class="teaser-item" hover-class="teaser-item-active" hover-stay-time="70" @click="goComingSoon(text.albumName)">
+							<text class="teaser-name">{{ text.albumName }}</text>
+							<text class="teaser-meta">{{ text.albumMeta }}</text>
+						</view>
+						<view class="teaser-item" hover-class="teaser-item-active" hover-stay-time="70" @click="goComingSoon(text.noteName)">
+							<text class="teaser-name">{{ text.noteName }}</text>
+							<text class="teaser-meta">{{ text.noteMeta }}</text>
+						</view>
+					</view>
+				</view>
+			</view>
+		</view>
+
+		<view class="editorial-panel app-fade-up app-delay-3">
+			<view class="editorial-head">
+				<view>
+					<view class="editorial-kicker">{{ text.editorialKicker }}</view>
+					<view class="editorial-title">{{ text.editorialTitle }}</view>
+				</view>
+				<view class="editorial-chip">{{ text.editorialChip }}</view>
+			</view>
+			<view class="editorial-columns">
+				<view class="editorial-column">
+					<view class="editorial-label">{{ text.editorialLeftLabel }}</view>
+					<view class="editorial-value">{{ text.editorialLeftValue }}</view>
+					<view class="editorial-note">{{ text.editorialLeftNote }}</view>
+				</view>
+				<view class="editorial-column">
+					<view class="editorial-label">{{ text.editorialRightLabel }}</view>
+					<view class="editorial-value">{{ text.editorialRightValue }}</view>
+					<view class="editorial-note">{{ text.editorialRightNote }}</view>
+				</view>
+			</view>
+		</view>
+
+		<BottomTab activeKey="home" />
+	</view>
+</template>
+
+<script setup>
+import { onMounted } from 'vue'
+import { requireAuth } from '@/utils/auth.js'
+import { goPage } from '@/utils/nav.js'
+import { useThemePage } from '@/utils/useThemePage.js'
+import BottomTab from '@/pages/components/BottomTab.vue'
+
+const { themeStyle } = useThemePage()
+
+const text = {
+	heroTopline: 'ROMANTIC DAILY',
+	heroTag: '\u9996\u9875\u4e3b\u821e\u53f0',
+	heroTitle: '\u628a\u604b\u7231\u91cc\u7684\u7b49\u5f85\u3001\u4eea\u5f0f\u611f\u548c\u56de\u5fc6\uff0c\u6392\u6210\u4e00\u9875\u4f1a\u53d1\u5149\u7684\u751f\u6d3b\u520a\u7269\u3002',
+	heroDesc: '\u8fd9\u91cc\u4e0d\u53ea\u662f\u529f\u80fd\u5165\u53e3\uff0c\u66f4\u50cf\u4f60\u4eec\u5173\u7cfb\u91cc\u7684\u4eca\u65e5\u5934\u7248\u3002\u60f3\u89c1\u9762\u7684\u5fc3\u60c5\u3001\u91cd\u8981\u65e5\u5b50\u7684\u7eaa\u5ff5\u3001\u8fd8\u6ca1\u4e0a\u7ebf\u7684\u5c0f\u671f\u5f85\uff0c\u90fd\u5728\u8fd9\u4e00\u9875\u6162\u6162\u5c55\u5f00\u3002',
+	heroPrimaryAction: '\u5148\u770b\u89c1\u9762\u5012\u8ba1\u65f6',
+	heroSecondaryAction: '\u6253\u5f00\u604b\u7231\u7eaa\u5ff5\u65e5',
+	arrow: '\u2192',
+	posterKicker: '\u4eca\u65e5\u4e3b\u6253',
+	posterTitle: '\u89c1\u9762\u8fd9\u4ef6\u4e8b\uff0c\u503c\u5f97\u88ab\u8ba4\u771f\u671f\u5f85',
+	posterDesc: '\u53bb\u6570\u4e00\u6570\u8fd8\u5269\u591a\u4e45\uff0c\u518d\u628a\u90a3\u4efd\u60f3\u5ff5\u4fdd\u5b58\u6210\u4eca\u5929\u6700\u4eae\u7684\u4e00\u5f20\u5361\u3002',
+	posterBadge: '\u6d6a\u6f2b\u6b63\u5728\u52a0\u8f7d',
+	posterFloatLabel: '\u7075\u611f\u7247\u6bb5',
+	posterFloatValue: '\u628a\u76f8\u7231\u8fc7\u6210\u4e00\u672c\u6742\u5fd7',
+	spotlightKicker: '\u4e3b\u63a8\u680f\u76ee',
+	spotlightTitle: '\u89c1\u9762\u5012\u8ba1\u65f6',
+	spotlightCopy: '\u628a\u7b49\u5f85\u62c6\u6210\u53ef\u89e6\u6478\u7684\u8282\u594f\uff0c\u4ece\u4eca\u5929\u3001\u660e\u5929\uff0c\u5230\u771f\u6b63\u89c1\u9762\u7684\u90a3\u5929\u3002',
+	spotlightMetrics: [
+		'\u671f\u5f85\u611f',
+		'\u4eea\u5f0f\u611f',
+		'\u63a8\u8fdb\u4e2d'
+	],
+	spotlightAction: '\u8fdb\u5165\u5012\u8ba1\u65f6',
+	memoryBadge: '\u8bb0\u5f55\u4e2d',
+	memoryTitle: '\u604b\u7231\u7eaa\u5ff5\u65e5',
+	memoryDesc: '\u628a\u91cd\u8981\u7684\u90a3\u4e00\u5929\uff0c\u505a\u6210\u53ef\u4ee5\u7ffb\u770b\u7684\u6545\u4e8b\u5361\u7247\u3002',
+	memoryAction: '\u53bb\u7ffb\u4f60\u4eec\u7684\u7eaa\u5ff5\u518c',
+	teaserTopline: '\u4e0b\u4e00\u6279\u6545\u4e8b\u5165\u53e3',
+	albumName: '\u751c\u871c\u76f8\u518c',
+	albumMeta: '\u7167\u7247\u3001\u5730\u70b9\u3001\u5f53\u5929\u5fc3\u60c5',
+	noteName: '\u60c5\u8bdd\u4fbf\u7b7e',
+	noteMeta: '\u90a3\u4e9b\u6ca1\u6765\u5f97\u53ca\u8bf4\u51fa\u53e3\u7684\u8bdd',
+	editorialKicker: '\u6d6a\u6f2b\u680f\u76ee\u5355',
+	editorialTitle: '\u9996\u9875\u60f3\u505a\u6210\u66f4\u50cf\u201c\u5173\u7cfb\u9648\u5217\u9986\u201d',
+	editorialChip: '\u6301\u7eed\u4e0a\u65b0',
+	editorialLeftLabel: '\u9002\u5408\u5148\u6253\u5f00',
+	editorialLeftValue: '\u5012\u8ba1\u65f6\u3001\u7eaa\u5ff5\u65e5',
+	editorialLeftNote: '\u5b83\u4eec\u4e00\u4e2a\u4ee3\u8868\u671f\u5f85\uff0c\u4e00\u4e2a\u4ee3\u8868\u56de\u5fc6\uff0c\u521a\u597d\u628a\u9996\u9875\u7684\u524d\u540e\u60c5\u7eea\u63a5\u4f4f\u3002',
+	editorialRightLabel: '\u5373\u5c06\u8865\u5b8c',
+	editorialRightValue: '\u76f8\u518c\u3001\u4fbf\u7b7e\u3001\u66f4\u591a\u53cc\u4eba\u5185\u5bb9',
+	editorialRightNote: '\u540e\u7eed\u6bcf\u4e2a\u677f\u5757\u90fd\u5c3d\u91cf\u6709\u72ec\u7acb\u6c14\u8d28\uff0c\u4e0d\u518d\u53ea\u662f\u7edf\u4e00\u6a21\u677f\u6362\u6807\u9898\u3002'
+}
+
+function goCountdown() {
+	goPage('/pages/modules/countdown/index')
+}
+
+function goAnniversary() {
+	goPage('/pages/modules/anniversary/index')
+}
+
+function goComingSoon(moduleName) {
+	goPage(`/pages/modules/coming-soon/index?title=${encodeURIComponent(moduleName)}`)
+}
+
+onMounted(() => {
+	requireAuth()
+})
+</script>
+
+<style scoped>
+	.home-page {
+		position: relative;
+		overflow: hidden;
+		background:
+			linear-gradient(180deg, rgba(255, 248, 250, 0.96) 0%, rgba(255, 238, 244, 0.98) 52%, rgba(255, 232, 240, 1) 100%);
+	}
+
+	.home-noise {
+		position: absolute;
+		inset: 0;
+		opacity: 0.3;
+		background-image:
+			linear-gradient(rgba(255, 255, 255, 0.14) 1rpx, transparent 1rpx),
+			linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1rpx, transparent 1rpx);
+		background-size: 24rpx 24rpx;
+		pointer-events: none;
+	}
+
+	.home-ribbon,
+	.home-halo {
+		position: absolute;
+		border-radius: 999rpx;
+		pointer-events: none;
+	}
+
+	.home-ribbon-a {
+		top: 80rpx;
+		right: -120rpx;
+		width: 440rpx;
+		height: 160rpx;
+		background: linear-gradient(135deg, rgba(255, 168, 191, 0.34), rgba(255, 220, 229, 0.08));
+		transform: rotate(-16deg);
+	}
+
+	.home-ribbon-b {
+		left: -120rpx;
+		top: 780rpx;
+		width: 420rpx;
+		height: 130rpx;
+		background: linear-gradient(135deg, rgba(252, 214, 223, 0.34), rgba(255, 255, 255, 0.06));
+		transform: rotate(12deg);
+	}
+
+	.home-halo-a {
+		right: -40rpx;
+		top: 160rpx;
+		width: 260rpx;
+		height: 260rpx;
+		background: radial-gradient(circle, rgba(255, 193, 211, 0.48), rgba(255, 193, 211, 0));
+	}
+
+	.home-halo-b {
+		left: -20rpx;
+		top: 1020rpx;
+		width: 300rpx;
+		height: 300rpx;
+		background: radial-gradient(circle, rgba(255, 222, 231, 0.66), rgba(255, 222, 231, 0));
+	}
+
+	.hero-stage,
+	.curation-grid,
+	.editorial-panel {
+		position: relative;
+		z-index: 2;
+	}
+
+	.hero-stage {
+		padding: 18rpx 0 0;
+	}
+
+	.hero-topline {
+		margin-bottom: 20rpx;
+		font-size: 20rpx;
+		font-weight: 700;
+		letter-spacing: 4rpx;
+		color: rgba(184, 118, 141, 0.72);
+	}
+
+	.hero-main {
+		display: grid;
+		grid-template-columns: 1.15fr 0.85fr;
+		gap: 24rpx;
+		align-items: stretch;
+	}
+
+	.hero-copy {
+		padding: 18rpx 4rpx 8rpx;
+	}
+
+	.hero-tag {
+		display: inline-flex;
+		align-items: center;
+		padding: 10rpx 18rpx;
+		border: 2rpx solid rgba(255, 121, 160, 0.16);
+		border-radius: 999rpx;
+		background: rgba(255, 255, 255, 0.72);
+		color: var(--app-color-primary);
+		font-size: 22rpx;
+		font-weight: 700;
+	}
+
+	.hero-title {
+		margin-top: 22rpx;
+		font-size: 54rpx;
+		line-height: 1.28;
+		font-weight: 700;
+		color: #7d4559;
+	}
+
+	.hero-desc {
+		margin-top: 22rpx;
+		font-size: 26rpx;
+		line-height: 1.92;
+		color: #9b7380;
+	}
+
+	.hero-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 16rpx;
+		margin-top: 30rpx;
+	}
+
+	.hero-action {
+		display: inline-flex;
+		align-items: center;
+		gap: 12rpx;
+		padding: 22rpx 26rpx;
+		border-radius: 26rpx;
+		transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+	}
+
+	.hero-action-active {
+		transform: translateY(2rpx) scale(0.99);
+	}
+
+	.hero-action-primary {
+		background: linear-gradient(135deg, #ff7ea6, #ff9cb9);
+		box-shadow: 0 20rpx 40rpx rgba(255, 128, 160, 0.22);
+		color: #fff;
+	}
+
+	.hero-action-secondary {
+		background: rgba(255, 255, 255, 0.8);
+		box-shadow: 0 12rpx 26rpx rgba(255, 150, 176, 0.12);
+		color: #b96a83;
+	}
+
+	.hero-action-label {
+		font-size: 25rpx;
+		font-weight: 700;
+	}
+
+	.hero-action-arrow {
+		font-size: 28rpx;
+		line-height: 1;
+	}
+
+	.hero-poster {
+		position: relative;
+		min-height: 460rpx;
+	}
+
+	.poster-card {
+		border-radius: 34rpx;
+		overflow: hidden;
+	}
+
+	.poster-card-main {
+		position: absolute;
+		inset: 24rpx 0 40rpx 12rpx;
+		padding: 34rpx 28rpx;
+		background:
+			linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0)),
+			linear-gradient(135deg, #ff7f9f, #ffb2c8 62%, #ffd6e2);
+		box-shadow: 0 22rpx 46rpx rgba(255, 122, 155, 0.2);
+	}
+
+	.poster-card-float {
+		position: absolute;
+		left: 0;
+		right: 44rpx;
+		bottom: 0;
+		padding: 18rpx 22rpx;
+		background: rgba(255, 255, 255, 0.82);
+		backdrop-filter: blur(10px);
+		box-shadow: 0 12rpx 28rpx rgba(255, 145, 176, 0.14);
+	}
+
+	.poster-kicker {
+		font-size: 20rpx;
+		font-weight: 700;
+		letter-spacing: 2rpx;
+		color: rgba(255, 255, 255, 0.82);
+	}
+
+	.poster-title {
+		margin-top: 18rpx;
+		font-size: 38rpx;
+		line-height: 1.4;
+		font-weight: 700;
+		color: #fff;
+	}
+
+	.poster-desc {
+		margin-top: 18rpx;
+		font-size: 24rpx;
+		line-height: 1.8;
+		color: rgba(255, 255, 255, 0.92);
+	}
+
+	.poster-badge {
+		margin-top: 24rpx;
+		display: inline-flex;
+		padding: 10rpx 16rpx;
+		border-radius: 999rpx;
+		background: rgba(255, 255, 255, 0.18);
+		color: #fff;
+		font-size: 20rpx;
+		font-weight: 700;
+	}
+
+	.poster-float-label {
+		font-size: 20rpx;
+		color: #c48b9c;
+	}
+
+	.poster-float-value {
+		margin-top: 10rpx;
+		font-size: 26rpx;
+		font-weight: 700;
+		color: #8f5366;
+		line-height: 1.55;
+	}
+
+	.curation-grid {
+		display: grid;
+		grid-template-columns: 1.02fr 0.98fr;
+		gap: 22rpx;
+		margin-top: 34rpx;
+	}
+
+	.spotlight-card {
+		padding: 30rpx 28rpx;
+		border-radius: 36rpx;
+		background:
+			radial-gradient(circle at top right, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0)),
+			linear-gradient(165deg, #ff7f9f 0%, #ff95b2 40%, #ffc4d4 100%);
+		color: #fff;
+		box-shadow: 0 22rpx 46rpx rgba(255, 121, 157, 0.18);
+	}
+
+	.spotlight-head {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 18rpx;
+	}
+
+	.spotlight-kicker {
+		font-size: 21rpx;
+		font-weight: 700;
+		letter-spacing: 2rpx;
+		color: rgba(255, 255, 255, 0.82);
+	}
+
+	.spotlight-title {
+		margin-top: 12rpx;
+		font-size: 40rpx;
+		font-weight: 700;
+		line-height: 1.3;
+	}
+
+	.spotlight-index {
+		font-size: 56rpx;
+		line-height: 1;
+		font-weight: 700;
+		color: rgba(255, 255, 255, 0.32);
+	}
+
+	.spotlight-copy {
+		margin-top: 22rpx;
+		font-size: 25rpx;
+		line-height: 1.84;
+		color: rgba(255, 255, 255, 0.92);
+	}
+
+	.spotlight-metrics {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12rpx;
+		margin-top: 24rpx;
+	}
+
+	.metric-pill {
+		padding: 10rpx 16rpx;
+		border-radius: 999rpx;
+		background: rgba(255, 255, 255, 0.18);
+		font-size: 20rpx;
+		font-weight: 700;
+	}
+
+	.spotlight-foot {
+		margin-top: 28rpx;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 20rpx 22rpx;
+		border-radius: 24rpx;
+		background: rgba(255, 255, 255, 0.16);
+		font-size: 24rpx;
+		font-weight: 700;
+	}
+
+	.spotlight-foot-active {
+		opacity: 0.9;
+		transform: scale(0.99);
+	}
+
+	.side-stack {
+		display: flex;
+		flex-direction: column;
+		gap: 20rpx;
+	}
+
+	.stack-card {
+		position: relative;
+		overflow: hidden;
+		border-radius: 30rpx;
+		padding: 28rpx 24rpx;
+		background: rgba(255, 255, 255, 0.88);
+	}
+
+	.stack-card-active {
+		transform: scale(0.99);
+	}
+
+	.memory-card {
+		background:
+			radial-gradient(circle at top right, rgba(255, 203, 217, 0.34), rgba(255, 255, 255, 0)),
+			linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 246, 249, 0.96));
+		min-height: 250rpx;
+	}
+
+	.stack-badge {
+		display: inline-flex;
+		padding: 8rpx 16rpx;
+		border-radius: 999rpx;
+		background: #fff1f5;
+		color: #cf7592;
+		font-size: 20rpx;
+		font-weight: 700;
+	}
+
+	.stack-title {
+		margin-top: 20rpx;
+		font-size: 32rpx;
+		font-weight: 700;
+		color: #8e5668;
+	}
+
+	.stack-desc {
+		margin-top: 14rpx;
+		font-size: 24rpx;
+		line-height: 1.8;
+		color: #9f7885;
+	}
+
+	.stack-cta {
+		margin-top: 22rpx;
+		font-size: 23rpx;
+		font-weight: 700;
+		color: var(--app-color-primary);
+	}
+
+	.teaser-card {
+		background:
+			linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 249, 251, 0.96));
+	}
+
+	.teaser-topline {
+		font-size: 22rpx;
+		font-weight: 700;
+		letter-spacing: 2rpx;
+		color: #c58ea0;
+	}
+
+	.teaser-list {
+		margin-top: 16rpx;
+	}
+
+	.teaser-item {
+		display: flex;
+		flex-direction: column;
+		gap: 8rpx;
+		padding: 18rpx 0;
+	}
+
+	.teaser-item + .teaser-item {
+		border-top: 2rpx solid rgba(234, 206, 216, 0.42);
+	}
+
+	.teaser-item-active {
+		opacity: 0.88;
+	}
+
+	.teaser-name {
+		font-size: 28rpx;
+		font-weight: 700;
+		color: #8f5769;
+	}
+
+	.teaser-meta {
+		font-size: 22rpx;
+		line-height: 1.7;
+		color: #a5838f;
+	}
+
+	.editorial-panel {
+		margin-top: 28rpx;
+		padding: 28rpx 24rpx;
+		border-radius: 32rpx;
+		background: rgba(255, 255, 255, 0.72);
+		backdrop-filter: blur(10px);
+		box-shadow: 0 16rpx 34rpx rgba(255, 151, 180, 0.12);
+	}
+
+	.editorial-head {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 18rpx;
+	}
+
+	.editorial-kicker {
+		font-size: 20rpx;
+		font-weight: 700;
+		letter-spacing: 2rpx;
+		color: #c48a9c;
+	}
+
+	.editorial-title {
+		margin-top: 10rpx;
+		font-size: 32rpx;
+		line-height: 1.42;
+		font-weight: 700;
+		color: #8f5265;
+	}
+
+	.editorial-chip {
+		padding: 10rpx 16rpx;
+		border-radius: 999rpx;
+		background: #fff1f5;
+		color: #cb7790;
+		font-size: 20rpx;
+		font-weight: 700;
+		white-space: nowrap;
+	}
+
+	.editorial-columns {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 18rpx;
+		margin-top: 22rpx;
+	}
+
+	.editorial-column {
+		padding: 22rpx 20rpx;
+		border-radius: 24rpx;
+		background: rgba(255, 255, 255, 0.72);
+	}
+
+	.editorial-label {
+		font-size: 20rpx;
+		font-weight: 700;
+		letter-spacing: 2rpx;
+		color: #c994a5;
+	}
+
+	.editorial-value {
+		margin-top: 12rpx;
+		font-size: 28rpx;
+		font-weight: 700;
+		line-height: 1.5;
+		color: #8c5365;
+	}
+
+	.editorial-note {
+		margin-top: 14rpx;
+		font-size: 22rpx;
+		line-height: 1.8;
+		color: #a27b88;
+	}
+
+	@media screen and (max-width: 680px) {
+		.hero-main,
+		.curation-grid,
+		.editorial-columns {
+			grid-template-columns: 1fr;
+		}
+
+		.hero-poster {
+			min-height: 380rpx;
+		}
+
+		.hero-title {
+			font-size: 46rpx;
+		}
+	}
+</style>

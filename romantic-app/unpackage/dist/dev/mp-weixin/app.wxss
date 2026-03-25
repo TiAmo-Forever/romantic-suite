@@ -1,0 +1,333 @@
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 品牌主题变量 */
+/* 颜色变量 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+:root,
+page {
+  --app-color-primary: #ff5e8a;
+  --app-color-primary-strong: #ff4f7d;
+  --app-color-primary-soft: #ff9fbc;
+  --app-color-accent: #d89cad;
+  --app-color-text: #8f6b77;
+  --app-color-text-strong: #5c4550;
+  --app-color-surface: rgba(255, 255, 255, 0.92);
+  --app-color-surface-soft: #fff6f9;
+  --app-gradient-primary: linear-gradient(135deg, #ff7ea6, #ff9fbc);
+  --app-gradient-hero: linear-gradient(135deg, #ff8dac, #ffb3c7);
+  --app-page-gradient-main: linear-gradient(180deg, #fff2f6 0%, #ffe8f0 100%);
+  --app-page-gradient-soft: linear-gradient(180deg, #fff6fa 0%, #ffeef4 100%);
+  --app-page-glow-strong: rgba(255, 192, 203, 0.3);
+  --app-page-glow-mid: rgba(255, 182, 193, 0.24);
+  --app-page-glow-soft: rgba(255, 228, 236, 0.45);
+  --app-page-orb-a: rgba(255, 215, 228, 0.42);
+  --app-page-orb-b: rgba(255, 232, 238, 0.5);
+  --app-card-gradient-soft: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 247, 249, 0.98) 100%);
+  --app-shadow-card: 0 18rpx 42rpx rgba(255, 128, 160, 0.12);
+  --app-shadow-soft: 0 12rpx 24rpx rgba(255, 156, 181, 0.1);
+  --app-page-background: #ffd7e2;
+  --app-radius-card: 32rpx;
+  --app-radius-pill: 999rpx;
+  background: var(--app-page-background);
+  font-family: "Microsoft YaHei", sans-serif;
+}
+view, text, button, input, textarea {
+  box-sizing: border-box;
+}
+.app-section-kicker {
+  font-size: 20rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+  text-transform: uppercase;
+  color: var(--app-color-accent);
+}
+.app-section-title {
+  margin-top: 8rpx;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--app-color-primary);
+}
+.app-section-desc {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.8;
+  color: #9d7582;
+}
+.app-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 10rpx 18rpx;
+  border-radius: var(--app-radius-pill);
+}
+.app-pill-soft {
+  background: #fff3f7;
+  color: var(--app-color-text);
+  font-size: 22rpx;
+  font-weight: 600;
+}
+.app-pill-glass {
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.96);
+  font-size: 22rpx;
+  font-weight: 600;
+}
+.app-page-shell {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 34rpx 28rpx 40rpx;
+}
+.app-page-shell-tabbed {
+  padding-bottom: 140rpx;
+}
+.app-card {
+  border-radius: var(--app-radius-card);
+  background: var(--app-color-surface);
+  box-shadow: var(--app-shadow-card);
+}
+.app-card-soft {
+  border-radius: 24rpx;
+  background: var(--app-color-surface);
+  box-shadow: var(--app-shadow-soft);
+}
+.app-card-gradient {
+  background: var(--app-card-gradient-soft);
+}
+.app-glass-panel {
+  border-radius: 36rpx;
+  background: rgba(255, 255, 255, 0.24);
+  -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(12px);
+  box-shadow: var(--app-shadow-card);
+}
+.app-primary-btn {
+  border: none;
+  border-radius: var(--app-radius-pill);
+  background: var(--app-gradient-primary);
+  color: #fff;
+  font-weight: 700;
+}
+.app-primary-btn-shadow {
+  box-shadow: 0 14rpx 28rpx rgba(255, 126, 166, 0.22);
+}
+.app-input-shell {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 22rpx;
+  background: var(--app-color-surface-soft);
+  box-shadow: inset 0 0 0 2rpx rgba(255, 145, 178, 0.08);
+}
+.app-field {
+  width: 100%;
+  min-height: 92rpx;
+  padding: 0 24rpx;
+  display: flex;
+  align-items: center;
+  font-size: 28rpx;
+  color: var(--app-color-text-strong);
+}
+.app-textarea {
+  width: 100%;
+  min-height: 190rpx;
+  padding: 22rpx 24rpx;
+  font-size: 28rpx;
+  color: var(--app-color-text-strong);
+}
+.app-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.app-topbar-btn,
+.app-topbar-placeholder {
+  min-width: 132rpx;
+  min-height: 72rpx;
+  padding: 0 20rpx;
+  border-radius: var(--app-radius-pill);
+  box-sizing: border-box;
+}
+.app-topbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 8rpx 20rpx rgba(255, 120, 155, 0.1);
+  color: var(--app-color-primary);
+}
+.app-topbar-icon {
+  font-size: 36rpx;
+  line-height: 1;
+  margin-top: -4rpx;
+}
+.app-topbar-text {
+  font-size: 24rpx;
+  font-weight: 600;
+}
+.app-topbar-center {
+  flex: 1;
+  text-align: center;
+  padding: 0 16rpx;
+}
+.app-topbar-eyebrow {
+  font-size: 18rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+  text-transform: uppercase;
+  color: #cf9aaa;
+}
+.app-topbar-title {
+  margin-top: 6rpx;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--app-color-primary-strong);
+}
+.app-fade-up {
+  opacity: 0;
+  transform: translateY(24rpx);
+  animation: appFadeUp 0.55s ease forwards;
+}
+.app-delay-1 {
+  animation-delay: 0.05s;
+}
+.app-delay-2 {
+  animation-delay: 0.15s;
+}
+.app-delay-3 {
+  animation-delay: 0.25s;
+}
+.app-delay-4 {
+  animation-delay: 0.35s;
+}
+@keyframes appFadeUp {
+to {
+    opacity: 1;
+    transform: translateY(0);
+}
+}
+.app-account-page {
+  min-height: 100vh;
+  background: var(--app-page-gradient-main);
+}
+.app-account-topbar-shell {
+  padding: 24rpx 28rpx;
+  background: rgba(255, 255, 255, 0.6);
+  -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(12px);
+}
+.app-account-content {
+  padding: 16rpx 24rpx 40rpx;
+}
+.app-account-section {
+  padding: 30rpx 26rpx;
+  border-radius: 32rpx;
+}
+.app-account-form-item {
+  margin-top: 24rpx;
+}
+.app-account-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+.app-account-form-col {
+  min-width: 0;
+}
+.app-account-label {
+  margin-bottom: 14rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #8e6673;
+}
+.app-account-input-placeholder {
+  color: #c1a2ad;
+}
+.app-account-save-btn {
+  margin-top: 28rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+.app-account-action-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16rpx;
+  margin-top: 28rpx;
+}
+.app-account-flat-btn {
+  height: 88rpx;
+  padding: 0;
+  border: none;
+  border-radius: 999rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
+  font-size: 26rpx;
+  font-weight: 700;
+  box-sizing: border-box;
+}
+.app-account-flat-btn::after {
+  border: none;
+}
+.app-account-flat-btn-soft {
+  background: #fff4f7;
+  color: #b56f85;
+}
+.app-account-flat-btn-warn {
+  background: #fff0f3;
+  color: #d8617e;
+}
+@media screen and (max-width: 520px) {
+.app-account-form-row,
+.app-account-action-row {
+    grid-template-columns: 1fr;
+}
+}
+.app-account-panel + .app-account-panel {
+  margin-top: 20rpx;
+}
+.app-account-panel-head {
+  margin-bottom: 6rpx;
+}
+.app-account-panel-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--app-color-primary-strong);
+}
+.app-account-panel-desc {
+  margin-top: 10rpx;
+  font-size: 23rpx;
+  line-height: 1.7;
+  color: #9d7582;
+}
+.app-account-field-hint {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: #b08a96;
+}
+.app-account-form-item-compact {
+  margin-top: 18rpx;
+}page{--status-bar-height:25px;--top-window-height:0px;--window-top:0px;--window-bottom:0px;--window-left:0px;--window-right:0px;--window-magin:0px}[data-c-h="true"]{display: none !important;}

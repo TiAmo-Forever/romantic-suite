@@ -1,0 +1,22 @@
+﻿<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="120" x2="900" y2="920" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE6EE"/>
+      <stop offset="1" stop-color="#FF8FB1"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="300" y1="250" x2="760" y2="760" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFDFE" stop-opacity="0.98"/>
+      <stop offset="1" stop-color="#FFD1DE" stop-opacity="0.92"/>
+    </linearGradient>
+    <linearGradient id="core" x1="430" y1="410" x2="610" y2="620" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF6D9C"/>
+      <stop offset="1" stop-color="#FFA8C2"/>
+    </linearGradient>
+  </defs>
+  <rect x="80" y="80" width="864" height="864" rx="220" fill="url(#bg)"/>
+  <circle cx="512" cy="512" r="248" fill="url(#glass)" fill-opacity="0.92"/>
+  <circle cx="512" cy="512" r="248" stroke="#FFF8FB" stroke-opacity="0.65" stroke-width="12"/>
+  <ellipse cx="430" cy="392" rx="92" ry="62" fill="#FFFFFF" fill-opacity="0.48"/>
+  <path d="M408 522C445 461 528 457 559 520C588 580 536 638 484 687C432 638 380 580 409 520C440 457 523 461 560 522" fill="url(#core)"/>
+  <path d="M252 558C330 510 406 488 512 488C620 488 695 510 772 558" stroke="#FF7EA6" stroke-width="30" stroke-linecap="round" stroke-opacity="0.9"/>
+</svg>

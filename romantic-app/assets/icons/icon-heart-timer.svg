@@ -1,0 +1,26 @@
+﻿<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="110" x2="850" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE2EB"/>
+      <stop offset="1" stop-color="#FF92B3"/>
+    </linearGradient>
+    <linearGradient id="clock" x1="270" y1="250" x2="760" y2="760" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF9FB"/>
+      <stop offset="1" stop-color="#FFD2DE"/>
+    </linearGradient>
+    <linearGradient id="heart" x1="410" y1="410" x2="620" y2="620" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF6B99"/>
+      <stop offset="1" stop-color="#FF9FBC"/>
+    </linearGradient>
+  </defs>
+  <rect x="80" y="80" width="864" height="864" rx="220" fill="url(#bg)"/>
+  <rect x="398" y="168" width="92" height="96" rx="36" fill="#FFF5F8" fill-opacity="0.92"/>
+  <rect x="534" y="168" width="92" height="96" rx="36" fill="#FFF5F8" fill-opacity="0.92"/>
+  <circle cx="512" cy="550" r="270" fill="url(#clock)"/>
+  <circle cx="512" cy="550" r="226" stroke="#FFB6CA" stroke-width="20" stroke-dasharray="12 22"/>
+  <path d="M512 550L512 404" stroke="#FF7EA6" stroke-width="26" stroke-linecap="round"/>
+  <path d="M512 550L620 612" stroke="#FF7EA6" stroke-width="26" stroke-linecap="round"/>
+  <circle cx="512" cy="550" r="28" fill="#FF7EA6"/>
+  <path d="M458 612C480 576 534 570 555 611C575 651 533 691 488 727C443 692 401 651 421 611C442 570 496 576 518 612" fill="url(#heart)"/>
+  <circle cx="360" cy="360" r="18" fill="#FFF7FA" fill-opacity="0.8"/>
+</svg>

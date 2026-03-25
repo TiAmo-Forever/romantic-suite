@@ -1,0 +1,11 @@
+
+.top-nav-icon.data-v-cde7421c {
+		width: 18rpx;
+		height: 18rpx;
+		border-left: 4rpx solid currentColor;
+		border-bottom: 4rpx solid currentColor;
+		border-radius: 2rpx;
+		box-sizing: border-box;
+		transform: rotate(45deg);
+		flex-shrink: 0;
+}

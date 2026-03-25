@@ -1,0 +1,41 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/home/home",
+    "pages/planet/planet",
+    "pages/mine/mine",
+    "pages/modules/countdown/index",
+    "pages/modules/anniversary/index",
+    "pages/modules/anniversary/detail",
+    "pages/modules/anniversary/edit",
+    "pages/modules/album/index",
+    "pages/modules/album/detail",
+    "pages/modules/album/edit",
+    "pages/modules/improvement/index",
+    "pages/modules/improvement/detail",
+    "pages/modules/improvement/edit",
+    "pages/modules/media-viewer/index",
+    "pages/modules/notifications/index",
+    "pages/modules/coming-soon/index",
+    "pages/account/settings",
+    "pages/account/profile",
+    "pages/account/avatar",
+    "pages/account/avatar-crop",
+    "pages/account/relationship",
+    "pages/account/security",
+    "pages/account/data",
+    "pages/account/area-picker",
+    "pages/theme/index"
+  ],
+  "window": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "浪漫App",
+    "navigationBarBackgroundColor": "#ff7ea6",
+    "backgroundColor": "#fff5f8",
+    "enablePullDownRefresh": false
+  },
+  "permission": {},
+  "usingComponents": {
+    "global-notification-banner": "/components/GlobalNotificationBanner"
+  }
+}

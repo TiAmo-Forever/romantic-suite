@@ -1,0 +1,21 @@
+
+.crop-card[data-v-62a67396] { border-radius: 1rem;
+}
+.crop-tip[data-v-62a67396] { font-size: 0.75rem; line-height: 1.7; color: #98707d;
+}
+.crop-shell[data-v-62a67396] { margin-top: 0.75rem; display: flex; justify-content: center;
+}
+.crop-viewport[data-v-62a67396] { position: relative; overflow: hidden; border-radius: 1.125rem; background: #fff; box-shadow: inset 0 0 0 0.125rem rgba(255, 143, 179, 0.12);
+}
+.crop-image[data-v-62a67396] { position: absolute; transform-origin: top left;
+}
+.crop-slider[data-v-62a67396] { margin-top: 0.625rem;
+}
+.crop-actions[data-v-62a67396] { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-top: 0.75rem;
+}
+.crop-canvas[data-v-62a67396] { position: fixed; left: -9999px; top: -9999px; width: 600px; height: 600px;
+}
+@media screen and (max-width: 520px) {
+.crop-actions[data-v-62a67396] { grid-template-columns: 1fr;
+}
+}

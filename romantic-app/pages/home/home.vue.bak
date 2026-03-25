@@ -1,0 +1,378 @@
+<template>
+	<view class="page app-page-shell app-page-shell-tabbed home-page" :style="themeStyle">
+		<view class="bg-layer"></view>
+		<view class="orb orb-a"></view>
+		<view class="orb orb-b"></view>
+
+		<view class="hero-card app-fade-up app-delay-1">
+			<view class="hero-glow hero-glow-a"></view>
+			<view class="hero-glow hero-glow-b"></view>
+			<view class="hero-badge app-pill app-pill-glass">浪漫主站</view>
+			<view class="hero-kicker">今日推荐</view>
+			<view class="hero-title">欢迎来到你们的浪漫宇宙</view>
+			<view class="hero-desc">把等待见面的心跳、纪念日的仪式感，还有没说出口的温柔，都收进这里。</view>
+			<view class="hero-meta-row">
+				<view class="hero-chip hero-chip-strong app-pill app-pill-glass">主入口</view>
+				<view class="hero-chip app-pill app-pill-glass">先去看看见面倒计时</view>
+			</view>
+		</view>
+
+		<view class="section-head app-fade-up app-delay-2">
+			<view class="app-section-kicker">精选模块</view>
+			<view class="app-section-title">把最常用的浪漫功能放近一点</view>
+			<view class="app-section-desc">首页不再只是入口堆叠，而是给你一个更像“生活面板”的主页面。</view>
+		</view>
+
+		<view class="feature-grid app-fade-up app-delay-2">
+			<view class="feature-card feature-card-primary app-card-soft" hover-class="feature-card-active" hover-stay-time="70" @click="goCountdown">
+				<view class="feature-accent"></view>
+				<view class="feature-head">
+					<view class="feature-icon-wrap">
+						<view class="feature-icon">⏰</view>
+					</view>
+					<view class="feature-chip">推荐</view>
+				</view>
+				<view class="feature-title">见面倒计时</view>
+				<view class="feature-summary">把想念拆成天、小时和分钟，一直数到见面的那一刻。</view>
+				<view class="feature-preview">心动值正在上升</view>
+			</view>
+
+			<view class="feature-card app-card-soft" hover-class="feature-card-active" hover-stay-time="70" @click="goAnniversary">
+				<view class="feature-accent accent-flower"></view>
+				<view class="feature-head">
+					<view class="feature-icon-wrap soft-peach">
+						<view class="feature-icon">🌷</view>
+					</view>
+					<view class="feature-chip soft">已开放</view>
+				</view>
+				<view class="feature-title">恋爱纪念日</view>
+				<view class="feature-summary">让每一个重要日子都拥有被认真记录的理由。</view>
+				<view class="feature-preview light">现在就能开始记录</view>
+			</view>
+
+			<view class="feature-card app-card-soft" hover-class="feature-card-active" hover-stay-time="70" @click="goComingSoon('甜蜜相册')">
+				<view class="feature-accent accent-photo"></view>
+				<view class="feature-head">
+					<view class="feature-icon-wrap soft-sky">
+						<view class="feature-icon">📷</view>
+					</view>
+					<view class="feature-chip soft">预留</view>
+				</view>
+				<view class="feature-title">甜蜜相册</view>
+				<view class="feature-summary">把照片、地点和当天的小心情一起装进回忆卡片。</view>
+				<view class="feature-preview light">故事会慢慢长出来</view>
+			</view>
+
+			<view class="feature-card app-card-soft" hover-class="feature-card-active" hover-stay-time="70" @click="goComingSoon('情话便签')">
+				<view class="feature-accent accent-note"></view>
+				<view class="feature-head">
+					<view class="feature-icon-wrap soft-lilac">
+						<view class="feature-icon">💌</view>
+					</view>
+					<view class="feature-chip soft">预留</view>
+				</view>
+				<view class="feature-title">情话便签</view>
+				<view class="feature-summary">把那些随手想起的话保存下来，等合适的时候送给 TA。</view>
+				<view class="feature-preview light">温柔的句子在排队</view>
+			</view>
+		</view>
+
+		<BottomTab activeKey="home" />
+	</view>
+</template>
+
+<script setup>
+import { onMounted } from 'vue'
+import { requireAuth } from '@/utils/auth.js'
+import { goPage } from '@/utils/nav.js'
+import { useThemePage } from '@/utils/useThemePage.js'
+import BottomTab from '@/pages/components/BottomTab.vue'
+
+const { themeStyle } = useThemePage()
+
+function goCountdown() {
+	goPage('/pages/modules/countdown/index')
+}
+
+function goAnniversary() {
+	goPage('/pages/modules/anniversary/index')
+}
+
+function goComingSoon(moduleName) {
+	goPage(`/pages/modules/coming-soon/index?title=${encodeURIComponent(moduleName)}`)
+}
+
+onMounted(() => {
+	requireAuth()
+})
+</script>
+
+<style scoped>
+	.home-page {
+		position: relative;
+		overflow: hidden;
+		background: var(--app-page-gradient-main);
+	}
+
+	.bg-layer {
+		position: absolute;
+		inset: 0;
+		background:
+			radial-gradient(circle at 10% 10%, var(--app-page-glow-strong), transparent 30%),
+			radial-gradient(circle at 85% 20%, var(--app-page-glow-mid), transparent 28%),
+			radial-gradient(circle at 50% 78%, var(--app-page-glow-soft), transparent 34%);
+	}
+
+	.orb {
+		position: absolute;
+		border-radius: 50%;
+		filter: blur(8rpx);
+		opacity: 0.75;
+	}
+
+	.orb-a {
+		width: 220rpx;
+		height: 220rpx;
+		right: -70rpx;
+		top: 260rpx;
+		background: var(--app-page-orb-a);
+	}
+
+	.orb-b {
+		width: 180rpx;
+		height: 180rpx;
+		left: -60rpx;
+		top: 700rpx;
+		background: var(--app-page-orb-b);
+	}
+
+	.hero-card {
+		position: relative;
+		z-index: 2;
+		overflow: hidden;
+		margin-top: 18rpx;
+		padding: 40rpx 32rpx;
+		border-radius: 32rpx;
+		background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.24), transparent 30%), var(--app-gradient-hero);
+		box-shadow: var(--app-shadow-card);
+	}
+
+	.hero-glow {
+		position: absolute;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.16);
+	}
+
+	.hero-glow-a {
+		width: 200rpx;
+		height: 200rpx;
+		right: -40rpx;
+		top: -50rpx;
+	}
+
+	.hero-glow-b {
+		width: 120rpx;
+		height: 120rpx;
+		left: 30rpx;
+		bottom: -30rpx;
+	}
+
+	.hero-badge,
+	.hero-kicker,
+	.hero-title,
+	.hero-desc,
+	.hero-meta-row {
+		position: relative;
+		z-index: 1;
+	}
+
+	.hero-badge {
+		display: inline-flex;
+		padding: 10rpx 18rpx;
+		border-radius: 999rpx;
+		background: rgba(255, 255, 255, 0.22);
+		color: #fff;
+		font-size: 22rpx;
+		font-weight: 700;
+		letter-spacing: 1rpx;
+	}
+
+	.hero-kicker {
+		margin-top: 20rpx;
+		font-size: 22rpx;
+		color: rgba(255, 255, 255, 0.78);
+	}
+
+	.hero-title {
+		margin-top: 10rpx;
+		font-size: 42rpx;
+		line-height: 1.4;
+		font-weight: 700;
+		color: #fff;
+	}
+
+	.hero-desc {
+		margin-top: 18rpx;
+		font-size: 27rpx;
+		line-height: 1.8;
+		color: rgba(255, 255, 255, 0.95);
+	}
+
+	.hero-meta-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 14rpx;
+		margin-top: 20rpx;
+	}
+
+	.hero-chip-strong {
+		background: rgba(255, 255, 255, 0.28);
+	}
+
+	.section-head {
+		position: relative;
+		z-index: 2;
+		margin-top: 34rpx;
+		margin-bottom: 20rpx;
+	}
+
+	.feature-grid {
+		position: relative;
+		z-index: 2;
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 20rpx;
+	}
+
+	.feature-card {
+		position: relative;
+		overflow: hidden;
+		min-height: 256rpx;
+		padding: 28rpx 24rpx;
+		transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+	}
+
+	.feature-card-active {
+		transform: scale(0.985);
+		box-shadow: 0 8rpx 18rpx rgba(255, 128, 160, 0.12);
+		background: rgba(255, 250, 252, 0.98);
+	}
+
+	.feature-card-primary {
+		background: var(--app-gradient-primary);
+	}
+
+	.feature-accent {
+		position: absolute;
+		left: 0;
+		top: 18rpx;
+		bottom: 18rpx;
+		width: 10rpx;
+		border-radius: 999rpx;
+		background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.45));
+	}
+
+	.accent-flower {
+		background: linear-gradient(180deg, #ffb287, #ffd8bd);
+	}
+
+	.accent-photo {
+		background: linear-gradient(180deg, #8fc3ff, #d5ebff);
+	}
+
+	.accent-note {
+		background: linear-gradient(180deg, #c2a1ff, #e8ddff);
+	}
+
+	.feature-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12rpx;
+		padding-left: 8rpx;
+	}
+
+	.feature-icon-wrap {
+		width: 64rpx;
+		height: 64rpx;
+		border-radius: 20rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(255, 255, 255, 0.22);
+	}
+
+	.soft-peach {
+		background: #fff0e6;
+	}
+
+	.soft-sky {
+		background: #edf6ff;
+	}
+
+	.soft-lilac {
+		background: #f4eeff;
+	}
+
+	.feature-icon {
+		font-size: 34rpx;
+	}
+
+	.feature-chip {
+		padding: 8rpx 14rpx;
+		border-radius: 999rpx;
+		background: rgba(255, 255, 255, 0.22);
+		color: #fff;
+		font-size: 20rpx;
+		font-weight: 700;
+	}
+
+	.feature-chip.soft {
+		background: #fff3f7;
+		color: #c86f8c;
+	}
+
+	.feature-title {
+		margin-top: 22rpx;
+		padding-left: 8rpx;
+		font-size: 30rpx;
+		font-weight: 700;
+		color: var(--app-color-primary-strong);
+	}
+
+	.feature-summary {
+		margin-top: 12rpx;
+		padding-left: 8rpx;
+		font-size: 24rpx;
+		line-height: 1.7;
+		color: #9a7682;
+	}
+
+	.feature-preview {
+		margin-top: 18rpx;
+		margin-left: 8rpx;
+		display: inline-flex;
+		padding: 8rpx 14rpx;
+		border-radius: 999rpx;
+		background: rgba(255,255,255,0.24);
+		font-size: 20rpx;
+		font-weight: 700;
+		color: #fff;
+	}
+
+	.feature-preview.light {
+		background: #fff4f7;
+		color: #be7c8d;
+	}
+
+	.feature-card-primary .feature-title,
+	.feature-card-primary .feature-summary {
+		color: #fff;
+	}
+
+	@media screen and (max-width: 520px) {
+		.feature-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

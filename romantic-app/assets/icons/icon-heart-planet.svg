@@ -1,0 +1,24 @@
+﻿<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="140" y1="120" x2="860" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFD9E6"/>
+      <stop offset="1" stop-color="#FF9FBC"/>
+    </linearGradient>
+    <linearGradient id="planet" x1="300" y1="280" x2="720" y2="720" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF7FA"/>
+      <stop offset="1" stop-color="#FFC0D2"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="180" y1="620" x2="830" y2="370" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF6F9F"/>
+      <stop offset="1" stop-color="#FFD3DF"/>
+    </linearGradient>
+  </defs>
+  <rect x="80" y="80" width="864" height="864" rx="220" fill="url(#bg)"/>
+  <circle cx="512" cy="520" r="220" fill="url(#planet)"/>
+  <circle cx="440" cy="450" r="70" fill="#FFFFFF" fill-opacity="0.45"/>
+  <path d="M234 628C304 548 402 510 510 510C638 510 738 556 810 640" stroke="url(#ring)" stroke-width="54" stroke-linecap="round"/>
+  <path d="M738 490C770 438 846 430 874 488C901 545 841 603 776 654C710 604 651 545 678 488C706 431 782 438 814 490" fill="#FFF5F8"/>
+  <circle cx="784" cy="490" r="14" fill="#FF8DB1"/>
+  <circle cx="356" cy="338" r="16" fill="#FFF7FA" fill-opacity="0.85"/>
+  <circle cx="690" cy="314" r="10" fill="#FFF7FA" fill-opacity="0.7"/>
+</svg>

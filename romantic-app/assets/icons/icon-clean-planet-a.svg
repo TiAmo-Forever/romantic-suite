@@ -1,0 +1,21 @@
+﻿<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="160" y1="120" x2="860" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF4F8"/>
+      <stop offset="1" stop-color="#FFB3C9"/>
+    </linearGradient>
+    <linearGradient id="planet" x1="340" y1="320" x2="670" y2="690" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#FFD7E4"/>
+    </linearGradient>
+    <linearGradient id="orbit" x1="240" y1="630" x2="790" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF6F9F"/>
+      <stop offset="1" stop-color="#FFAEC4"/>
+    </linearGradient>
+  </defs>
+  <rect x="80" y="80" width="864" height="864" rx="220" fill="url(#bg)"/>
+  <circle cx="512" cy="520" r="184" fill="url(#planet)"/>
+  <circle cx="444" cy="446" r="54" fill="#FFFFFF" fill-opacity="0.58"/>
+  <path d="M260 626C342 553 420 520 512 520C610 520 691 555 772 626" stroke="url(#orbit)" stroke-width="40" stroke-linecap="round"/>
+  <path d="M718 420C744 382 798 380 820 419C841 456 812 497 776 531C741 497 711 456 733 419C754 381 808 382 834 420" fill="#FFF9FB"/>
+</svg>
