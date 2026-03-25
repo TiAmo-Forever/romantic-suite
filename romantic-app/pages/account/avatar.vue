@@ -5,59 +5,73 @@
 			<AccountHeader :title="TEXT.pageTitle" :eyebrow="TEXT.eyebrow" />
 		</view>
 		<view class="app-account-content">
-			<AccountPanel :title="TEXT.panelTitle" :description="TEXT.panelDescription">
-				<view class="avatar-mode-row">
-					<view class="avatar-mode" :class="{ active: form.avatarType === 'preset' }" @click="setAvatarType('preset')">{{ TEXT.presetMode }}</view>
-					<view class="avatar-mode" :class="{ active: form.avatarType === 'upload' }" @click="activateUploadAvatar">{{ TEXT.uploadMode }}</view>
-					<view class="avatar-mode" :class="{ active: form.avatarType === 'text' }" @click="setAvatarType('text')">{{ TEXT.textMode }}</view>
-				</view>
+			<view class="app-account-stack">
+				<AccountIntroCard
+					eyebrow="头像风格"
+					title="挑一个更像现在的你"
+					description="你可以在预设头像、上传照片和字符头像之间切换，保存后会同步到当前账号的资料展示里。"
+					:tags="[avatarModeTag, previewAvatarUrl ? '已有头像预览' : '等待选择头像']"
+				/>
+				<AccountPanel :title="TEXT.panelTitle" :description="TEXT.panelDescription">
+					<view class="avatar-mode-row">
+						<view class="avatar-mode" :class="{ active: form.avatarType === 'preset' }" @click="setAvatarType('preset')">{{ TEXT.presetMode }}</view>
+						<view class="avatar-mode" :class="{ active: form.avatarType === 'upload' }" @click="activateUploadAvatar">{{ TEXT.uploadMode }}</view>
+						<view class="avatar-mode" :class="{ active: form.avatarType === 'text' }" @click="setAvatarType('text')">{{ TEXT.textMode }}</view>
+					</view>
 
-				<template v-if="form.avatarType === 'preset'">
-					<AccountField :label="TEXT.presetFieldLabel" :hint="TEXT.presetHint" bare>
-						<scroll-view class="preset-scroll" scroll-x show-scrollbar="false">
-							<view class="preset-row">
-								<view
-									v-for="item in avatarPresets"
-									:key="item.key"
-									class="preset-card"
-									:class="{ active: form.avatarPreset === item.key }"
-									:style="{ background: item.gradient }"
-									@click="selectPreset(item.key)"
-								>
-									<view class="preset-icon">{{ item.text }}</view>
-									<view class="preset-name">{{ item.label }}</view>
+					<template v-if="form.avatarType === 'preset'">
+						<AccountField :label="TEXT.presetFieldLabel" :hint="TEXT.presetHint" bare>
+							<scroll-view class="preset-scroll" scroll-x show-scrollbar="false">
+								<view class="preset-row">
+									<view
+										v-for="item in avatarPresets"
+										:key="item.key"
+										class="preset-card"
+										:class="{ active: form.avatarPreset === item.key }"
+										:style="{ background: item.gradient }"
+										@click="selectPreset(item.key)"
+									>
+										<view class="preset-icon">{{ item.text }}</view>
+										<view class="preset-name">{{ item.label }}</view>
+									</view>
+								</view>
+							</scroll-view>
+						</AccountField>
+					</template>
+
+					<template v-else-if="form.avatarType === 'upload'">
+						<AccountField :label="TEXT.uploadFieldLabel" :hint="TEXT.uploadHint" bare>
+							<view class="upload-panel app-input-shell">
+								<image v-if="previewAvatarUrl" class="upload-preview" :src="previewAvatarUrl" mode="aspectFill" @click="previewCurrentAvatar"></image>
+								<view v-else class="upload-empty">{{ TEXT.emptyUpload }}</view>
+								<view class="upload-actions">
+									<button class="small-btn" @click="chooseAvatarImage">{{ TEXT.chooseButton }}</button>
+									<button class="small-btn ghost" @click="clearAvatarImage">{{ TEXT.clearButton }}</button>
 								</view>
 							</view>
-						</scroll-view>
-					</AccountField>
-				</template>
+						</AccountField>
+					</template>
 
-				<template v-else-if="form.avatarType === 'upload'">
-					<AccountField :label="TEXT.uploadFieldLabel" :hint="TEXT.uploadHint" bare>
-						<view class="upload-panel app-input-shell">
-							<image v-if="previewAvatarUrl" class="upload-preview" :src="previewAvatarUrl" mode="aspectFill" @click="previewCurrentAvatar"></image>
-							<view v-else class="upload-empty">{{ TEXT.emptyUpload }}</view>
-							<view class="upload-actions">
-								<button class="small-btn" @click="chooseAvatarImage">{{ TEXT.chooseButton }}</button>
-								<button class="small-btn ghost" @click="clearAvatarImage">{{ TEXT.clearButton }}</button>
-							</view>
-						</view>
-					</AccountField>
-				</template>
-
-				<template v-else>
-					<AccountField :label="TEXT.textFieldLabel" :hint="TEXT.textHint">
-						<input
-							v-model="form.avatarText"
-							maxlength="2"
-							class="input app-field"
-							:placeholder="TEXT.textPlaceholder"
-							placeholder-class="app-account-input-placeholder"
-						/>
-					</AccountField>
-				</template>
-			</AccountPanel>
-			<button class="save-btn app-primary-btn app-primary-btn-shadow app-account-save-btn" @click="handleSave">{{ TEXT.saveButton }}</button>
+					<template v-else>
+						<AccountField :label="TEXT.textFieldLabel" :hint="TEXT.textHint">
+							<input
+								v-model="form.avatarText"
+								maxlength="2"
+								class="input app-field"
+								:placeholder="TEXT.textPlaceholder"
+								placeholder-class="app-account-input-placeholder"
+							/>
+						</AccountField>
+					</template>
+				</AccountPanel>
+				<view class="app-account-action-bar">
+					<view class="app-account-action-note">
+						<view class="app-account-action-note-title">保存后会更新账号资料中的头像展示</view>
+						<view class="app-account-action-note-desc">如果使用上传头像，系统会先完成裁剪和上传，再同步保存到服务端。</view>
+					</view>
+					<button class="save-btn app-primary-btn app-primary-btn-shadow app-account-save-btn" @click="handleSave">{{ TEXT.saveButton }}</button>
+				</view>
+			</view>
 		</view>
 	</view>
 </template>
@@ -75,6 +89,7 @@ import { goPage } from '@/utils/nav.js'
 import { useThemePage } from '@/utils/useThemePage.js'
 import AccountField from '@/pages/account/components/AccountField.vue'
 import AccountHeader from '@/pages/account/components/AccountHeader.vue'
+import AccountIntroCard from '@/pages/account/components/AccountIntroCard.vue'
 import AccountPanel from '@/pages/account/components/AccountPanel.vue'
 
 const TEXT = {
@@ -105,6 +120,11 @@ const form = reactive(getProfile())
 const avatarPresets = getAvatarPresets()
 const draftAvatarPath = ref('')
 const previewAvatarUrl = computed(() => resolveAvatarUrl(draftAvatarPath.value || form.avatarImage))
+const avatarModeTag = computed(() => {
+	if (form.avatarType === 'upload') return '上传头像'
+	if (form.avatarType === 'text') return '字符头像'
+	return '默认头像'
+})
 
 onLoad(() => {
 	requireAuth()

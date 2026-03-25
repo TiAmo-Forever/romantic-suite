@@ -5,38 +5,52 @@
 			<AccountHeader title="关系信息" eyebrow="关系编辑" />
 		</view>
 		<view class="app-account-content">
-			<AccountPanel title="关系设定">
+			<view class="app-account-stack">
+				<AccountIntroCard
+					eyebrow="共享信息"
+					title="把你们之间的重要设定留在这里"
+					description="这里维护的是你们共同会看到的关系资料，包括称呼、常用见面地点和纪念日，保存后会影响共享内容展示。"
+					:tags="introTags"
+				/>
+			<AccountPanel title="关系设定" description="这部分属于共享资料，两个人查看到的是同一份关系信息。">
 				<view class="app-account-form-row">
 					<view class="app-account-form-col">
 						<AccountField label="对方对你的称呼">
-							<input v-model="form.loverNickname" class="input app-field" placeholder="请输入对方对你的称呼" placeholder-class="app-account-input-placeholder" />
+							<input v-model="form.loverNickname" class="input app-field" placeholder="输入一个你喜欢被叫到的称呼" placeholder-class="app-account-input-placeholder" />
 						</AccountField>
 					</view>
 					<view class="app-account-form-col">
-						<AccountField label="默认见面地点">
+						<AccountField label="常用见面地点">
 							<view class="picker app-field location-picker" @click="openAreaPicker">
-								<view class="picker-value">{{ form.defaultMeetingPlace || '请选择你们常去的地方' }}</view>
+								<view class="picker-value">{{ form.defaultMeetingPlace || '选择一个你们常去的地方' }}</view>
 							</view>
 						</AccountField>
 					</view>
 				</view>
 				<view class="location-actions">
-					<button class="ghost-btn app-account-flat-btn app-account-flat-btn-soft" @click="openAreaPicker">重新选择地区</button>
-					<button class="ghost-btn app-account-flat-btn app-account-flat-btn-soft" @click="useCurrentLocation">使用当前位置</button>
+					<button class="ghost-btn app-account-flat-btn app-account-flat-btn-soft location-action-btn" @click="openAreaPicker">重新选择地点</button>
+					<button class="ghost-btn app-account-flat-btn app-account-flat-btn-soft location-action-btn" @click="useCurrentLocation">使用当前位置</button>
 				</view>
 				<AccountField label="恋爱纪念日">
 					<picker class="picker app-field" mode="date" :value="form.anniversaryDate" @change="handleAnniversaryChange">
-						<view class="picker-value">{{ form.anniversaryDate || '请选择纪念日' }}</view>
+						<view class="picker-value">{{ form.anniversaryDate || '选择你们想认真记住的那一天' }}</view>
 					</picker>
 				</AccountField>
 			</AccountPanel>
-			<button class="save-btn app-primary-btn app-primary-btn-shadow app-account-save-btn" @click="handleSave">保存并同步</button>
+				<view class="app-account-action-bar">
+					<view class="app-account-action-note">
+						<view class="app-account-action-note-title">保存后会同步到共享资料</view>
+						<view class="app-account-action-note-desc">纪念日、默认见面地点和称呼会影响首页摘要、倒计时和关系资料展示。</view>
+					</view>
+					<button class="save-btn app-primary-btn app-primary-btn-shadow app-account-save-btn" @click="handleSave">保存并同步</button>
+				</view>
+			</view>
 		</view>
 	</view>
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { computed, reactive } from 'vue'
 import { onLoad, onShow } from '@dcloudio/uni-app'
 import { requireAuth } from '@/utils/auth.js'
 import { saveProfilePatchAndBack } from '@/utils/account.js'
@@ -48,10 +62,15 @@ import { goPage } from '@/utils/nav.js'
 import { useThemePage } from '@/utils/useThemePage.js'
 import AccountField from '@/pages/account/components/AccountField.vue'
 import AccountHeader from '@/pages/account/components/AccountHeader.vue'
+import AccountIntroCard from '@/pages/account/components/AccountIntroCard.vue'
 import AccountPanel from '@/pages/account/components/AccountPanel.vue'
 
 const { themeStyle } = useThemePage()
 const form = reactive(getProfile())
+const introTags = computed(() => [
+	form.anniversaryDate || '纪念日待设置',
+	form.defaultMeetingPlace || '地点待设置'
+])
 
 onLoad(() => {
 	requireAuth()
@@ -110,6 +129,27 @@ async function handleSave() {
 </script>
 
 <style scoped>
-	.location-actions { margin-top: 18rpx; }
+	.location-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 14rpx;
+		margin-top: 18rpx;
+	}
+	.location-action-btn {
+		width: auto;
+		min-width: 220rpx;
+		padding: 0 30rpx;
+		margin: 0;
+		flex: 0 0 auto;
+	}
 	.location-picker { justify-content: space-between; }
+	@media screen and (max-width: 520px) {
+		.location-actions {
+			gap: 12rpx;
+		}
+		.location-action-btn {
+			min-width: 0;
+			flex: 1 1 calc(50% - 6rpx);
+		}
+	}
 </style>

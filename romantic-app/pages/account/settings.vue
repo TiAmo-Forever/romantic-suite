@@ -25,7 +25,7 @@
         </view>
       </view>
 
-      <AccountPanel title="资料与外观">
+      <AccountPanel title="资料与外观" description="先整理当前账号自己的资料与头像，让首页和个人卡片展示更自然。">
         <view class="menu-list menu-list-tight app-fade-up app-delay-1">
           <view class="menu-card app-card-soft" hover-class="menu-card-active" hover-stay-time="70" @click="goPage('/pages/account/profile')">
             <view class="menu-accent accent-profile"></view>
@@ -68,7 +68,7 @@
         </view>
       </AccountPanel>
 
-      <AccountPanel title="关系与安全">
+      <AccountPanel title="关系与安全" description="这里同时管理共享的关系资料，以及只属于当前账号自己的登录安全设置。">
         <view class="menu-list menu-list-tight app-fade-up app-delay-2">
           <view class="menu-card app-card-soft" hover-class="menu-card-active" hover-stay-time="70" @click="goPage('/pages/account/relationship')">
             <view class="menu-accent accent-relationship"></view>
@@ -112,7 +112,7 @@
         </view>
       </AccountPanel>
 
-      <AccountPanel title="数据管理">
+      <AccountPanel title="数据管理" description="谨慎处理当前账号资料的重置与同步操作，避免误覆盖本地暂存内容。">
         <view class="menu-list menu-list-tight app-fade-up app-delay-3">
           <view class="menu-card app-card-soft" hover-class="menu-card-active" hover-stay-time="70" @click="goPage('/pages/account/data')">
             <view class="menu-accent accent-data"></view>
