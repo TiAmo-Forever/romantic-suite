@@ -1,1 +1,0 @@
-<view class="{{['app-account-form-item', f]}}"><view wx:if="{{a}}" class="app-account-label">{{b}}</view><view class="{{c}}"><slot/></view><view wx:if="{{d}}" class="app-account-field-hint">{{e}}</view></view>

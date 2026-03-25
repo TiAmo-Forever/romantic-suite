@@ -1,0 +1,34 @@
+# Workspace-wide ignore rules
+
+# IDE / editor
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS / temp
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Frontend local/build artifacts
+romantic-app/node_modules/
+romantic-app/unpackage/
+romantic-app/.hbuilderx/
+
+# Backend local/build artifacts
+romantic-server/target/
+romantic-server/.idea/
+
+# Sensitive packaging artifacts
+*.apk
+*.keystore

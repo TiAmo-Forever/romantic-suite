@@ -1,1 +1,0 @@
-<view class="app-card app-account-section app-account-panel"><view wx:if="{{a}}" class="app-account-panel-head"><view wx:if="{{b}}" class="app-account-panel-title">{{c}}</view><view wx:if="{{d}}" class="app-account-panel-desc">{{e}}</view></view><slot/></view>

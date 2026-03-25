@@ -996,3 +996,43 @@
 
 - 今日涉及的页面、文案、排版和编译修复内容已同步补充到 `WORKSPACE_NOTES.md`。
 - 后续继续开发前，仍需先阅读本文档，再决定是在现有页面上增量调整，还是统一推进模块内部页风格重构。
+## 2026-03-25 Git 忽略规则与索引清理记录
+### 目标
+
+- 收口工作区 Git 忽略规则，避免前端构建产物、后端编译目录、IDE 本地配置和打包敏感文件继续进入版本库。
+- 将已经被 Git 跟踪、但本应忽略的目录和文件从索引中移除，同时保留本地文件不删除。
+
+### 关键问题
+
+- 仓库根目录原先没有统一的 `.gitignore`，导致前后端子项目的忽略规则无法在工作区层面统一约束。
+- 前端 `romantic-app` 缺少对 `unpackage`、`node_modules`、`.hbuilderx` 等本地产物目录的忽略配置。
+- 后端 `romantic-server/.gitignore` 只忽略了部分 `.idea` 文件，没有直接忽略整个 `.idea/` 目录，导致 `vcs.xml`、`misc.xml` 等本地 IDE 配置被带入 Git。
+- 当前仓库中已经存在被跟踪的非源码内容，包括：
+  - `romantic-app/unpackage/**`
+  - `romantic-server/.idea/**`
+  - 打包产物中的 `.apk`
+  - 本地签名文件 `.keystore`
+
+### 关键结果
+
+- 已新增工作区根级 `.gitignore`：
+  - `D:/JavaProject/romantic-suite/.gitignore`
+- 根级忽略规则当前已统一覆盖：
+  - 前端 `romantic-app/unpackage/`
+  - 前端 `romantic-app/node_modules/`
+  - 前端 `romantic-app/.hbuilderx/`
+  - 后端 `romantic-server/target/`
+  - 后端 `romantic-server/.idea/`
+  - 通用 IDE 配置 `.idea/`、`.vscode/`、`*.iml`
+  - 打包敏感文件 `*.apk`、`*.keystore`
+- 已补充后端子项目忽略规则：
+  - `romantic-server/.gitignore`
+  - 当前已显式忽略整个 `.idea/` 目录，避免后续继续漏进新的 IntelliJ 本地配置。
+- 已明确后续 Git 管理约束：
+  - 构建产物、编译缓存、IDE 本地配置、签名文件、安装包等内容不作为版本库源码提交对象。
+  - 如果某类本地产物已被 Git 跟踪，仅补 `.gitignore` 不够，还必须同步执行一次 `git rm --cached` 取消索引跟踪。
+
+### 验证情况
+
+- 已确认工作区此前确实存在大量被跟踪的非源码内容，重点集中在 `romantic-app/unpackage/**` 与 `romantic-server/.idea/**`。
+- 本轮完成忽略规则补齐后，还需同步执行 Git 索引清理并提交一次专门的收口提交，确保后续 `git status` 不再被这些产物污染。

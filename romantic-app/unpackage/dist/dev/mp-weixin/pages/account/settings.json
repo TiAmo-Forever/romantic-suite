@@ -1,7 +1,0 @@
-{
-  "navigationStyle": "custom",
-  "usingComponents": {
-    "account-header": "./components/AccountHeader",
-    "account-panel": "./components/AccountPanel"
-  }
-}
