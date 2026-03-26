@@ -17,6 +17,26 @@ function normalizeMediaItem(item = {}, index = 0) {
   }
 }
 
+function normalizeLikeUser(item = {}) {
+  return {
+    username: String(item.username || '').trim(),
+    nickname: String(item.nickname || '').trim(),
+    likeTimes: Number(item.likeTimes || 0),
+    lastLikedAt: String(item.lastLikedAt || '').trim()
+  }
+}
+
+function normalizeComment(item = {}) {
+  return {
+    id: item.id || '',
+    commenterUsername: String(item.commenterUsername || '').trim(),
+    commenterNickname: String(item.commenterNickname || '').trim(),
+    content: String(item.content || '').trim(),
+    createdAt: String(item.createdAt || '').trim(),
+    updatedAt: String(item.updatedAt || '').trim()
+  }
+}
+
 function normalizeMemoryItem(item = {}) {
   const mediaList = (Array.isArray(item.mediaList) ? item.mediaList : []).map(normalizeMediaItem)
   const tags = Array.isArray(item.tags)
@@ -32,12 +52,23 @@ function normalizeMemoryItem(item = {}) {
     coverUrl: String(item.coverUrl || '').trim(),
     tags,
     mediaList,
+    likeCount: Number(item.likeCount || 0),
+    likedByCurrentUser: Boolean(item.likedByCurrentUser),
     imageCount: Number(item.imageCount || mediaList.filter((media) => media.mediaType === 'image').length),
     videoCount: Number(item.videoCount || mediaList.filter((media) => media.mediaType === 'video').length),
     creatorUsername: String(item.creatorUsername || '').trim(),
     creatorNickname: String(item.creatorNickname || '').trim(),
     createdAt: String(item.createdAt || '').trim(),
-    updatedAt: String(item.updatedAt || '').trim()
+    updatedAt: String(item.updatedAt || '').trim(),
+    likeUsers: (Array.isArray(item.likeUsers) ? item.likeUsers : []).map(normalizeLikeUser),
+    commentList: (Array.isArray(item.commentList) ? item.commentList : []).map(normalizeComment)
+  }
+}
+
+function normalizeLikeToggle(item = {}) {
+  return {
+    likeCount: Number(item.likeCount || 0),
+    liked: Boolean(item.liked)
   }
 }
 
@@ -79,4 +110,29 @@ export async function deleteAlbumMemory(id) {
     method: 'DELETE'
   })
   return ensureSuccess(response, '删除回忆失败')
+}
+
+export async function toggleAlbumLike(id) {
+  const response = await request({
+    url: `/api/albums/${encodeURIComponent(id)}/likes`,
+    method: 'POST'
+  })
+  return normalizeLikeToggle(ensureSuccess(response, '点赞操作失败'))
+}
+
+export async function createAlbumComment(id, payload) {
+  const response = await request({
+    url: `/api/albums/${encodeURIComponent(id)}/comments`,
+    method: 'POST',
+    data: payload
+  })
+  return normalizeComment(ensureSuccess(response, '评论失败'))
+}
+
+export async function deleteAlbumComment(id, commentId) {
+  const response = await request({
+    url: `/api/albums/${encodeURIComponent(id)}/comments/${encodeURIComponent(commentId)}`,
+    method: 'DELETE'
+  })
+  return ensureSuccess(response, '删除评论失败')
 }

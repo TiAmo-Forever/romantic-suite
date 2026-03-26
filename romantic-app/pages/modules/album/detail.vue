@@ -1,5 +1,5 @@
 <template>
-  <view class="page app-account-page" :style="themeStyle">
+  <view class="page app-account-page" :style="themeStyle" @click="handlePageTap">
     <GlobalNotificationBanner />
     <view class="app-account-topbar-shell">
       <AccountHeader :title="TEXT.detailTitle" :eyebrow="TEXT.albumTitle" />
@@ -39,10 +39,53 @@
           <view v-if="detail.videoCount" class="detail-chip strong">{{ detail.videoCount }} {{ TEXT.videoUnit }}</view>
         </view>
 
+        <view class="detail-creator">{{ creatorText }}</view>
         <view v-if="detail.summary" class="detail-summary">{{ detail.summary }}</view>
 
         <view v-if="detail.tags.length" class="detail-tags">
           <view v-for="tag in detail.tags" :key="tag" class="detail-tag">{{ tag }}</view>
+        </view>
+
+        <view class="interaction-row">
+          <view class="interaction-time">{{ detail.updatedAt || detail.createdAt }}</view>
+          <view class="interaction-more-wrap" @click.stop>
+            <view class="interaction-more-btn" @click.stop="toggleActionMenu">
+              <text class="interaction-more-dot"></text>
+              <text class="interaction-more-dot"></text>
+              <text class="interaction-more-dot"></text>
+            </view>
+
+            <view v-if="showActionMenu" class="interaction-action-pop">
+              <view class="interaction-pop-item" @click.stop="handleLikeFromMenu">
+                <text class="interaction-pop-icon">{{ FILLED_HEART }}</text>
+                <text class="interaction-pop-label">{{ likeActionText }}</text>
+              </view>
+              <view class="interaction-pop-divider"></view>
+              <view class="interaction-pop-item comment-only" @click.stop="openCommentComposer()">
+                <text class="interaction-pop-label">{{ TEXT.commentAction }}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <view v-if="hasInteractionFeed" class="interaction-feed">
+          <view v-if="detail.likeUsers.length" class="interaction-feed-line interaction-feed-like">
+            <text class="interaction-feed-heart">{{ FILLED_HEART }}</text>
+            <text class="interaction-feed-text">{{ likeUserSummary }}</text>
+          </view>
+          <view
+            v-for="item in detail.commentList"
+            :key="item.id"
+            class="interaction-feed-line interaction-feed-comment"
+            @click.stop="handleCommentTap(item)"
+            @longpress.stop="handleCommentLongPress(item, $event)"
+          >
+            <view class="interaction-comment-head">
+              <text class="interaction-feed-name">{{ getCommentDisplayName(item) }}</text>
+              <text class="interaction-comment-time">{{ formatCommentTime(item.createdAt || item.updatedAt) }}</text>
+            </view>
+            <text class="interaction-comment-content">{{ item.content }}</text>
+          </view>
         </view>
       </AccountPanel>
 
@@ -80,14 +123,59 @@
         <button class="detail-action-btn" @click="handleDelete">{{ TEXT.deleteButton }}</button>
       </view>
     </view>
+
+    <view v-if="commentInputVisible" class="comment-composer" @click.stop>
+      <input
+        v-model="commentForm.content"
+        class="comment-input"
+        :focus="commentFocus"
+        :maxlength="200"
+        :cursor-spacing="24"
+        :placeholder="commentInputPlaceholder"
+        placeholder-class="app-account-input-placeholder"
+        confirm-type="send"
+        @confirm="handleSubmitComment"
+      />
+      <view class="comment-composer-actions">
+        <view class="comment-limit">{{ commentLengthText }}</view>
+        <button class="comment-send-btn" :disabled="submittingComment" @click="handleSubmitComment">
+          {{ submittingComment ? TEXT.commentSending : TEXT.commentSend }}
+        </button>
+      </view>
+    </view>
+
+    <view v-if="commentActionSheetVisible" class="comment-sheet-mask" @click="closeCommentActionSheet">
+      <view class="comment-sheet-card" @click.stop>
+        <view class="comment-sheet-title">{{ TEXT.deleteOwnCommentTitle }}</view>
+        <view class="comment-sheet-action danger" @click="handleDeleteSelectedComment">{{ TEXT.deleteAction }}</view>
+        <view class="comment-sheet-action" @click="closeCommentActionSheet">{{ TEXT.cancelAction }}</view>
+      </view>
+    </view>
+
+    <view
+      v-if="commentPopoverVisible"
+      class="comment-popover-card"
+      :style="commentPopoverStyle"
+      @click.stop
+    >
+      <view class="comment-popover-item" @click="handleCopySelectedComment">{{ TEXT.copyAction }}</view>
+      <view class="comment-popover-divider"></view>
+      <view class="comment-popover-item danger" @click="handleDeleteSelectedComment">{{ TEXT.deleteAction }}</view>
+    </view>
   </view>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, nextTick, reactive, ref } from 'vue'
 import { onLoad, onShow } from '@dcloudio/uni-app'
-import { deleteAlbumMemory, fetchAlbumMemoryDetail } from '@/services/albums.js'
-import { requireAuth } from '@/utils/auth.js'
+import {
+  createAlbumComment,
+  deleteAlbumComment,
+  deleteAlbumMemory,
+  fetchAlbumMemoryDetail,
+  toggleAlbumLike
+} from '@/services/albums.js'
+import { getUser, requireAuth } from '@/utils/auth.js'
 import { resolveMediaUrl } from '@/utils/media-upload.js'
 import { openMediaViewer } from '@/utils/media-viewer.js'
 import { backPage, goPage } from '@/utils/nav.js'
@@ -95,27 +183,101 @@ import { useThemePage } from '@/utils/useThemePage.js'
 import AccountHeader from '@/pages/account/components/AccountHeader.vue'
 import AccountPanel from '@/pages/account/components/AccountPanel.vue'
 
+const FILLED_HEART = '❤'
 const TEXT = {
-  albumTitle: '\u751c\u871c\u76f8\u518c',
-  detailTitle: '\u56de\u5fc6\u8be6\u60c5',
-  imageWord: '\u56fe\u7247',
-  videoWord: '\u89c6\u9891',
-  imageUnit: '\u5f20\u56fe\u7247',
-  videoUnit: '\u4e2a\u89c6\u9891',
-  mediaTitle: '\u7167\u7247\u4e0e\u89c6\u9891',
-  emptyMedia: '\u6682\u65e0\u5a92\u4f53',
-  editButton: '\u7f16\u8f91\u56de\u5fc6',
-  deleteButton: '\u5220\u9664\u56de\u5fc6',
-  deleteTitle: '\u5220\u9664\u56de\u5fc6',
-  deleteContent: '\u5220\u9664\u540e\u4f1a\u79fb\u9664\u8fd9\u6bb5\u56de\u5fc6\u548c\u5173\u8054\u5a92\u4f53\uff0c\u662f\u5426\u7ee7\u7eed\uff1f',
-  deleted: '\u5df2\u5220\u9664',
-  deleteFailed: '\u5220\u9664\u5931\u8d25',
-  loadFailed: '\u56de\u5fc6\u8be6\u60c5\u52a0\u8f7d\u5931\u8d25'
+  albumTitle: '甜蜜相册',
+  detailTitle: '回忆详情',
+  imageWord: '图片',
+  videoWord: '视频',
+  imageUnit: '张图片',
+  videoUnit: '个视频',
+  mediaTitle: '照片与视频',
+  emptyMedia: '暂时还没有上传媒体内容',
+  editButton: '编辑回忆',
+  deleteButton: '删除回忆',
+  deleteTitle: '删除回忆',
+  deleteContent: '删除后会移除这段回忆和关联媒体，确认继续吗？',
+  deleted: '这段回忆已删除',
+  deleteFailed: '删除回忆失败',
+  loadFailed: '回忆详情加载失败',
+  likeFailed: '操作失败，请稍后再试',
+  likeAction: '点赞',
+  unlikeAction: '取消点赞',
+  commentAction: '评论',
+  commentPlaceholder: '说点想留在这段回忆里的话',
+  commentSend: '发送',
+  commentSending: '发送中',
+  commentFailed: '评论失败，请稍后再试',
+  commentEmptyError: '请先写下评论内容',
+  commentSuccess: '评论已发送',
+  commentDeleted: '评论已删除',
+  commentDeleteFailed: '删除评论失败',
+  commentCopied: '评论内容已复制',
+  commentFallbackUser: '未命名',
+  creatorPrefix: '由 ',
+  creatorSuffix: ' 收进相册',
+  creatorFallback: '这段回忆已经被认真收进相册了',
+  commentLengthSuffix: '/200',
+  replyPrefix: '回复 ',
+  replyDivider: '：',
+  deleteOwnCommentTitle: '删除我的评论',
+  deleteAction: '删除',
+  cancelAction: '取消',
+  copyAction: '复制'
 }
 
 const { themeStyle } = useThemePage()
 const detail = ref(null)
 const memoryId = ref('')
+const liking = ref(false)
+const submittingComment = ref(false)
+const deletingComment = ref(false)
+const showActionMenu = ref(false)
+const commentInputVisible = ref(false)
+const commentFocus = ref(false)
+const commentActionSheetVisible = ref(false)
+const commentPopoverVisible = ref(false)
+const selectedComment = ref(null)
+const replyTargetComment = ref(null)
+const suppressCommentTapUntil = ref(0)
+const popoverPosition = reactive({ left: 0, top: 0 })
+const commentForm = reactive({ content: '' })
+
+const currentUsername = computed(() => String(getUser()?.username || '').trim())
+const isDetailCreator = computed(() => {
+  return currentUsername.value && currentUsername.value === String(detail.value?.creatorUsername || '').trim()
+})
+
+const creatorText = computed(() => {
+  if (!detail.value?.creatorNickname) return TEXT.creatorFallback
+  return `${TEXT.creatorPrefix}${detail.value.creatorNickname}${TEXT.creatorSuffix}`
+})
+
+const likeActionText = computed(() => (detail.value?.likedByCurrentUser ? TEXT.unlikeAction : TEXT.likeAction))
+
+const commentLengthText = computed(() => `${String(commentForm.content || '').length}${TEXT.commentLengthSuffix}`)
+
+const commentInputPlaceholder = computed(() => {
+  const target = replyTargetComment.value
+  if (!target) return TEXT.commentPlaceholder
+  return `${TEXT.replyPrefix}${getCommentDisplayName(target)}${TEXT.replyDivider}`
+})
+
+const likeUserSummary = computed(() => {
+  const list = Array.isArray(detail.value?.likeUsers) ? detail.value.likeUsers : []
+  return list.map((item) => item?.nickname || item?.username || TEXT.commentFallbackUser).join('、')
+})
+
+const hasInteractionFeed = computed(() => {
+  const likeUsers = Array.isArray(detail.value?.likeUsers) ? detail.value.likeUsers : []
+  const commentList = Array.isArray(detail.value?.commentList) ? detail.value.commentList : []
+  return likeUsers.length > 0 || commentList.length > 0
+})
+
+const commentPopoverStyle = computed(() => ({
+  left: `${popoverPosition.left}px`,
+  top: `${popoverPosition.top}px`
+}))
 
 onLoad(async (options) => {
   if (!requireAuth()) return
@@ -162,6 +324,180 @@ function openViewer(mediaList, index) {
   openMediaViewer(payload, nextIndex)
 }
 
+function getCommentDisplayName(comment) {
+  return comment?.commenterNickname || comment?.commenterUsername || TEXT.commentFallbackUser
+}
+
+function formatCommentTime(value) {
+  const source = String(value || '').replace('T', ' ').trim()
+  if (!source) return ''
+  if (source.length >= 16) {
+    return source.slice(5, 16)
+  }
+  return source
+}
+
+function isOwnComment(comment) {
+  return String(comment?.commenterUsername || '').trim() === currentUsername.value
+}
+
+function toggleActionMenu() {
+  closeCommentMenus()
+  showActionMenu.value = !showActionMenu.value
+}
+
+function closeActionMenu() {
+  showActionMenu.value = false
+}
+
+function closeCommentActionSheet() {
+  commentActionSheetVisible.value = false
+}
+
+function closeCommentPopover() {
+  commentPopoverVisible.value = false
+}
+
+function closeCommentMenus() {
+  closeCommentActionSheet()
+  closeCommentPopover()
+}
+
+function handlePageTap() {
+  closeActionMenu()
+  closeCommentMenus()
+}
+
+function openCommentComposer(targetComment = null) {
+  closeActionMenu()
+  closeCommentMenus()
+  replyTargetComment.value = targetComment
+  commentInputVisible.value = true
+  commentFocus.value = false
+  nextTick(() => {
+    commentFocus.value = true
+  })
+}
+
+function closeCommentComposer() {
+  commentFocus.value = false
+  commentInputVisible.value = false
+  replyTargetComment.value = null
+}
+
+function handleCommentTap(comment) {
+  if (!comment || Date.now() < suppressCommentTapUntil.value) return
+  selectedComment.value = comment
+  closeActionMenu()
+  closeCommentPopover()
+
+  if (isOwnComment(comment)) {
+    commentActionSheetVisible.value = true
+    return
+  }
+
+  openCommentComposer(comment)
+}
+
+function handleCommentLongPress(comment, event) {
+  if (!comment || !isDetailCreator.value) return
+  suppressCommentTapUntil.value = Date.now() + 320
+  selectedComment.value = comment
+  closeActionMenu()
+  closeCommentActionSheet()
+
+  const touch = event?.changedTouches?.[0] || event?.touches?.[0] || {}
+  const systemInfo = uni.getSystemInfoSync()
+  const cardWidth = 176
+  const cardHeight = 92
+  const left = Math.min(Math.max(Number(touch.clientX || touch.x || 0) - cardWidth / 2, 12), systemInfo.windowWidth - cardWidth - 12)
+  const top = Math.min(Math.max(Number(touch.clientY || touch.y || 0) - cardHeight - 16, 18), systemInfo.windowHeight - cardHeight - 18)
+
+  popoverPosition.left = left
+  popoverPosition.top = top
+  commentPopoverVisible.value = true
+}
+
+async function handleLikeFromMenu() {
+  closeActionMenu()
+  await handleLike()
+}
+
+async function handleLike() {
+  if (!detail.value?.id || liking.value) return
+  liking.value = true
+  try {
+    const result = await toggleAlbumLike(detail.value.id)
+    detail.value.likeCount = Number(result.likeCount || 0)
+    detail.value.likedByCurrentUser = Boolean(result.liked)
+    await loadDetail()
+  } catch (error) {
+    uni.showToast({ title: error?.message || TEXT.likeFailed, icon: 'none' })
+  } finally {
+    liking.value = false
+  }
+}
+
+async function handleSubmitComment() {
+  if (!detail.value?.id || submittingComment.value) return
+  const rawContent = String(commentForm.content || '').trim()
+  if (!rawContent) {
+    uni.showToast({ title: TEXT.commentEmptyError, icon: 'none' })
+    return
+  }
+
+  const targetName = replyTargetComment.value ? getCommentDisplayName(replyTargetComment.value) : ''
+  const payloadContent = targetName ? `${TEXT.replyPrefix}${targetName}${TEXT.replyDivider}${rawContent}` : rawContent
+
+  submittingComment.value = true
+  try {
+    const comment = await createAlbumComment(detail.value.id, { content: payloadContent })
+    detail.value.commentList = [...(detail.value.commentList || []), comment]
+    commentForm.content = ''
+    closeCommentComposer()
+    uni.hideKeyboard()
+    uni.showToast({ title: TEXT.commentSuccess, icon: 'success' })
+  } catch (error) {
+    uni.showToast({ title: error?.message || TEXT.commentFailed, icon: 'none' })
+  } finally {
+    submittingComment.value = false
+  }
+}
+
+async function handleDeleteSelectedComment() {
+  if (!detail.value?.id || !selectedComment.value?.id || deletingComment.value) return
+  deletingComment.value = true
+  try {
+    await deleteAlbumComment(detail.value.id, selectedComment.value.id)
+    detail.value.commentList = (detail.value.commentList || []).filter((item) => item.id !== selectedComment.value.id)
+    if (replyTargetComment.value?.id === selectedComment.value.id) {
+      replyTargetComment.value = null
+    }
+    closeCommentMenus()
+    uni.showToast({ title: TEXT.commentDeleted, icon: 'success' })
+  } catch (error) {
+    uni.showToast({ title: error?.message || TEXT.commentDeleteFailed, icon: 'none' })
+  } finally {
+    deletingComment.value = false
+  }
+}
+
+function handleCopySelectedComment() {
+  const content = String(selectedComment.value?.content || '').trim()
+  if (!content) {
+    closeCommentPopover()
+    return
+  }
+
+  uni.setClipboardData({
+    data: content,
+    success: () => {
+      closeCommentPopover()
+      uni.showToast({ title: TEXT.commentCopied, icon: 'none' })
+    }
+  })
+}
+
 function goEdit() {
   if (!detail.value?.id) return
   goPage(`/pages/modules/album/edit?id=${detail.value.id}`)
@@ -185,163 +521,469 @@ function handleDelete() {
     }
   })
 }
-
 </script>
 
 <style scoped>
-  .app-account-topbar-shell {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background: rgba(255, 250, 252, 0.88);
-  }
-  .memory-cover-panel {
-    overflow: hidden;
-    padding: 18rpx;
-    border-radius: 34rpx;
-    background: linear-gradient(135deg, #fff2f7, #fffafc);
-  }
-  .memory-swiper {
-    height: 430rpx;
-  }
-  .memory-swiper-item {
-    position: relative;
-    height: 100%;
-    overflow: hidden;
-    border-radius: 26rpx;
-  }
-  .memory-swiper-media {
-    width: 100%;
-    height: 100%;
-    display: block;
-    background: rgba(255, 255, 255, 0.4);
-  }
-  .memory-swiper-fallback {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.32);
-  }
-  .memory-play-icon {
-    width: 88rpx;
-    height: 88rpx;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.76);
-    position: relative;
-  }
-  .memory-play-icon::before {
-    content: '';
-    position: absolute;
-    left: 36rpx;
-    top: 24rpx;
-    border-left: 26rpx solid #ff7ea6;
-    border-top: 18rpx solid transparent;
-    border-bottom: 18rpx solid transparent;
-  }
-  .memory-media-tag {
-    position: absolute;
-    left: 18rpx;
-    bottom: 18rpx;
-    padding: 8rpx 16rpx;
-    border-radius: 999rpx;
-    background: rgba(255, 255, 255, 0.8);
-    color: #bf6f8b;
-    font-size: 22rpx;
-    font-weight: 700;
-  }
-  .detail-meta {
-    display: flex;
-    gap: 14rpx;
-    flex-wrap: wrap;
-    margin-top: 8rpx;
-  }
-  .detail-chip {
-    padding: 10rpx 16rpx;
-    border-radius: 999rpx;
-    background: #fff4f8;
-    color: #bc7990;
-    font-size: 22rpx;
-    font-weight: 700;
-  }
-  .detail-chip.strong {
-    background: #ffe8f0;
-    color: #ff6b97;
-  }
-  .detail-summary {
-    margin-top: 18rpx;
-    font-size: 25rpx;
-    line-height: 1.8;
-    color: #8d6c77;
-  }
-  .detail-tags {
-    margin-top: 18rpx;
-    display: flex;
-    gap: 12rpx;
-    flex-wrap: wrap;
-  }
-  .detail-tag {
-    padding: 8rpx 16rpx;
-    border-radius: 999rpx;
-    background: #fff5f8;
-    color: #c36f8f;
-    font-size: 22rpx;
-    font-weight: 700;
-  }
-  .media-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16rpx;
-  }
-  .media-card {
-    position: relative;
-    overflow: hidden;
-    border-radius: 24rpx;
-    background: #fff4f7;
-    min-height: 240rpx;
-  }
-  .media-thumb {
-    width: 100%;
-    height: 240rpx;
-    display: block;
-  }
-  .media-tag {
-    position: absolute;
-    left: 14rpx;
-    bottom: 14rpx;
-    padding: 8rpx 14rpx;
-    border-radius: 999rpx;
-    background: rgba(0, 0, 0, 0.42);
-    color: #fff;
-    font-size: 20rpx;
-  }
-  .detail-empty {
-    font-size: 24rpx;
-    line-height: 1.7;
-    color: #98707d;
-  }
-  .detail-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20rpx 28rpx;
-    margin-top: 20rpx;
-  }
-  .detail-action-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: auto;
-    min-width: 0;
-    height: 88rpx;
-    margin: 0;
-    padding: 0 32rpx;
-    border: none;
-    border-radius: 999rpx;
-    background: linear-gradient(180deg, #fff6f9, #fff1f6);
-    box-shadow: inset 0 0 0 2rpx rgba(255, 214, 226, 0.65);
-    color: var(--app-color-primary-strong);
-    font-size: 25rpx;
-    font-weight: 800;
-    line-height: 1;
-    text-align: center;
-  }
+.app-account-topbar-shell {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(255, 250, 252, 0.88);
+}
+
+.memory-cover-panel {
+  overflow: hidden;
+  padding: 18rpx;
+  border-radius: 34rpx;
+  background: linear-gradient(135deg, #fff2f7, #fffafc);
+}
+
+.memory-swiper {
+  height: 430rpx;
+}
+
+.memory-swiper-item {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 26rpx;
+}
+
+.memory-swiper-media {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.memory-swiper-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.memory-play-icon {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.76);
+  position: relative;
+}
+
+.memory-play-icon::before {
+  content: '';
+  position: absolute;
+  left: 36rpx;
+  top: 24rpx;
+  border-left: 26rpx solid #ff7ea6;
+  border-top: 18rpx solid transparent;
+  border-bottom: 18rpx solid transparent;
+}
+
+.memory-media-tag {
+  position: absolute;
+  left: 18rpx;
+  bottom: 18rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.8);
+  color: #bf6f8b;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.detail-meta {
+  display: flex;
+  gap: 14rpx;
+  flex-wrap: wrap;
+  margin-top: 8rpx;
+}
+
+.detail-chip {
+  padding: 10rpx 16rpx;
+  border-radius: 999rpx;
+  background: #fff4f8;
+  color: #bc7990;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.detail-chip.strong {
+  background: #ffe8f0;
+  color: #ff6b97;
+}
+
+.detail-creator {
+  margin-top: 18rpx;
+  font-size: 23rpx;
+  color: #bc8b9b;
+}
+
+.detail-summary {
+  margin-top: 18rpx;
+  font-size: 25rpx;
+  line-height: 1.8;
+  color: #8d6c77;
+}
+
+.detail-tags {
+  margin-top: 18rpx;
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+}
+
+.detail-tag {
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  background: #fff5f8;
+  color: #c36f8f;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.interaction-row {
+  margin-top: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24rpx;
+}
+
+.interaction-time {
+  font-size: 22rpx;
+  color: #b997a4;
+}
+
+.interaction-more-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.interaction-more-btn {
+  width: 72rpx;
+  height: 52rpx;
+  border-radius: 16rpx;
+  background: #f1f3f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+}
+
+.interaction-more-dot {
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: #78828f;
+}
+
+.interaction-action-pop {
+  position: absolute;
+  right: 84rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  padding: 0 14rpx;
+  border-radius: 22rpx;
+  background: rgba(30, 35, 41, 0.96);
+  box-shadow: 0 14rpx 32rpx rgba(27, 31, 37, 0.18);
+  white-space: nowrap;
+}
+
+.interaction-pop-item {
+  min-width: 152rpx;
+  height: 84rpx;
+  padding: 0 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+  color: #fff8fb;
+  font-size: 24rpx;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.interaction-pop-item.comment-only {
+  min-width: 108rpx;
+}
+
+.interaction-pop-icon {
+  flex-shrink: 0;
+  font-size: 26rpx;
+  line-height: 1;
+}
+
+.interaction-pop-label {
+  flex-shrink: 0;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.interaction-pop-divider {
+  width: 2rpx;
+  height: 32rpx;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.interaction-feed {
+  margin-top: 18rpx;
+  border-radius: 22rpx;
+  background: #f3f5f8;
+  overflow: hidden;
+}
+
+.interaction-feed-line {
+  padding: 18rpx 20rpx;
+  font-size: 23rpx;
+  line-height: 1.7;
+  color: #6d5c66;
+  word-break: break-word;
+}
+
+.interaction-feed-line + .interaction-feed-line {
+  border-top: 1rpx solid rgba(196, 204, 214, 0.5);
+}
+
+.interaction-feed-like {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+}
+
+.interaction-feed-heart {
+  margin-top: 4rpx;
+  color: #ff6b97;
+  font-size: 24rpx;
+  line-height: 1;
+}
+
+.interaction-feed-text {
+  color: #6d5c66;
+}
+
+.interaction-feed-comment {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.interaction-comment-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.interaction-feed-name {
+  color: #4f7aaf;
+  font-weight: 700;
+  flex: 1;
+}
+
+.interaction-comment-time {
+  flex-shrink: 0;
+  font-size: 22rpx;
+  color: #b49eaa;
+}
+
+.interaction-comment-content {
+  color: #6d5c66;
+  line-height: 1.75;
+}
+
+.detail-empty {
+  margin-top: 16rpx;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: #98707d;
+}
+
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
+}
+
+.media-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24rpx;
+  background: #fff4f7;
+  min-height: 240rpx;
+}
+
+.media-thumb {
+  width: 100%;
+  height: 240rpx;
+  display: block;
+}
+
+.media-tag {
+  position: absolute;
+  left: 14rpx;
+  bottom: 14rpx;
+  padding: 8rpx 14rpx;
+  border-radius: 999rpx;
+  background: rgba(0, 0, 0, 0.42);
+  color: #fff;
+  font-size: 20rpx;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx 28rpx;
+  margin-top: 20rpx;
+  padding-bottom: 180rpx;
+}
+
+.detail-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 0;
+  height: 88rpx;
+  margin: 0;
+  padding: 0 32rpx;
+  border: none;
+  border-radius: 999rpx;
+  background: linear-gradient(180deg, #fff6f9, #fff1f6);
+  box-shadow: inset 0 0 0 2rpx rgba(255, 214, 226, 0.65);
+  color: var(--app-color-primary-strong);
+  font-size: 25rpx;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+}
+
+.comment-composer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  padding: 18rpx 24rpx calc(18rpx + env(safe-area-inset-bottom));
+  background: rgba(255, 251, 252, 0.98);
+  box-shadow: 0 -16rpx 40rpx rgba(186, 146, 161, 0.14);
+}
+
+.comment-input {
+  flex: 1;
+  height: 76rpx;
+  padding: 0 22rpx;
+  border-radius: 999rpx;
+  background: #f4f6f8;
+  color: #6c5963;
+  font-size: 24rpx;
+}
+
+.comment-composer-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 16rpx;
+  flex-shrink: 0;
+}
+
+.comment-limit {
+  font-size: 22rpx;
+  color: #b08a97;
+}
+
+.comment-send-btn {
+  height: 72rpx;
+  margin: 0;
+  padding: 0 28rpx;
+  border: none;
+  border-radius: 999rpx;
+  background: linear-gradient(135deg, #ff8fb2, #ff719c);
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: 700;
+  line-height: 72rpx;
+}
+
+.comment-send-btn[disabled] {
+  opacity: 0.6;
+}
+
+.comment-sheet-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 82;
+  background: rgba(18, 22, 28, 0.18);
+}
+
+.comment-sheet-card {
+  position: fixed;
+  left: 50%;
+  bottom: calc(28rpx + env(safe-area-inset-bottom));
+  z-index: 83;
+  width: 360rpx;
+  overflow: hidden;
+  border-radius: 28rpx;
+  transform: translateX(-50%);
+  background: rgba(255, 252, 253, 0.98);
+  box-shadow: 0 18rpx 42rpx rgba(76, 53, 63, 0.18);
+}
+
+.comment-sheet-title {
+  padding: 24rpx 24rpx 18rpx;
+  text-align: center;
+  color: #9e8792;
+  font-size: 23rpx;
+}
+
+.comment-sheet-action {
+  height: 92rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1rpx solid rgba(223, 208, 214, 0.7);
+  color: #6f5d66;
+  font-size: 27rpx;
+  font-weight: 700;
+}
+
+.comment-sheet-action.danger {
+  color: #e36a8e;
+}
+
+.comment-popover-card {
+  position: fixed;
+  z-index: 84;
+  min-width: 176px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 18rpx;
+  background: rgba(33, 37, 43, 0.96);
+  box-shadow: 0 12rpx 30rpx rgba(26, 30, 36, 0.2);
+}
+
+.comment-popover-item {
+  flex: 1;
+  padding: 18rpx 24rpx;
+  text-align: center;
+  color: #fff9fb;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.comment-popover-item.danger {
+  color: #ff9fba;
+}
+
+.comment-popover-divider {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(255, 255, 255, 0.12);
+}
 </style>

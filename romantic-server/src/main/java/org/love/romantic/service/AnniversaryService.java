@@ -3,6 +3,9 @@ package org.love.romantic.service;
 import org.love.romantic.model.AnniversaryEventRequest;
 import org.love.romantic.model.AnniversaryEventResponse;
 import org.love.romantic.model.AnniversaryReminderResponse;
+import org.love.romantic.model.InteractionCommentRequest;
+import org.love.romantic.model.InteractionCommentResponse;
+import org.love.romantic.model.InteractionLikeToggleResponse;
 
 import java.util.List;
 
@@ -21,7 +24,11 @@ public interface AnniversaryService {
 
     void deleteEvent(Long id);
 
-    long increaseLikeCount(Long id);
+    InteractionLikeToggleResponse toggleLike(Long id);
+
+    InteractionCommentResponse addComment(Long id, InteractionCommentRequest request);
+
+    void deleteComment(Long id, Long commentId);
 
     List<AnniversaryReminderResponse> consumeDueReminders();
 }

@@ -117,25 +117,25 @@ import { goPage } from '@/utils/nav.js'
 import { useThemePage } from '@/utils/useThemePage.js'
 import BottomTab from '@/pages/components/BottomTab.vue'
 const TEXT = {
-  brandKicker: '\u6a21\u5757\u661f\u7403',
-  brand: '\u6d6a\u6f2b\u661f\u7403',
-  brandSub: '\u628a\u60f3\u7ee7\u7eed\u5b8c\u5584\u7684\u529f\u80fd\u90fd\u6536\u8fdb\u8fd9\u91cc',
-  brandIcon: '\u2726',
-  heroTitle: '\u628a\u5e38\u7528\u6a21\u5757\u653e\u5728\u66f4\u987a\u624b\u7684\u4f4d\u7f6e',
-  heroDesc: '\u8fd9\u91cc\u627f\u63a5\u7eaa\u5ff5\u3001\u76f8\u518c\u3001\u6539\u8fdb\u548c\u540e\u7eed\u4f1a\u7ee7\u7eed\u6269\u5c55\u7684\u80fd\u529b\u3002',
-  chipAnniversary: '\u7eaa\u5ff5\u65e5',
-  chipAlbum: '\u76f8\u518c',
-  chipPlan: '\u8ba1\u5212\u5361',
-  opened: '\u5df2\u5f00\u653e',
-  reserve: '\u9884\u7559',
-  anniversaryTitle: '\u604b\u7231\u7eaa\u5ff5\u65e5',
-  anniversaryDesc: '\u7eaa\u5ff5\u65e5\u8bb0\u5f55',
-  albumTitle: '\u751c\u871c\u76f8\u518c',
-  albumDesc: '\u7167\u7247\u8bb0\u5f55',
-  improvementTitle: '\u604b\u7231\u6539\u8fdb\u7c3f',
-  improvementDesc: '\u6539\u8fdb\u8bb0\u5f55',
-  planTitle: '\u6d6a\u6f2b\u8ba1\u5212',
-  planDesc: '\u8ba1\u5212\u8bb0\u5f55'
+  brandKicker: '模块星球',
+  brand: '浪漫星球',
+  brandSub: '把想继续完善的功能都收进这里',
+  brandIcon: '✦',
+  heroTitle: '把常用模块放在更顺手的位置',
+  heroDesc: '这里承接纪念、相册、改进和后续会继续扩展的能力。',
+  chipAnniversary: '纪念日',
+  chipAlbum: '相册',
+  chipPlan: '计划卡',
+  opened: '已开放',
+  reserve: '预留',
+  anniversaryTitle: '恋爱纪念日',
+  anniversaryDesc: '纪念日记录',
+  albumTitle: '甜蜜相册',
+  albumDesc: '照片记录',
+  improvementTitle: '恋爱改进簿',
+  improvementDesc: '改进记录',
+  planTitle: '浪漫计划',
+  planDesc: '计划记录'
 }
 
 const { themeStyle } = useThemePage()

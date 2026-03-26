@@ -114,13 +114,13 @@ public class ImprovementNoteServiceImpl implements ImprovementNoteService {
         userNotificationService.notifyPartners(
                 operator,
                 NotificationTypeConstants.IMPROVEMENT_CREATED,
-                "\u5199\u4e0b\u4e86\u4e00\u6761\u65b0\u7684\u6539\u8fdb\u8bb0\u5f55",
-                "\u300c" + note.getTitle() + "\u300d\u5df2\u7ecf\u88ab\u8ba4\u771f\u653e\u8fdb\u604b\u7231\u6539\u8fdb\u7c3f\u91cc\u3002",
+                "写下了一条新的改进记录",
+                "「" + note.getTitle() + "」已经被认真放进恋爱改进簿里。",
                 NotificationBizTypeConstants.IMPROVEMENT_NOTE,
                 note.getId(),
                 Map.of("title", note.getTitle())
         );
-        log.info("闂佸憡甯楃粙鎴犵磽閹捐绠掗悗锝庡墮閻撳啴鏌￠埀顒傛兜閸涱垳顔掔紓浣靛姀閸庡顢欓崶顏備汗闁哄洨鍠庨悘鍥煕閺冨倸娅愮紒杈ㄧ床reator={}, noteId={}", operator, note.getId());
+        log.info("恋爱改进簿记录创建成功，creator={}, noteId={}", operator, note.getId());
         return getNote(note.getId());
     }
 
@@ -141,13 +141,13 @@ public class ImprovementNoteServiceImpl implements ImprovementNoteService {
         userNotificationService.notifyPartners(
                 operator,
                 NotificationTypeConstants.IMPROVEMENT_UPDATED,
-                "\u6539\u8fdb\u8bb0\u5f55\u6709\u4e86\u65b0\u53d8\u5316",
-                "\u300c" + note.getTitle() + "\u300d\u521a\u521a\u88ab\u91cd\u65b0\u6574\u7406\u4e86\u4e00\u6b21\u3002",
+                "改进记录有了新变化",
+                "「" + note.getTitle() + "」刚刚被重新整理了一次。",
                 NotificationBizTypeConstants.IMPROVEMENT_NOTE,
                 note.getId(),
                 Map.of("title", note.getTitle())
         );
-        log.info("闂佸搫娲ら悺銊╁蓟婵犲洤绠掗悗锝庡墮閻撳啴鏌￠埀顒傛兜閸涱垳顔掔紓浣靛姀閸庡顢欓崶顏備汗闁哄洨鍠庨悘鍥煕閺冨倸娅愮紒杈ㄧ睄perator={}, noteId={}", operator, id);
+        log.info("恋爱改进簿记录更新成功，operator={}, noteId={}", operator, id);
         return getNote(id);
     }
 
@@ -161,7 +161,7 @@ public class ImprovementNoteServiceImpl implements ImprovementNoteService {
         improvementFeedbackMapper.delete(new LambdaQueryWrapper<ImprovementFeedback>().eq(ImprovementFeedback::getNoteId, id));
         improvementNoteMapper.deleteById(id);
         deleteMediaFiles(existingMedia);
-        log.info("闂佸憡甯炴繛鈧繛鍛叄楠炰胶鈧綆鍓欓悡鍐煛閳ь剛娑甸崨顖滎啋缂備降鍔忛崕濠氼敊閸ヮ亗浜归柡鍥╁枎閻忓洭鏌涢弮鍌氭珢缂佽鲸绫峱erator={}, noteId={}", operator, id);
+        log.info("恋爱改进簿记录删除成功，operator={}, noteId={}", operator, id);
     }
 
     @Override
@@ -186,13 +186,13 @@ public class ImprovementNoteServiceImpl implements ImprovementNoteService {
         userNotificationService.notifyPartners(
                 operator,
                 NotificationTypeConstants.IMPROVEMENT_FEEDBACK_CREATED,
-                "\u6536\u5230\u4e86\u65b0\u7684\u53cd\u9988",
-                "\u300c" + note.getTitle() + "\u300d\u521a\u521a\u591a\u4e86\u4e00\u6761\u65b0\u7684\u53cd\u9988\u8bb0\u5f55\u3002",
+                "收到了新的反馈",
+                "「" + note.getTitle() + "」刚刚多了一条新的反馈记录。",
                 NotificationBizTypeConstants.IMPROVEMENT_FEEDBACK,
                 feedback.getId(),
                 Map.of("noteId", id, "title", note.getTitle())
         );
-        log.info("闁哄鏅炲Λ鍕叏閻愬搫绠掗悗锝庡墮閻撳啴鏌￠埀顒傛兜閸涱垳顔掔紓浣靛妼閻忔繂顕ｉ懞銉磾闁割偆鍠庨悘鍥煕閺冨倸娅愮紒杈ㄧ睄perator={}, noteId={}, feedbackId={}", operator, id, feedback.getId());
+        log.info("恋爱改进簿反馈创建成功，operator={}, noteId={}, feedbackId={}", operator, id, feedback.getId());
         return getNote(id);
     }
 
@@ -221,34 +221,34 @@ public class ImprovementNoteServiceImpl implements ImprovementNoteService {
         userNotificationService.notifyPartners(
                 operator,
                 NotificationTypeConstants.IMPROVEMENT_FEEDBACK_UPDATED,
-                "\u53cd\u9988\u5185\u5bb9\u66f4\u65b0\u4e86",
-                "\u300c" + note.getTitle() + "\u300d\u7684\u53cd\u9988\u5185\u5bb9\u521a\u521a\u88ab\u8c03\u6574\u8fc7\u3002",
+                "反馈内容更新了",
+                "「" + note.getTitle() + "」的反馈内容刚刚被调整过。",
                 NotificationBizTypeConstants.IMPROVEMENT_FEEDBACK,
                 feedbackId,
                 Map.of("noteId", id, "title", note.getTitle())
         );
-        log.info("缂傚倸鍊归悧鐐垫椤愶箑绠掗悗锝庡墮閻撳啴鏌￠埀顒傛兜閸涱垳顔掔紓浣靛妼閻忔繂顕ｉ懞銉磾闁割偆鍠庨悘鍥煕閺冨倸娅愮紒杈ㄧ睄perator={}, noteId={}, feedbackId={}", operator, id, feedbackId);
+        log.info("恋爱改进簿反馈更新成功，operator={}, noteId={}, feedbackId={}", operator, id, feedbackId);
         return getNote(id);
     }
 
     private ImprovementNote requireNote(Long id) {
         if (id == null) {
-            throw new BusinessException("闂佽　鍋撶痪顓炴噽缁犲鎮规担瑙勭凡缂傚秴绉剁槐鎾诲冀瑜嶆繛鍥р槈閹惧磭啸闁稿繑蓱缁嬪鎼归崗澶嬫櫈");
+            throw new BusinessException("改进记录编号不能为空");
         }
         ImprovementNote note = improvementNoteMapper.selectById(id);
         if (note == null) {
-            throw new BusinessException("\u6539\u8fdb\u8bb0\u5f55\u4e0d\u5b58\u5728");
+            throw new BusinessException("改进记录不存在");
         }
         return note;
     }
 
     private ImprovementFeedback requireFeedback(Long noteId, Long feedbackId) {
         if (feedbackId == null) {
-            throw new BusinessException("\u53cd\u9988\u7f16\u53f7\u4e0d\u80fd\u4e3a\u7a7a");
+            throw new BusinessException("反馈编号不能为空");
         }
         ImprovementFeedback feedback = improvementFeedbackMapper.selectById(feedbackId);
         if (feedback == null || !noteId.equals(feedback.getNoteId())) {
-            throw new BusinessException("\u53cd\u9988\u8bb0\u5f55\u4e0d\u5b58\u5728");
+            throw new BusinessException("反馈记录不存在");
         }
         return feedback;
     }
@@ -256,10 +256,10 @@ public class ImprovementNoteServiceImpl implements ImprovementNoteService {
     private void applyRequest(ImprovementNote note, ImprovementNoteRequest request) {
         String title = String.valueOf(request.getTitle()).trim();
         if (!StringUtils.hasText(title)) {
-            throw new BusinessException("\u8bf7\u5148\u586b\u5199\u4e8b\u60c5\u6807\u9898");
+            throw new BusinessException("请先填写事情标题");
         }
 
-        validateMediaList(request.getMediaList(), "\u4e3b\u8bb0\u5f55");
+        validateMediaList(request.getMediaList(), "主记录");
         note.setTitle(title);
         note.setDescription(defaultIfBlank(request.getDescription(), ""));
         note.setTargetType(normalizeTargetType(request.getTargetType()));
@@ -288,24 +288,24 @@ public class ImprovementNoteServiceImpl implements ImprovementNoteService {
         long imageCount = safeList.stream().filter(item -> "image".equalsIgnoreCase(item.getMediaType())).count();
         long videoCount = safeList.stream().filter(item -> "video".equalsIgnoreCase(item.getMediaType())).count();
         if (imageCount > MAX_IMAGE_COUNT) {
-            throw new BusinessException(label + "\u56fe\u7247\u6700\u591a " + MAX_IMAGE_COUNT + " \u5f20");
+            throw new BusinessException(label + "图片最多 " + MAX_IMAGE_COUNT + " 张");
         }
         if (videoCount > MAX_VIDEO_COUNT) {
-            throw new BusinessException(label + "\u89c6\u9891\u6700\u591a " + MAX_VIDEO_COUNT + " \u4e2a");
+            throw new BusinessException(label + "视频最多 " + MAX_VIDEO_COUNT + " 个");
         }
 
         for (ImprovementMediaRequest media : safeList) {
             if (!"image".equalsIgnoreCase(media.getMediaType()) && !"video".equalsIgnoreCase(media.getMediaType())) {
-                throw new BusinessException(label + "\u5a92\u4f53\u7c7b\u578b\u4e0d\u6b63\u786e");
+                throw new BusinessException(label + "媒体类型不正确");
             }
 
             String normalizedFileUrl = localFileStorageService.normalizeManagedImprovementPath(media.getFileUrl());
             if (!StringUtils.hasText(normalizedFileUrl)) {
-                throw new BusinessException(label + "\u5a92\u4f53\u5730\u5740\u4e0d\u5408\u6cd5\uff0c\u8bf7\u91cd\u65b0\u4e0a\u4f20");
+                throw new BusinessException(label + "媒体地址不合法，请重新上传");
             }
             if (StringUtils.hasText(media.getThumbnailUrl())
                     && !StringUtils.hasText(localFileStorageService.normalizeManagedImprovementPath(media.getThumbnailUrl()))) {
-                throw new BusinessException(label + "\u7f29\u7565\u56fe\u5730\u5740\u4e0d\u5408\u6cd5\uff0c\u8bf7\u91cd\u65b0\u4e0a\u4f20");
+                throw new BusinessException(label + "缩略图地址不合法，请重新上传");
             }
         }
     }
@@ -318,7 +318,7 @@ public class ImprovementNoteServiceImpl implements ImprovementNoteService {
                                       Long feedbackId,
                                       List<ImprovementMedia> existingMedia,
                                       List<ImprovementMediaRequest> mediaRequests) {
-        validateMediaList(mediaRequests, "\u53cd\u9988");
+        validateMediaList(mediaRequests, "反馈");
         replaceMedia(noteId, feedbackId, existingMedia, mediaRequests);
     }
 
@@ -540,7 +540,7 @@ public class ImprovementNoteServiceImpl implements ImprovementNoteService {
             case "both":
                 return value;
             default:
-                throw new BusinessException("\u6539\u8fdb\u5bf9\u8c61\u7c7b\u578b\u4e0d\u6b63\u786e");
+                throw new BusinessException("改进对象类型不正确");
         }
     }
 
@@ -552,18 +552,18 @@ public class ImprovementNoteServiceImpl implements ImprovementNoteService {
             case "pending":
                 return value;
             default:
-                throw new BusinessException("\u6539\u8fdb\u72b6\u6001\u4e0d\u6b63\u786e");
+                throw new BusinessException("改进状态不正确");
         }
     }
 
     private String resolveStatusEmoji(String status) {
         switch (status) {
             case "resolved":
-                return "\uD83D\uDE0A";
+                return "😊";
             case "pending":
-                return "\uD83D\uDE15";
+                return "😕";
             default:
-                return "\u2764\uFE0F";
+                return "❤️";
         }
     }
 
@@ -571,7 +571,7 @@ public class ImprovementNoteServiceImpl implements ImprovementNoteService {
         try {
             return LocalDate.parse(value);
         } catch (Exception exception) {
-            throw new BusinessException("\u5f00\u59cb\u65e5\u671f\u683c\u5f0f\u4e0d\u6b63\u786e");
+            throw new BusinessException("开始日期格式不正确");
         }
     }
 

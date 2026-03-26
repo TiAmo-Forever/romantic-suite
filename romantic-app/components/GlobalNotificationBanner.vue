@@ -29,11 +29,11 @@ import { dismissNotificationBanner, isNotificationBannerVisible, notificationBan
 import { goPage } from '@/utils/nav.js'
 
 const TEXT = {
-  kicker: '\u65b0\u63d0\u9192',
-  defaultTitle: '\u6709\u65b0\u7684\u5fc3\u52a8\u63d0\u9192',
-  defaultContent: '\u70b9\u5f00\u770b\u770b\u4f60\u4eec\u521a\u521a\u66f4\u65b0\u4e86\u4ec0\u4e48',
-  hint: '\u5de6\u6ed1\u5173\u95ed',
-  justNow: '\u521a\u521a'
+  kicker: '新提醒',
+  defaultTitle: '有新的心动提醒',
+  defaultContent: '点开看看你们刚刚更新了什么',
+  hint: '左滑关闭',
+  justNow: '刚刚'
 }
 
 const shouldRender = ref(!!notificationBannerNotification.value)

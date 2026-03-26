@@ -7,6 +7,9 @@ import org.love.romantic.common.ApiResponse;
 import org.love.romantic.model.AnniversaryEventRequest;
 import org.love.romantic.model.AnniversaryEventResponse;
 import org.love.romantic.model.AnniversaryReminderResponse;
+import org.love.romantic.model.InteractionCommentRequest;
+import org.love.romantic.model.InteractionCommentResponse;
+import org.love.romantic.model.InteractionLikeToggleResponse;
 import org.love.romantic.service.AnniversaryService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -71,8 +74,23 @@ public class AnniversaryController {
 
     @ApiOperation("纪念日点赞")
     @PostMapping("/{id}/likes")
-    public ApiResponse<Long> increaseLikeCount(@ApiParam("纪念日 ID") @PathVariable Long id) {
-        return ApiResponse.ok("点赞成功", anniversaryService.increaseLikeCount(id));
+    public ApiResponse<InteractionLikeToggleResponse> toggleLike(@ApiParam("纪念日 ID") @PathVariable Long id) {
+        return ApiResponse.ok("操作成功", anniversaryService.toggleLike(id));
+    }
+
+    @ApiOperation("纪念日评论")
+    @PostMapping("/{id}/comments")
+    public ApiResponse<InteractionCommentResponse> addComment(@ApiParam("纪念日 ID") @PathVariable Long id,
+                                                              @Validated @RequestBody InteractionCommentRequest request) {
+        return ApiResponse.ok("评论成功", anniversaryService.addComment(id, request));
+    }
+
+    @ApiOperation("删除纪念日评论")
+    @DeleteMapping("/{id}/comments/{commentId}")
+    public ApiResponse<Void> deleteComment(@ApiParam("纪念日 ID") @PathVariable Long id,
+                                           @ApiParam("评论 ID") @PathVariable Long commentId) {
+        anniversaryService.deleteComment(id, commentId);
+        return ApiResponse.ok("删除成功", null);
     }
 
     @ApiOperation("检查今日提醒")

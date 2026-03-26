@@ -93,26 +93,26 @@ import AccountIntroCard from '@/pages/account/components/AccountIntroCard.vue'
 import AccountPanel from '@/pages/account/components/AccountPanel.vue'
 
 const TEXT = {
-	pageTitle: '\u5934\u50CF\u8BBE\u7F6E',
-	eyebrow: '\u5934\u50CF\u7F16\u8F91',
-	panelTitle: '\u5934\u50CF\u65B9\u5F0F',
-	panelDescription: '\u53EF\u4EE5\u5728\u9ED8\u8BA4\u5934\u50CF\u3001\u4E0A\u4F20\u5934\u50CF\u548C\u5B57\u7B26\u5934\u50CF\u4E4B\u95F4\u5207\u6362\u3002',
-	presetMode: '\u9ED8\u8BA4\u5934\u50CF',
-	uploadMode: '\u4E0A\u4F20\u5934\u50CF',
-	textMode: '\u5B57\u7B26\u5934\u50CF',
-	presetFieldLabel: '\u9ED8\u8BA4\u5934\u50CF',
-	presetHint: '\u5DE6\u53F3\u6ED1\u52A8\u67E5\u770B\u66F4\u591A\u9884\u8BBE\uFF0C\u9009\u4E2D\u540E\u4F1A\u76F4\u63A5\u5E94\u7528\u5230\u5934\u50CF\u9884\u89C8\u3002',
-	uploadFieldLabel: '\u4E0A\u4F20\u5934\u50CF',
-	uploadHint: '\u5982\u679C\u5DF2\u7ECF\u4E0A\u4F20\u8FC7\u5934\u50CF\uFF0C\u4F1A\u5148\u5C55\u793A\u5F53\u524D\u9884\u89C8\uFF1B\u6CA1\u6709\u5934\u50CF\u65F6\u624D\u4F1A\u63D0\u793A\u91CD\u65B0\u9009\u62E9\u3002',
-	emptyUpload: '\u8FD8\u6CA1\u6709\u9009\u62E9\u5934\u50CF',
-	chooseButton: '\u9009\u62E9\u5E76\u88C1\u526A',
-	clearButton: '\u6E05\u7A7A\u5934\u50CF',
-	textFieldLabel: '\u5934\u50CF\u5B57\u7B26',
-	textHint: '\u9002\u5408\u505A\u7B80\u5355\u7684\u60C5\u7EEA\u6807\u8BB0\uFF0C\u6700\u591A\u4FDD\u7559 2 \u4E2A\u5B57\u7B26\u3002',
-	textPlaceholder: '\uD83D\uDC95',
-	saveButton: '\u4FDD\u5B58\u5934\u50CF',
-	saveSuccess: '\u5934\u50CF\u5DF2\u4FDD\u5B58',
-	saveError: '\u5934\u50CF\u4FDD\u5B58\u5931\u8D25'
+	pageTitle: '头像设置',
+	eyebrow: '头像编辑',
+	panelTitle: '头像方式',
+	panelDescription: '可以在默认头像、上传头像和字符头像之间切换。',
+	presetMode: '默认头像',
+	uploadMode: '上传头像',
+	textMode: '字符头像',
+	presetFieldLabel: '默认头像',
+	presetHint: '左右滑动查看更多预设，选中后会直接应用到头像预览。',
+	uploadFieldLabel: '上传头像',
+	uploadHint: '如果已经上传过头像，会先展示当前预览；没有头像时才会提示重新选择。',
+	emptyUpload: '还没有选择头像',
+	chooseButton: '选择并裁剪',
+	clearButton: '清空头像',
+	textFieldLabel: '头像字符',
+	textHint: '适合做简单的情绪标记，最多保留 2 个字符。',
+	textPlaceholder: '❤',
+	saveButton: '保存头像',
+	saveSuccess: '头像已保存',
+	saveError: '头像保存失败'
 }
 
 const { themeStyle } = useThemePage()

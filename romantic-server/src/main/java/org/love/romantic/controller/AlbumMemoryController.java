@@ -6,6 +6,9 @@ import io.swagger.annotations.ApiParam;
 import org.love.romantic.common.ApiResponse;
 import org.love.romantic.model.AlbumMemoryRequest;
 import org.love.romantic.model.AlbumMemoryResponse;
+import org.love.romantic.model.InteractionCommentRequest;
+import org.love.romantic.model.InteractionCommentResponse;
+import org.love.romantic.model.InteractionLikeToggleResponse;
 import org.love.romantic.service.AlbumMemoryService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -59,6 +62,27 @@ public class AlbumMemoryController {
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteMemory(@ApiParam("回忆 ID") @PathVariable Long id) {
         albumMemoryService.deleteMemory(id);
+        return ApiResponse.ok("删除成功", null);
+    }
+
+    @ApiOperation("甜蜜相册点赞或取消点赞")
+    @PostMapping("/{id}/likes")
+    public ApiResponse<InteractionLikeToggleResponse> toggleLike(@ApiParam("回忆 ID") @PathVariable Long id) {
+        return ApiResponse.ok("操作成功", albumMemoryService.toggleLike(id));
+    }
+
+    @ApiOperation("甜蜜相册新增评论")
+    @PostMapping("/{id}/comments")
+    public ApiResponse<InteractionCommentResponse> addComment(@ApiParam("回忆 ID") @PathVariable Long id,
+                                                              @Validated @RequestBody InteractionCommentRequest request) {
+        return ApiResponse.ok("评论成功", albumMemoryService.addComment(id, request));
+    }
+
+    @ApiOperation("删除回忆评论")
+    @DeleteMapping("/{id}/comments/{commentId}")
+    public ApiResponse<Void> deleteComment(@ApiParam("回忆 ID") @PathVariable Long id,
+                                           @ApiParam("评论 ID") @PathVariable Long commentId) {
+        albumMemoryService.deleteComment(id, commentId);
         return ApiResponse.ok("删除成功", null);
     }
 }

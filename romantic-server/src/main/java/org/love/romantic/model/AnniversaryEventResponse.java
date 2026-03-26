@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
+import org.love.romantic.model.InteractionCommentResponse;
+import org.love.romantic.model.InteractionLikeUserResponse;
 
 import java.util.List;
 
@@ -39,6 +41,9 @@ public class AnniversaryEventResponse {
     @ApiModelProperty("点赞次数")
     private long likeCount;
 
+    @ApiModelProperty("当前账号是否已点赞")
+    private boolean likedByCurrentUser;
+
     @ApiModelProperty("提醒方式")
     private String reminderType;
 
@@ -62,4 +67,10 @@ public class AnniversaryEventResponse {
 
     @ApiModelProperty("媒体列表")
     private List<AnniversaryMediaResponse> mediaList;
+
+    @ApiModelProperty("点赞人列表")
+    private List<InteractionLikeUserResponse> likeUsers;
+
+    @ApiModelProperty("评论列表")
+    private List<InteractionCommentResponse> commentList;
 }

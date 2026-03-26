@@ -52,19 +52,12 @@
           <view class="event-footer">
             <view class="event-location">{{ item.location || TEXT.locationFallback }}</view>
             <view class="like-wrap">
-              <view class="like-burst">
-                <text
-                  v-for="particle in getLikeBursts(item.id)"
-                  :key="particle.id"
-                  class="like-particle"
-                  :style="particle.style"
-                >
-                  {{ FILLED_HEART }}
-                </text>
-              </view>
-              <view class="like-button" :class="{ liking: isLiking(item.id) }" @click.stop="handleLike(item)">
+              <view
+                v-if="Number(item.likeCount || 0) > 0"
+                class="like-button"
+                :class="{ active: item.likedByCurrentUser }"
+              >
                 <text class="like-icon">{{ FILLED_HEART }}</text>
-                <text class="like-count">{{ item.likeCount || 0 }}</text>
               </view>
             </view>
           </view>
@@ -83,7 +76,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import { fetchAnniversaryList, increaseAnniversaryLikeCount } from '@/services/anniversaries.js'
+import { fetchAnniversaryList } from '@/services/anniversaries.js'
 import { previewImages } from '@/utils/image-preview.js'
 import { requireAuth } from '@/utils/auth.js'
 import { resolveMediaUrl } from '@/utils/media-upload.js'
@@ -91,50 +84,47 @@ import { goPage } from '@/utils/nav.js'
 import { useThemePage } from '@/utils/useThemePage.js'
 import AccountHeader from '@/pages/account/components/AccountHeader.vue'
 
-const HEART = '\u2661'
-const FILLED_HEART = '\u2665'
+const HEART = '♡'
+const FILLED_HEART = '♥'
 const TEXT = {
-  pageTitle: '\u604B\u7231\u7EAA\u5FF5\u65E5',
-  eyebrow: '\u91CD\u8981\u65E5\u5B50',
-  heroBadge: '\u604B\u7231\u7EAA\u5FF5\u65E5',
-  heroTitle: '\u628A\u91CD\u8981\u7684\u65E5\u5B50\u8BA4\u771F\u6536\u85CF\u8D77\u6765',
-  heroDesc: '\u652F\u6301\u8FC7\u53BB\u548C\u672A\u6765\u7684\u65E5\u671F\uFF0C\u65E2\u80FD\u8BB0\u5F55\u56DE\u5FC6\uFF0C\u4E5F\u80FD\u63D0\u524D\u671F\u5F85\u3002',
-  createButton: '\u65B0\u589E\u7EAA\u5FF5\u65E5',
-  defaultType: '\u7EAA\u5FF5\u65E5',
-  cardFallback: '\u70B9\u51FB\u67E5\u770B\u7EAA\u5FF5\u65E5\u8BE6\u60C5\u3002',
-  locationFallback: '\u628A\u8FD9\u4E00\u523B\u7559\u7ED9\u4F60\u4EEC\u7684\u56DE\u5FC6\u3002',
-  emptyTitle: '\u8FD8\u6CA1\u6709\u7EAA\u5FF5\u65E5',
-  emptyDesc: '\u5148\u6DFB\u52A0\u4E00\u4E2A\u91CD\u8981\u7684\u65E5\u5B50\uFF0C\u5217\u8868\u4F1A\u6309\u65F6\u95F4\u5012\u5E8F\u5C55\u793A\u3002',
-  loadError: '\u7EAA\u5FF5\u65E5\u52A0\u8F7D\u5931\u8D25',
-  likeError: '\u70B9\u8D5E\u5931\u8D25',
-  creatorPrefix: '\u7531 ',
-  creatorSuffix: ' \u521B\u5EFA',
-  futureToday: '\u5C31\u662F\u4ECA\u5929',
-  futurePrefix: '\u8FD8\u6709 ',
-  futureSuffix: ' \u5929',
-  pastPrefix: '\u5DF2\u8FC7\u53BB ',
-  pastSuffix: ' \u5929'
+  pageTitle: '恋爱纪念日',
+  eyebrow: '重要日子',
+  heroBadge: '恋爱纪念日',
+  heroTitle: '把重要的日子认真收藏起来',
+  heroDesc: '支持过去和未来的日期，既能记录回忆，也能提前期待。',
+  createButton: '新增纪念日',
+  defaultType: '纪念日',
+  cardFallback: '点击查看纪念日详情。',
+  locationFallback: '把这一刻留给你们的回忆。',
+  emptyTitle: '还没有纪念日',
+  emptyDesc: '先添加一个重要的日子，列表会按时间倒序展示。',
+  loadError: '纪念日加载失败',
+  creatorPrefix: '由 ',
+  creatorSuffix: ' 创建',
+  futureToday: '就是今天',
+  futurePrefix: '还有 ',
+  futureSuffix: ' 天',
+  pastPrefix: '已过去 ',
+  pastSuffix: ' 天'
 }
 
 const filters = [
-  { key: 'all', label: '\u5168\u90E8' },
-  { key: 'future', label: '\u672A\u53D1\u751F' },
-  { key: 'past', label: '\u5DF2\u53D1\u751F' }
+  { key: 'all', label: '全部' },
+  { key: 'future', label: '未发生' },
+  { key: 'past', label: '已发生' }
 ]
 
 const typeLabels = {
-  custom: '\u7EAA\u5FF5\u65E5',
-  meet: '\u7B2C\u4E00\u6B21\u89C1\u9762',
-  love: '\u786E\u8BA4\u5173\u7CFB',
-  travel: '\u7B2C\u4E00\u6B21\u65C5\u884C',
-  birthday: '\u751F\u65E5'
+  custom: '纪念日',
+  meet: '第一次见面',
+  love: '确认关系',
+  travel: '第一次旅行',
+  birthday: '生日'
 }
 
 const { themeStyle } = useThemePage()
 const activeFilter = ref('all')
 const eventList = ref([])
-const likeBursts = ref({})
-const likingMap = ref({})
 
 onShow(async () => {
   if (!requireAuth()) return
@@ -171,75 +161,6 @@ function previewEventCover(item) {
 
 function creatorText(item) {
   return `${TEXT.creatorPrefix}${item.creatorNickname}${TEXT.creatorSuffix}`
-}
-
-function getLikeBursts(eventId) {
-  return likeBursts.value[eventId] || []
-}
-
-function isLiking(eventId) {
-  return Boolean(likingMap.value[eventId])
-}
-
-async function handleLike(item) {
-  if (!item?.id) return
-
-  const eventId = item.id
-  item.likeCount = Number(item.likeCount || 0) + 1
-  triggerLikePulse(eventId)
-  createLikeBurst(eventId)
-
-  try {
-    const latestLikeCount = await increaseAnniversaryLikeCount(eventId)
-    item.likeCount = Math.max(Number(item.likeCount || 0), Number(latestLikeCount || 0))
-  } catch (error) {
-    item.likeCount = Math.max(0, Number(item.likeCount || 0) - 1)
-    uni.showToast({ title: error?.message || TEXT.likeError, icon: 'none' })
-  }
-}
-
-function triggerLikePulse(eventId) {
-  const pulseToken = Date.now()
-  likingMap.value = { ...likingMap.value, [eventId]: pulseToken }
-  setTimeout(() => {
-    if (likingMap.value[eventId] !== pulseToken) return
-    const nextLikingMap = { ...likingMap.value }
-    delete nextLikingMap[eventId]
-    likingMap.value = nextLikingMap
-  }, 260)
-}
-
-function createLikeBurst(eventId) {
-  const particles = Array.from({ length: 7 }, (_, index) => ({
-    id: `${eventId}_${Date.now()}_${index}`,
-    style: {
-      '--drift': `${Math.round((Math.random() - 0.5) * 180)}rpx`,
-      '--lift': `${-220 - Math.round(Math.random() * 80)}rpx`,
-      '--duration': `${1180 + Math.round(Math.random() * 360)}ms`,
-      '--delay': `${index * 70}ms`,
-      '--scale': `${0.95 + Math.random() * 0.55}`,
-      '--hue': `${index % 2 === 0 ? '#ff5d8f' : '#ff91b2'}`
-    }
-  }))
-
-  const existingParticles = likeBursts.value[eventId] || []
-  likeBursts.value = {
-    ...likeBursts.value,
-    [eventId]: existingParticles.concat(particles)
-  }
-
-  setTimeout(() => {
-    const currentParticles = likeBursts.value[eventId] || []
-    const particleIds = new Set(particles.map((item) => item.id))
-    const remainedParticles = currentParticles.filter((item) => !particleIds.has(item.id))
-    const nextBursts = { ...likeBursts.value }
-    if (remainedParticles.length) {
-      nextBursts[eventId] = remainedParticles
-    } else {
-      delete nextBursts[eventId]
-    }
-    likeBursts.value = nextBursts
-  }, 1900)
 }
 
 function formatStatus(item) {
@@ -318,29 +239,12 @@ function formatStatus(item) {
     word-break: break-all;
     min-height: 70rpx;
   }
-  .like-wrap { position: relative; min-width: 112rpx; display: flex; justify-content: flex-end; }
-  .like-button { position: relative; z-index: 2; display: inline-flex; align-items: center; gap: 10rpx; padding: 12rpx 18rpx; border-radius: 999rpx; background: #fff1f5; color: #ff5d8f; font-size: 24rpx; font-weight: 700; }
-  .like-button.liking { transform: scale(1.1); }
+  .like-wrap { position: relative; min-width: 64rpx; display: flex; justify-content: flex-end; }
+  .like-button { position: relative; z-index: 2; display: inline-flex; align-items: center; justify-content: center; width: 56rpx; height: 56rpx; padding: 0; border-radius: 999rpx; background: #fff1f5; color: #ff5d8f; font-size: 24rpx; font-weight: 700; }
+  .like-button.active { background: #ffedf3; box-shadow: inset 0 0 0 2rpx rgba(255, 150, 184, 0.34); }
   .like-icon { font-size: 28rpx; line-height: 1; }
-  .like-count { min-width: 24rpx; text-align: left; }
-  .like-burst { position: absolute; right: 10rpx; bottom: 18rpx; width: 180rpx; height: 280rpx; pointer-events: none; overflow: visible; }
-  .like-particle { position: absolute; right: 18rpx; bottom: 0; color: var(--hue); font-size: 30rpx; line-height: 1; opacity: 0; transform: translate3d(0, 0, 0) scale(var(--scale)); animation: like-float var(--duration) ease-out forwards; animation-delay: var(--delay); }
   .empty-card { margin-top: 28rpx; padding: 46rpx 28rpx; text-align: center; }
   .empty-icon { font-size: 56rpx; color: #ff8fb0; }
   .empty-title { margin-top: 18rpx; font-size: 30rpx; font-weight: 700; color: var(--app-color-primary-strong); }
   .empty-desc { margin-top: 12rpx; font-size: 24rpx; line-height: 1.7; color: #9a7682; }
-
-  @keyframes like-float {
-    0% {
-      opacity: 0;
-      transform: translate3d(0, 0, 0) scale(calc(var(--scale) * 0.8));
-    }
-    20% {
-      opacity: 1;
-    }
-    100% {
-      opacity: 0;
-      transform: translate3d(var(--drift), var(--lift), 0) scale(var(--scale));
-    }
-  }
 </style>

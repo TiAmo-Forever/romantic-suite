@@ -37,16 +37,22 @@ public class AlbumMemoryResponse {
     @ApiModelProperty("封面路径")
     private String coverUrl;
 
+    @ApiModelProperty("点赞次数")
+    private long likeCount;
+
+    @ApiModelProperty("当前账号是否已点赞")
+    private boolean likedByCurrentUser;
+
     @ApiModelProperty("图片数量")
     private Integer imageCount;
 
     @ApiModelProperty("视频数量")
     private Integer videoCount;
 
-    @ApiModelProperty("创建人账号")
+    @ApiModelProperty("创建账号")
     private String creatorUsername;
 
-    @ApiModelProperty("创建人昵称")
+    @ApiModelProperty("创建昵称")
     private String creatorNickname;
 
     @ApiModelProperty("创建时间")
@@ -57,4 +63,10 @@ public class AlbumMemoryResponse {
 
     @ApiModelProperty("媒体列表")
     private List<AlbumMediaResponse> mediaList;
+
+    @ApiModelProperty("点赞人列表")
+    private List<InteractionLikeUserResponse> likeUsers;
+
+    @ApiModelProperty("评论列表")
+    private List<InteractionCommentResponse> commentList;
 }

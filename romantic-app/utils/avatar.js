@@ -4,9 +4,9 @@ import { markServerOffline, markServerOnline } from '@/utils/server-state.js'
 
 const AVATAR_DRAFT_KEY = 'romantic_avatar_draft'
 const AUTH_INVALID_MESSAGES = [
-  '\u672A\u767B\u5F55\u6216\u767B\u5F55\u5DF2\u5931\u6548',
-  '\u767B\u5F55\u5DF2\u5931\u6548\uFF0C\u8BF7\u91CD\u65B0\u767B\u5F55',
-  '\u767B\u5F55\u5DF2\u5931\u6548'
+  '未登录或登录已失效',
+  '登录已失效，请重新登录',
+  '登录已失效'
 ]
 
 function joinUrl(baseUrl, path) {
@@ -96,7 +96,7 @@ export function uploadAvatarFile(filePath) {
       header: token ? { Authorization: `Bearer ${token}` } : {},
       success(response) {
         const payload = parseUploadResponse(response.data)
-        const message = payload?.message || '\u5934\u50CF\u4E0A\u4F20\u5931\u8D25'
+        const message = payload?.message || '头像上传失败'
 
         if (isAuthInvalid(response.statusCode, payload)) {
           redirectToLogin(message)

@@ -1202,3 +1202,471 @@
 
 - 今日后半段涉及的账号设置模块、关系信息页局部修正、消息中心改造和 Git 约束补充，均已同步写入 `WORKSPACE_NOTES.md`。
 - 这次用户已明确要求提交代码，因此本轮会在文档同步完成后执行一次中文提交；后续仍继续遵守“没有明确要求时不主动提交 Git”的协作约束。
+## 2026-03-26 鐢滆湝鐩稿唽鎺掑簭涓庣偣璧炶兘鍔涜褰?
+### 鐩爣
+
+- 灏嗙敎铚滅浉鍐屽垪琛ㄨ皟鏁翠负鎸夊洖蹇嗘棩鏈?`memoryDate` 鍊掑簭灞曠ず锛屽湪鍚屼竴鍥炲繂鏃ユ湡涓嬪啀浠?`createdAt` 鍋氬厬搴曟帓搴忥紝淇濇寔鈥滆秺杩戠殑鏃ュ瓙瓒婇潬鍓嶁€濈殑涓€鑷存€ц鍒欍€?
+- 涓虹敎铚滅浉鍐屽鍔犵埍蹇冪偣璧炶兘鍔涳紝鍓嶅悗绔悓姝ユ敮鎸佺偣璧炴暟缁熻锛屽苟鍦ㄦ瘡 99 娆＄偣璧炴椂缁欏鏂瑰彂閫佷竴娆＄珯鍐呴€氱煡銆?
+
+### 鍏抽敭缁撴灉
+
+- 鐢滆湝鐩稿唽鍚庣鍒楄〃鏌ヨ宸叉敼涓烘寜 `memory_date DESC, created_at DESC, id DESC` 鎺掑簭锛?
+  - `romantic-server/src/main/java/org/love/romantic/service/impl/AlbumMemoryServiceImpl.java`
+- `album_memory` 宸叉柊澧?`like_count` 瀛楁锛屽悓姝ユ洿鏂颁簡琛ㄧ粨鏋勮剼鏈拰杩佺Щ閫昏緫锛?
+  - `romantic-server/src/main/resources/schema.sql`
+  - `romantic-server/src/main/java/org/love/romantic/config/SchemaMigrationRunner.java`
+- 鐢滆湝鐩稿唽鍝嶅簲妯″瀷銆佸疄浣撱€佹帶鍒跺櫒鍜屾湇鍔″眰宸叉帴鍏?`likeCount` 鑳藉姏锛屽苟鏂板鐐硅禐鎺ュ彛锛?
+  - `POST /api/albums/{id}/likes`
+  - `romantic-server/src/main/java/org/love/romantic/controller/AlbumMemoryController.java`
+  - `romantic-server/src/main/java/org/love/romantic/service/AlbumMemoryService.java`
+  - `romantic-server/src/main/java/org/love/romantic/model/AlbumMemoryResponse.java`
+  - `romantic-server/src/main/java/org/love/romantic/entity/AlbumMemory.java`
+- 鐢滆湝鐩稿唽鐐硅禐姣?99 娆℃椂锛屽悗绔細鍒涘缓涓€鏉?`album_like_milestone` 绫诲瀷鐨勯€氱煡锛岄€氱煡缁欏彟涓€鏂硅处鍙枫€?
+  - `romantic-server/src/main/java/org/love/romantic/common/NotificationTypeConstants.java`
+- 鍓嶇鐢滆湝鐩稿唽鍒楄〃宸叉帴鍏ョ埍蹇冪偣璧炲叆鍙ｅ拰鍗冲埢鍔ㄦ晥鍙嶉锛屽寘鎷偣璧炴暟鏄剧ず銆佺偣璧炲姩鐢诲拰澶辫触鍥為€€锛?
+  - `romantic-app/services/albums.js`
+  - `romantic-app/pages/modules/album/index.vue`
+
+### 楠岃瘉鎯呭喌
+
+- 鏈疆搴旀墽琛岄〉闈㈡簮鐮佸贰妫€鑴氭湰锛屽苟杩愯鍚庣 `mvn test` 鍥炲綊鐢滆湝鐩稿唽鏈嶅姟銆?
+- 鍓嶇灏氭湭棰濆杩涜灏忕▼搴忕湡鏈烘垨缂栬瘧楠岃瘉锛屽悗缁噸鐐规鏌ワ細
+  - 鐩稿唽鍒楄〃鍦ㄨ法鏈堝垎缁勬儏鍐典笅鏄惁浠嶆寜鏈€鏂?`memoryDate` 鍥炲繂浼樺厛鏄剧ず
+  - 鐐硅禐鍚庢暟鍊笺€佸姩鐢诲拰鐐瑰嚮璇︽儏鐨勪簨浠堕殧绂绘槸鍚︾鍚堥鏈?
+  - 绗?99 娆＄偣璧炴椂鍙︿竴鏂硅处鍙锋槸鍚﹁兘姝ｅ父鏀跺埌娑堟伅涓績鎻愰啋
+## 2026-03-26 甜蜜相册点赞人与评论能力记录
+### 目标
+
+- 在甜蜜相册中补齐类似朋友圈的互动能力，支持查看点赞人信息和评论列表，并允许双方账号都能对共享回忆发表评论。
+- 保留现有相册爱心累计规则，继续支持每 99 次爱心触发一次站内通知给对方，同时把点赞总数和点赞人信息拆开维护。
+
+### 关键结果
+
+- 后端新增甜蜜相册互动表：
+  - `album_memory_like`
+  - `album_memory_comment`
+- 两张新表都已同步写入：
+  - `romantic-server/src/main/resources/schema.sql`
+  - `romantic-server/src/main/java/org/love/romantic/config/SchemaMigrationRunner.java`
+- 两张新表都补齐了表注释和字段注释，迁移器中也补了 MySQL 注释刷新逻辑。
+- 甜蜜相册详情响应已扩展为可返回：
+  - `likeUsers`
+  - `commentList`
+  - 对应模型位置：
+    - `romantic-server/src/main/java/org/love/romantic/model/AlbumLikeUserResponse.java`
+    - `romantic-server/src/main/java/org/love/romantic/model/AlbumCommentResponse.java`
+    - `romantic-server/src/main/java/org/love/romantic/model/AlbumMemoryResponse.java`
+- 后端甜蜜相册接口已新增评论能力：
+  - `POST /api/albums/{id}/comments`
+  - 请求模型：
+    - `romantic-server/src/main/java/org/love/romantic/model/AlbumCommentRequest.java`
+- 甜蜜相册点赞逻辑已从“只记总数”升级为“总数 + 点赞记录并存”：
+  - 每次点赞都会新增一条 `album_memory_like` 记录
+  - 详情页会按用户聚合展示点赞人昵称、累计点赞次数和最近一次点赞时间
+  - `like_count` 仍作为总爱心数保留，用于首页/列表快速展示和 99 次通知阈值判断
+- 甜蜜相册详情页已新增互动区：
+  - 可查看爱心总数、评论数量
+  - 可查看点赞人信息
+  - 可查看评论列表
+  - 可直接新增评论
+  - 前端位置：
+    - `romantic-app/pages/modules/album/detail.vue`
+    - `romantic-app/services/albums.js`
+
+### 当前约束
+
+- 本轮甜蜜相册先实现一级评论，不包含删除评论、回复评论、评论点赞等二级互动。
+- 评论当前按时间正序展示，便于像聊天记录一样顺着阅读；点赞人按最近一次点赞时间倒序展示。
+- 甜蜜相册列表页仍保持轻量展示，点赞人信息与评论列表集中在详情页查看。
+
+### 验证情况
+
+- 本轮应执行页面源码巡检和后端 `mvn test`，重点确认：
+  - 新增互动表的建表与迁移逻辑可正常执行
+  - 相册详情返回结构中包含点赞人和评论列表
+  - 小程序端相册详情页新增评论后能即时看到结果
+## 2026-03-26 通用互动表重构记录
+### 目标
+
+- 将刚落下的甜蜜相册点赞/评论能力从“相册专用表”收口为“通用业务互动表”，避免后续恋爱纪念日、倒计时或其他模块继续重复建表。
+- 保持甜蜜相册现有点赞人信息、评论列表和新增评论能力不变，同时为后续模块复用预留统一数据结构。
+
+### 关键结果
+
+- 互动底层已切换为通用表：
+  - `biz_like_record`
+  - `biz_comment_record`
+- 通用表字段统一为：
+  - `biz_type`
+  - `biz_id`
+  - `username`
+  - 评论表额外包含 `content`
+- 甜蜜相册当前通过 `biz_type = album` 接入这套互动表，不再依赖相册专用互动表作为主写入目标。
+- 旧表：
+  - `album_memory_like`
+  - `album_memory_comment`
+  当前仅作为兼容迁移保留，不再作为新增互动的主表。
+- 迁移器已补充兼容迁移逻辑：
+  - 如果历史上已存在 `album_memory_like` 或 `album_memory_comment`
+  - 启动时会把旧数据迁移到通用表中
+  - 位置：
+    - `romantic-server/src/main/java/org/love/romantic/config/SchemaMigrationRunner.java`
+- 甜蜜相册服务层已改为读取/写入通用互动表，位置：
+  - `romantic-server/src/main/java/org/love/romantic/service/impl/AlbumMemoryServiceImpl.java`
+- 通用互动相关实体、Mapper 和模型已新增：
+  - `BizLikeRecord`
+  - `BizCommentRecord`
+  - `InteractionLikeUserResponse`
+  - `InteractionCommentRequest`
+  - `InteractionCommentResponse`
+
+### 当前约束
+
+- 目前只是把数据结构和甜蜜相册接入改成可复用形态，恋爱纪念日前端和后端互动页还没有开始接这套通用表。
+- 评论仍然是一级评论，不包含回复、删除评论和评论点赞。
+
+### 验证情况
+
+- 本轮应继续执行页面源码巡检和后端 `mvn test`，重点确认：
+  - 通用互动表建表成功
+  - 相册详情点赞人和评论列表返回正常
+  - 旧相册互动表存在时不会阻断启动
+## 2026-03-26 通用互动表重构收口与验证记录
+### 本轮处理
+
+- 已将甜蜜相册的互动能力从相册专用表收口为通用业务互动表：
+  - `biz_like_record`
+  - `biz_comment_record`
+- 甜蜜相册当前通过 `biz_type = album` 接入通用互动表，保留：
+  - 点赞总数 `like_count`
+  - 点赞人列表 `likeUsers`
+  - 评论列表 `commentList`
+  - 新增评论接口 `POST /api/albums/{id}/comments`
+- 为兼容历史数据，旧表当前仍保留但只用于迁移兼容：
+  - `album_memory_like`
+  - `album_memory_comment`
+- 启动迁移器已补齐通用互动表建表与旧相册互动表迁移逻辑：
+  - `romantic-server/src/main/java/org/love/romantic/config/SchemaMigrationRunner.java`
+- `schema.sql` 已与迁移逻辑同步收口，通用互动表和兼容迁移保留表都已补齐表注释与字段注释：
+  - `romantic-server/src/main/resources/schema.sql`
+
+### 本轮修复重点
+
+- 由于上一轮批量改动中存在编码写入事故，本轮已将以下会直接影响编译、建表或 Swagger 的后端文件重写为干净版本：
+  - `romantic-server/src/main/java/org/love/romantic/config/SchemaMigrationRunner.java`
+  - `romantic-server/src/main/resources/schema.sql`
+  - `romantic-server/src/main/java/org/love/romantic/service/impl/AlbumMemoryServiceImpl.java`
+  - `romantic-server/src/main/java/org/love/romantic/controller/AlbumMemoryController.java`
+  - `romantic-server/src/main/java/org/love/romantic/model/AlbumMemoryResponse.java`
+  - `romantic-server/src/main/java/org/love/romantic/entity/BizLikeRecord.java`
+  - `romantic-server/src/main/java/org/love/romantic/entity/BizCommentRecord.java`
+  - `romantic-server/src/main/java/org/love/romantic/model/InteractionLikeUserResponse.java`
+  - `romantic-server/src/main/java/org/love/romantic/model/InteractionCommentRequest.java`
+  - `romantic-server/src/main/java/org/love/romantic/model/InteractionCommentResponse.java`
+- 本轮明确要求：后续如果其他模块也要做点赞和评论，优先复用通用互动表，不再重复为每个模块各建一套点赞表、评论表。
+
+### 验证情况
+
+- 已执行前端页面源码巡检：
+  - `powershell -ExecutionPolicy Bypass -File D:\JavaProject\romantic-suite\romantic-app\tools\check-pages-source.ps1`
+- 巡检结果：
+  - `OK: no suspicious page-source findings under D:\JavaProject\romantic-suite\romantic-app\pages`
+- 已执行后端测试：
+  - `$env:JAVA_HOME='D:\Service_File\jdk-11.0.0.2'; $env:Path='D:\Service_File\jdk-11.0.0.2\bin;' + $env:Path; mvn test`
+- 测试结果：
+  - `BUILD SUCCESS`
+- 本轮已顺手清理 `mvn test` 追加到 `romantic-server/log/application.log` 的测试日志，避免把运行产物误当源码改动保留在工作区。
+
+### 当前状态
+
+- 甜蜜相册的通用互动表重构已完成并通过后端测试。
+- 恋爱纪念日的点赞/评论复用改造尚未开始，后续应直接基于 `biz_like_record` / `biz_comment_record` 接入，不再新建纪念日专用互动表。
+## 2026-03-26 甜蜜相册详情互动区朋友圈化改造记录
+### 目标
+
+- 将甜蜜相册详情页中“爱心与评论”的独立卡片式互动区改成更接近微信朋友圈的轻交互。
+- 不再把点赞和评论操作做成单独模块卡片，而是内嵌在回忆内容区域中，通过右下角 `...` 按钮触发操作菜单。
+- 评论时直接从页面底部拉起输入框和键盘，减少跳转感与操作层级。
+
+### 关键结果
+
+- `romantic-app/pages/modules/album/detail.vue` 已取消原有独立 `爱心与评论` 卡片。
+- 当前甜蜜相册详情页的互动方式已改为：
+  - 回忆内容卡片右下角保留 `...` 操作入口
+  - 点击后弹出轻量操作菜单，提供 `点赞` 和 `评论`
+  - 点赞仍调用原有点赞接口
+  - 评论会直接展示页面底部输入栏，并尝试立即聚焦输入
+- 点赞人信息与评论列表已改为内嵌展示在回忆内容卡内部，更接近朋友圈的灰底互动区表现：
+  - 点赞人列表显示为一行汇总信息
+  - 评论列表按顺序直接跟在点赞信息下方
+
+### 当前约束
+
+- 本轮仅调整甜蜜相册详情页的前端交互与展示结构，后端评论与点赞接口不变。
+- 评论当前仍是一层评论，不包含回复评论、删除评论、评论点赞。
+- 评论发送成功后会直接关闭底部输入栏并清空输入内容。
+
+### 验证情况
+
+- 已执行前端页面源码巡检：
+  - `powershell -ExecutionPolicy Bypass -File D:\JavaProject\romantic-suite\romantic-app\tools\check-pages-source.ps1`
+- 巡检结果：
+  - `OK: no suspicious page-source findings under D:\JavaProject\romantic-suite\romantic-app\pages`
+- 本轮尚未额外执行 uni-app / 小程序编译或真机验证，后续应重点检查：
+  - `...` 操作菜单在小程序端的弹出位置是否自然
+  - 点击 `评论` 后底部输入框与键盘是否能稳定拉起
+  - 发送评论后底部输入栏关闭、列表即时回显是否符合预期
+
+## 2026-03-26 甜蜜相册点赞切换与操作条布局修正记录
+### 目标
+
+- 修正甜蜜相册详情页 `...` 操作菜单中“点赞 / 评论”文字在小程序端被压缩换行、视觉挤在一起的问题。
+- 取消甜蜜相册原先的“同一账号可重复累计爱心”逻辑，统一改为“点赞 / 取消点赞”切换。
+- 相册列表页与相册详情页的点赞行为保持一致，并在点赞与取消点赞两种状态切换时都给对方发送通知。
+
+### 关键结果
+
+- `romantic-app/pages/modules/album/detail.vue` 已调整 `...` 操作菜单尺寸与排版：
+  - 操作条外层圆角、内边距和分隔线高度同步增大
+  - 单个按钮改为更宽的单行布局，避免中文逐字换行
+  - `点赞` / `取消点赞` 与 `评论` 标签均强制保持同一行显示
+- `romantic-app/pages/modules/album/index.vue` 已与详情页统一为“切换点赞”口径：
+  - 点亮爱心时进入已点赞状态
+  - 再次点击会取消点赞
+  - 仅在成功点赞时保留爱心粒子动效
+- 后端甜蜜相册点赞逻辑已从“累计爱心数”改为“当前用户是否已点赞”的切换逻辑：
+  - `POST /api/albums/{id}/likes` 当前返回 `liked + likeCount`
+  - 当前账号未点赞时写入一条通用点赞记录
+  - 当前账号已点赞时删除自己在该回忆下的点赞记录
+  - 总爱心数按去重后的点赞用户数重新回写
+- 甜蜜相册通知类型已改为明确区分：
+  - `album_liked`
+  - `album_unliked`
+- 点赞与取消点赞都会给对方写入通知，后续消息中心与实时提醒直接沿用现有通知链路即可。
+
+### 当前约束
+
+- 甜蜜相册点赞现在是“一人一票”的切换模型，不再保留“同一账号多次累计点赞”的业务口径。
+- 点赞人列表当前按最近点赞时间倒序展示，同一账号在列表中只保留一条记录。
+- 本轮未新增数据库表结构，仍复用通用互动表：
+  - `biz_like_record`
+  - `biz_comment_record`
+
+### 验证情况
+
+- 已执行前端页面源码巡检：
+  - `powershell -ExecutionPolicy Bypass -File D:\JavaProject\romantic-suite\romantic-app\tools\check-pages-source.ps1`
+- 巡检结果：
+  - `OK: no suspicious page-source findings under D:\JavaProject\romantic-suite\romantic-app\pages`
+- 已执行后端测试：
+  - `$env:JAVA_HOME='D:\Service_File\jdk-11.0.0.2'; $env:Path='D:\Service_File\jdk-11.0.0.2\bin;' + $env:Path; mvn test`
+- 测试结果：
+  - `BUILD SUCCESS`
+- 本轮尚未额外执行 uni-app / 小程序真机验证，后续应重点检查：
+  - `...` 操作菜单在微信小程序端是否稳定保持单行不换行
+  - 相册列表与详情页的点赞状态是否能正确互相同步
+  - 取消点赞后点赞人信息与消息通知是否符合预期
+
+## 2026-03-26 甜蜜相册互动文案与列表爱心展示收口记录
+### 调整内容
+
+- `romantic-app/pages/modules/album/detail.vue` 中 `...` 操作菜单的评论项已改为纯文字 `评论`，不再显示类似 `评 评论` 的重复视觉。
+- `romantic-app/pages/modules/album/index.vue` 中相册列表卡片的爱心区已改为极简展示：
+  - 不再显示点赞数量
+  - 仅在该回忆存在点赞时显示一个 `❤`
+  - 没有任何点赞时，列表卡片中不展示爱心入口
+
+### 当前约束
+
+- 甜蜜相册列表页当前更偏向“已被点亮状态展示”，不是完整互动入口；未被点赞的记录不会在列表卡片中露出空爱心按钮。
+- 甜蜜相册列表页中的爱心当前仅作展示，不支持在列表中直接点赞或取消点赞。
+- 点赞/取消点赞的主操作入口仍以详情页 `...` 菜单为准。
+
+### 验证情况
+
+- 已执行前端页面源码巡检：
+  - `powershell -ExecutionPolicy Bypass -File D:\JavaProject\romantic-suite\romantic-app\tools\check-pages-source.ps1`
+- 巡检结果：
+  - `OK: no suspicious page-source findings under D:\JavaProject\romantic-suite\romantic-app\pages`
+
+## 2026-03-26 恋爱纪念日互动能力对齐甜蜜相册记录
+### 目标
+
+- 给恋爱纪念日补齐与甜蜜相册一致的点赞与评论能力。
+- 纪念日互动能力继续复用通用互动表，不额外新增纪念日专用点赞表、评论表。
+- 纪念日详情页交互方式与相册保持一致，统一为 `...` 菜单触发点赞/评论，评论时直接拉起底部输入栏。
+
+### 关键结果
+
+- 后端纪念日接口已切换到通用互动模型：
+  - `POST /api/anniversaries/{id}/likes` 由累计点赞改为切换点赞/取消点赞，返回 `liked + likeCount`
+  - 新增 `POST /api/anniversaries/{id}/comments` 评论接口
+- 纪念日详情响应已补齐互动字段：
+  - `likedByCurrentUser`
+  - `likeUsers`
+  - `commentList`
+- 纪念日点赞/取消点赞都会通过现有通知服务给对方发送通知，通知类型新增：
+  - `anniversary_liked`
+  - `anniversary_unliked`
+- 前端纪念日详情页已改成和甜蜜相册一致的互动结构：
+  - 右下角 `...` 菜单
+  - `点赞 / 取消点赞`
+  - `评论`
+  - 底部评论输入栏
+  - 卡片内联点赞人信息与评论列表
+- 前端纪念日列表页已同步为和甜蜜相册一致的轻展示：
+  - 有点赞时只显示一个 `❤`
+  - 没有点赞时不显示
+  - 列表页中的爱心仅作展示，不作为互动入口
+
+### 当前约束
+
+- 恋爱纪念日当前与甜蜜相册一致，点赞/取消点赞主操作入口只保留在详情页 `...` 菜单中。
+- 评论当前仍为一级评论，不包含回复评论、删除评论、评论点赞。
+- 评论能力继续复用通用互动表：
+  - `biz_like_record`
+  - `biz_comment_record`
+
+### 涉及文件
+
+- 后端：
+  - `romantic-server/src/main/java/org/love/romantic/service/impl/AnniversaryServiceImpl.java`
+  - `romantic-server/src/main/java/org/love/romantic/service/AnniversaryService.java`
+  - `romantic-server/src/main/java/org/love/romantic/controller/AnniversaryController.java`
+  - `romantic-server/src/main/java/org/love/romantic/model/AnniversaryEventResponse.java`
+  - `romantic-server/src/main/java/org/love/romantic/common/NotificationTypeConstants.java`
+- 前端：
+  - `romantic-app/services/anniversaries.js`
+  - `romantic-app/pages/modules/anniversary/detail.vue`
+  - `romantic-app/pages/modules/anniversary/index.vue`
+
+### 验证情况
+
+- 已执行前端页面源码巡检：
+  - `powershell -ExecutionPolicy Bypass -File D:\JavaProject\romantic-suite\romantic-app\tools\check-pages-source.ps1`
+- 巡检结果：
+  - `OK: no suspicious page-source findings under D:\JavaProject\romantic-suite\romantic-app\pages`
+- 已执行后端测试：
+  - `$env:JAVA_HOME='D:\Service_File\jdk-11.0.0.2'; $env:Path='D:\Service_File\jdk-11.0.0.2\bin;' + $env:Path; mvn test`
+- 测试结果：
+  - `BUILD SUCCESS`
+- 本轮尚未额外执行 uni-app / 微信小程序真机验证，后续应重点检查：
+  - 纪念日详情页 `...` 菜单和底部评论输入在小程序端的拉起体验
+  - 纪念日详情页点赞与评论后的即时回显是否顺手
+  - 纪念日列表页的爱心展示是否与甜蜜相册保持同一视觉口径
+
+### 补充修复
+
+- 在将纪念日列表页爱心展示改成和甜蜜相册一致的轻展示后，`romantic-app/pages/modules/anniversary/index.vue` 模板中出现了一处多余的 `</view>`，会导致 Vite 报 `Invalid end tag`。
+- 当前已修复该模板闭合问题，并重新执行前端页面源码巡检，结果正常。
+- 在重写纪念日页面过程中，`romantic-app/pages/modules/anniversary/index.vue` 中一批中文文案曾被写成 `\uXXXX` 形式的 Unicode 转义字符串。虽然运行不受影响，但源码可读性差，不符合当前前端维护口径。
+- 当前已将纪念日列表页与详情页里的相关转义文案和符号恢复为正常中文与直观符号，并重新执行前端页面源码巡检，结果正常。
+
+## 2026-03-26 前后端 Unicode 转义残留与源码污染清理记录
+### 背景
+
+- 在前几轮页面重写和局部文件重建之后，项目里还残留了一批 `\uXXXX` 形式的 Unicode 转义文案。
+- 这类问题不等同于乱码，也不一定会影响运行，但会显著降低源码可读性，并增加后续误判编码问题的概率。
+- 此外，后端 `ImprovementNoteServiceImpl.java` 中还存在几条已经真实写坏的中文日志文案，属于源码内容污染，不只是转义风格问题。
+
+### 本轮处理范围
+
+- 前端已清理并恢复正常中文源码的文件：
+  - `romantic-app/components/GlobalNotificationBanner.vue`
+  - `romantic-app/utils/avatar.js`
+  - `romantic-app/pages/account/avatar.vue`
+  - `romantic-app/pages/planet/planet.vue`
+  - `romantic-app/pages/modules/album/edit.vue`
+  - `romantic-app/pages/modules/album/index.vue`
+  - `romantic-app/pages/modules/album/detail.vue`
+- 后端已清理并恢复正常中文源码的文件：
+  - `romantic-server/src/main/java/org/love/romantic/service/impl/ImprovementNoteServiceImpl.java`
+
+### 关键结果
+
+- 前端页面、组件、工具文件中的主要用户可见文案已从 `\uXXXX` 恢复为正常中文。
+- 相册与纪念日模块中的爱心、冒号等常用符号也已改回直观字符，不再保留转义形式。
+- `ImprovementNoteServiceImpl.java` 中的通知文案、异常提示、状态 emoji 以及几条已损坏的日志文本已恢复为正常可维护内容。
+- 重新全量扫描源码目录后，当前未再发现新的 `\uXXXX` 残留命中。
+
+### 验证情况
+
+- 已执行源码扫描：
+  - `rg -n "\\u[0-9A-Fa-f]{4}" D:\JavaProject\romantic-suite\romantic-app D:\JavaProject\romantic-suite\romantic-server -g '!**/unpackage/**' -g '!**/target/**' -g '!**/*.bak' -g '!**/*.log'`
+- 扫描结果：
+  - 无命中
+- 已执行前端页面源码巡检：
+  - `powershell -ExecutionPolicy Bypass -File D:\JavaProject\romantic-suite\romantic-app\tools\check-pages-source.ps1`
+- 巡检结果：
+  - `OK: no suspicious page-source findings under D:\JavaProject\romantic-suite\romantic-app\pages`
+- 已执行后端测试：
+  - `$env:JAVA_HOME='D:\Service_File\jdk-11.0.0.2'; $env:Path='D:\Service_File\jdk-11.0.0.2\bin;' + $env:Path; mvn test`
+- 测试结果：
+  - `BUILD SUCCESS`
+
+### 后续约束补充
+
+- 后续如果只是为了临时避开终端显示问题，不要把中文源码重写成 `\uXXXX` 形式。
+- 前端页面、组件、服务层与后端业务文案，默认都应保留为正常 UTF-8 中文源码，除非存在非常明确的语言级转义需求。
+## 2026-03-26 相册与纪念日评论交互补充记录
+
+### 本轮目标
+
+- 将甜蜜相册与恋爱纪念日详情页的评论区交互进一步向朋友圈式体验靠拢。
+- 评论展示需要补充时间信息，并统一成“两行结构”：
+  - 第一行：评论人名称在左、评论时间在右
+  - 第二行：评论内容
+- 自己点击自己的评论时，从底部弹出较窄的操作窗，只提供“删除 / 取消”。
+- 点击别人的评论时，直接进入回复态，底部输入框 placeholder 改成“回复 xxx：”。
+- 详情创建人长按评论时，弹出小型操作卡片，支持“复制 / 删除”。
+
+### 关键结果
+
+- 后端已为甜蜜相册与恋爱纪念日补齐评论删除接口：
+  - `DELETE /api/albums/{id}/comments/{commentId}`
+  - `DELETE /api/anniversaries/{id}/comments/{commentId}`
+- 删除权限口径统一为：
+  - 评论作者本人可以删除自己的评论
+  - 对应详情记录的创建人也可以删除任意评论
+- 前端甜蜜相册详情页与恋爱纪念日详情页均已完成以下交互对齐：
+  - 评论列表统一显示评论时间
+  - 点击自己的评论弹出窄版底部操作窗
+  - 点击别人的评论直接进入回复输入态
+  - 创建人长按评论弹出“复制 / 删除”小卡片
+- 当前回复为第一版轻实现，后端仍只保存一级评论结构：
+  - 点击别人评论时，前端会以“回复 xxx：评论内容”的形式提交
+  - 暂未单独拆分楼中回复、被回复人字段与回复链结构
+
+### 涉及文件
+
+- 后端：
+  - `romantic-server/src/main/java/org/love/romantic/service/AlbumMemoryService.java`
+  - `romantic-server/src/main/java/org/love/romantic/service/AnniversaryService.java`
+  - `romantic-server/src/main/java/org/love/romantic/controller/AlbumMemoryController.java`
+  - `romantic-server/src/main/java/org/love/romantic/controller/AnniversaryController.java`
+  - `romantic-server/src/main/java/org/love/romantic/service/impl/AlbumMemoryServiceImpl.java`
+  - `romantic-server/src/main/java/org/love/romantic/service/impl/AnniversaryServiceImpl.java`
+- 前端：
+  - `romantic-app/services/albums.js`
+  - `romantic-app/services/anniversaries.js`
+  - `romantic-app/pages/modules/album/detail.vue`
+  - `romantic-app/pages/modules/anniversary/detail.vue`
+
+### 验证情况
+
+- 已执行前端页面源码巡检：
+  - `powershell -ExecutionPolicy Bypass -File D:\JavaProject\romantic-suite\romantic-app\tools\check-pages-source.ps1`
+- 巡检结果：
+  - `OK: no suspicious page-source findings under D:\JavaProject\romantic-suite\romantic-app\pages`
+- 已执行后端测试：
+  - `$env:JAVA_HOME='D:\Service_File\jdk-11.0.0.2'; $env:Path='D:\Service_File\jdk-11.0.0.2\bin;' + $env:Path; mvn test`
+- 测试结果：
+  - `BUILD SUCCESS`
+
+### 后续风险与注意点
+
+- 当前尚未额外执行 uni-app / 微信小程序真机验证，后续需要重点检查：
+  - 评论长按在微信端是否稳定触发
+  - 回复态 placeholder 与键盘拉起是否顺手
+  - 创建人长按弹出的“复制 / 删除”小卡片位置是否合适
+  - 删除评论后列表刷新、回复目标清空与提示文案是否符合预期

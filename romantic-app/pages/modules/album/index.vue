@@ -84,6 +84,19 @@
               <view v-if="item.tags.length" class="memory-tags">
                 <view v-for="tag in item.tags.slice(0, 4)" :key="tag" class="memory-tag">{{ tag }}</view>
               </view>
+
+              <view class="memory-footer">
+                <view class="memory-creator app-line-clamp-1">{{ creatorText(item) }}</view>
+                <view class="like-wrap">
+                  <view
+                    v-if="Number(item.likeCount || 0) > 0"
+                    class="like-button"
+                    :class="{ active: item.likedByCurrentUser }"
+                  >
+                    <text class="like-icon">{{ FILLED_HEART }}</text>
+                  </view>
+                </view>
+              </view>
             </view>
           </view>
         </view>
@@ -108,31 +121,35 @@ import { goPage } from '@/utils/nav.js'
 import { useThemePage } from '@/utils/useThemePage.js'
 import AccountHeader from '@/pages/account/components/AccountHeader.vue'
 
+const FILLED_HEART = '♥'
 const TEXT = {
-  albumTitle: '\u751c\u871c\u76f8\u518c',
-  albumEyebrow: '\u56de\u5fc6\u6536\u85cf',
-  heroKicker: '\u672c\u6708\u56de\u5fc6',
-  heroSummary: '\u628a\u89c1\u9762\u3001\u65c5\u884c\u3001\u751f\u65e5\u548c\u7eaa\u5ff5\u65e5\u90fd\u6536\u8fdb\u4e00\u518c\u3002',
-  createButton: '\u65b0\u5efa\u56de\u5fc6',
-  groupUnit: '\u6bb5\u56de\u5fc6',
-  memoryWord: '\u56de\u5fc6',
-  imageCountSuffix: '\u5f20\u56fe',
-  videoCountSuffix: '\u4e2a\u89c6\u9891',
-  emptyIcon: '\u76f8\u518c',
-  emptyTitle: '\u8fd8\u6ca1\u6709\u56de\u5fc6',
-  emptyDesc: '\u5148\u65b0\u5efa\u4e00\u6bb5\u5c5e\u4e8e\u4f60\u4eec\u7684\u751c\u871c\u8bb0\u5f55\u5427\u3002',
-  all: '\u5168\u90e8',
-  month: '\u672c\u6708',
-  year: '\u4eca\u5e74',
-  heroFallbackMeta: '\u628a\u6bcf\u6b21\u89c1\u9762\u90fd\u6536\u8fdb\u65f6\u95f4\u91cc',
-  countSeparator: ' \u00b7 ',
-  ungrouped: '\u672a\u5206\u7ec4'
+  albumTitle: '甜蜜相册',
+  albumEyebrow: '回忆收藏',
+  heroKicker: '本月回忆',
+  heroSummary: '把见面、旅行、生日和纪念日都收进一册。',
+  createButton: '新建回忆',
+  groupUnit: '段回忆',
+  memoryWord: '回忆',
+  imageCountSuffix: '张图',
+  videoCountSuffix: '个视频',
+  emptyIcon: '相册',
+  emptyTitle: '还没有回忆',
+  emptyDesc: '先新建一段属于你们的甜蜜记录吧。',
+  all: '全部',
+  month: '本月',
+  year: '今年',
+  heroFallbackMeta: '把每次见面都收进时间里',
+  countSeparator: ' · ',
+  ungrouped: '未分组',
+  loadError: '甜蜜相册加载失败',
+  creatorPrefix: '由 ',
+  creatorSuffix: ' 收进相册',
+  creatorFallback: '把这段回忆认真收进了相册'
 }
 
 const { themeStyle } = useThemePage()
 const activeFilter = ref('all')
 const memoryList = ref([])
-
 const filters = [
   { key: 'all', label: TEXT.all },
   { key: 'month', label: TEXT.month },
@@ -187,7 +204,7 @@ async function loadList() {
   try {
     memoryList.value = await fetchAlbumMemoryList()
   } catch (error) {
-    uni.showToast({ title: error?.message || '\u751c\u871c\u76f8\u518c\u52a0\u8f7d\u5931\u8d25', icon: 'none' })
+    uni.showToast({ title: error?.message || TEXT.loadError, icon: 'none' })
   }
 }
 
@@ -208,7 +225,7 @@ function matchFilter(item, filterKey) {
 function formatGroupLabel(key) {
   if (!key || key === TEXT.ungrouped) return TEXT.ungrouped
   const [year, month] = key.split('-')
-  return `${year}\u5e74${Number(month)}\u6708`
+  return `${year}年${Number(month)}月`
 }
 
 function formatGroupRange(items) {
@@ -232,6 +249,11 @@ function resolveCover(item) {
   const firstMedia = Array.isArray(item.mediaList) ? item.mediaList[0] : null
   const coverPath = item.coverUrl || firstMedia?.thumbnailUrl || firstMedia?.fileUrl || ''
   return resolveMediaUrl(coverPath)
+}
+
+function creatorText(item) {
+  if (!item?.creatorNickname) return TEXT.creatorFallback
+  return `${TEXT.creatorPrefix}${item.creatorNickname}${TEXT.creatorSuffix}`
 }
 </script>
 
@@ -482,6 +504,50 @@ function resolveCover(item) {
     color: #c36f8f;
     font-size: 22rpx;
     font-weight: 700;
+  }
+  .memory-footer {
+    margin-top: 18rpx;
+    padding-top: 18rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20rpx;
+  }
+  .memory-creator {
+    flex: 1;
+    min-width: 0;
+    font-size: 22rpx;
+    line-height: 1.6;
+    color: #b18a96;
+  }
+  .like-wrap {
+    position: relative;
+    min-width: 64rpx;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .like-button {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56rpx;
+    height: 56rpx;
+    padding: 0;
+    border-radius: 999rpx;
+    background: #fff1f5;
+    color: #ff5d8f;
+    font-size: 24rpx;
+    font-weight: 700;
+  }
+  .like-button.active {
+    background: #ffedf3;
+    box-shadow: inset 0 0 0 2rpx rgba(255, 150, 184, 0.34);
+  }
+  .like-icon {
+    font-size: 28rpx;
+    line-height: 1;
   }
   .empty-card {
     margin-top: 30rpx;

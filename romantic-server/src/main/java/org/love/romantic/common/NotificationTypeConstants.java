@@ -10,12 +10,16 @@ public final class NotificationTypeConstants {
     public static final String COUNTDOWN_UPDATED = "countdown_updated";
     public static final String ANNIVERSARY_CREATED = "anniversary_created";
     public static final String ANNIVERSARY_UPDATED = "anniversary_updated";
+    public static final String ANNIVERSARY_LIKED = "anniversary_liked";
+    public static final String ANNIVERSARY_UNLIKED = "anniversary_unliked";
     public static final String IMPROVEMENT_CREATED = "improvement_created";
     public static final String IMPROVEMENT_UPDATED = "improvement_updated";
     public static final String IMPROVEMENT_FEEDBACK_CREATED = "improvement_feedback_created";
     public static final String IMPROVEMENT_FEEDBACK_UPDATED = "improvement_feedback_updated";
     public static final String ALBUM_CREATED = "album_created";
     public static final String ALBUM_UPDATED = "album_updated";
+    public static final String ALBUM_LIKED = "album_liked";
+    public static final String ALBUM_UNLIKED = "album_unliked";
 
     private NotificationTypeConstants() {
     }

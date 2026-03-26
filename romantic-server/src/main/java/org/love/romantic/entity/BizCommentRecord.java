@@ -10,44 +10,31 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName("album_memory")
-@ApiModel("甜蜜相册回忆实体")
-public class AlbumMemory {
+@TableName("biz_comment_record")
+@ApiModel("通用评论记录")
+public class BizCommentRecord {
 
     @TableId(type = IdType.AUTO)
     @ApiModelProperty("主键 ID")
     private Long id;
 
-    @ApiModelProperty("创建人账号")
+    @ApiModelProperty("业务类型")
+    private String bizType;
+
+    @ApiModelProperty("业务 ID")
+    private Long bizId;
+
+    @ApiModelProperty("评论账号")
     private String username;
 
-    @ApiModelProperty("回忆标题")
-    private String title;
-
-    @ApiModelProperty("回忆日期")
-    private LocalDate memoryDate;
-
-    @ApiModelProperty("地点")
-    private String location;
-
-    @ApiModelProperty("回忆内容")
-    private String summary;
-
-    @ApiModelProperty("标签 JSON")
-    private String tagsJson;
-
-    @ApiModelProperty("封面路径")
-    private String coverUrl;
-
-    @ApiModelProperty("点赞次数")
-    private Long likeCount;
+    @ApiModelProperty("评论内容")
+    private String content;
 
     @ApiModelProperty("创建时间")
     private LocalDateTime createdAt;

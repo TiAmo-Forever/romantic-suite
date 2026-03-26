@@ -1,23 +1,30 @@
 package org.love.romantic.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.love.romantic.auth.AuthContext;
 import org.love.romantic.common.NotificationBizTypeConstants;
 import org.love.romantic.common.NotificationTypeConstants;
 import org.love.romantic.entity.AnniversaryEvent;
 import org.love.romantic.entity.AnniversaryMedia;
+import org.love.romantic.entity.BizCommentRecord;
+import org.love.romantic.entity.BizLikeRecord;
 import org.love.romantic.entity.CoupleProfile;
 import org.love.romantic.exception.BusinessException;
 import org.love.romantic.mapper.AnniversaryEventMapper;
 import org.love.romantic.mapper.AnniversaryMediaMapper;
+import org.love.romantic.mapper.BizCommentRecordMapper;
+import org.love.romantic.mapper.BizLikeRecordMapper;
 import org.love.romantic.mapper.CoupleProfileMapper;
 import org.love.romantic.model.AnniversaryEventRequest;
 import org.love.romantic.model.AnniversaryEventResponse;
 import org.love.romantic.model.AnniversaryMediaRequest;
 import org.love.romantic.model.AnniversaryMediaResponse;
 import org.love.romantic.model.AnniversaryReminderResponse;
+import org.love.romantic.model.InteractionCommentRequest;
+import org.love.romantic.model.InteractionCommentResponse;
+import org.love.romantic.model.InteractionLikeToggleResponse;
+import org.love.romantic.model.InteractionLikeUserResponse;
 import org.love.romantic.service.AnniversaryService;
 import org.love.romantic.service.LocalFileStorageService;
 import org.love.romantic.service.UserNotificationService;
@@ -27,13 +34,17 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -49,17 +60,23 @@ public class AnniversaryServiceImpl implements AnniversaryService {
 
     private final AnniversaryEventMapper anniversaryEventMapper;
     private final AnniversaryMediaMapper anniversaryMediaMapper;
+    private final BizLikeRecordMapper bizLikeRecordMapper;
+    private final BizCommentRecordMapper bizCommentRecordMapper;
     private final CoupleProfileMapper coupleProfileMapper;
     private final LocalFileStorageService localFileStorageService;
     private final UserNotificationService userNotificationService;
 
     public AnniversaryServiceImpl(AnniversaryEventMapper anniversaryEventMapper,
                                   AnniversaryMediaMapper anniversaryMediaMapper,
+                                  BizLikeRecordMapper bizLikeRecordMapper,
+                                  BizCommentRecordMapper bizCommentRecordMapper,
                                   CoupleProfileMapper coupleProfileMapper,
                                   LocalFileStorageService localFileStorageService,
                                   UserNotificationService userNotificationService) {
         this.anniversaryEventMapper = anniversaryEventMapper;
         this.anniversaryMediaMapper = anniversaryMediaMapper;
+        this.bizLikeRecordMapper = bizLikeRecordMapper;
+        this.bizCommentRecordMapper = bizCommentRecordMapper;
         this.coupleProfileMapper = coupleProfileMapper;
         this.localFileStorageService = localFileStorageService;
         this.userNotificationService = userNotificationService;
@@ -67,6 +84,7 @@ public class AnniversaryServiceImpl implements AnniversaryService {
 
     @Override
     public List<AnniversaryEventResponse> listEvents(String status) {
+        String currentUsername = AuthContext.getRequiredUsername();
         LocalDate today = LocalDate.now();
         LambdaQueryWrapper<AnniversaryEvent> queryWrapper = new LambdaQueryWrapper<>();
 
@@ -80,15 +98,34 @@ public class AnniversaryServiceImpl implements AnniversaryService {
         queryWrapper.orderByDesc(AnniversaryEvent::getEventDate).orderByDesc(AnniversaryEvent::getId);
         List<AnniversaryEvent> events = anniversaryEventMapper.selectList(queryWrapper);
         Map<String, String> nicknameMap = buildNicknameMap();
+        Map<Long, Long> likeCountMap = buildLikeCountMap(
+                NotificationBizTypeConstants.ANNIVERSARY,
+                events.stream().map(AnniversaryEvent::getId).collect(Collectors.toList())
+        );
+        Set<Long> likedEventIds = buildLikedBizIdSet(
+                NotificationBizTypeConstants.ANNIVERSARY,
+                events.stream().map(AnniversaryEvent::getId).collect(Collectors.toList()),
+                currentUsername
+        );
+
         return events.stream()
-                .map(event -> toSummaryResponse(event, nicknameMap))
+                .map(event -> {
+                    event.setLikeCount(likeCountMap.getOrDefault(event.getId(), 0L));
+                    return toSummaryResponse(event, nicknameMap, likedEventIds.contains(event.getId()));
+                })
                 .collect(Collectors.toList());
     }
 
     @Override
     public AnniversaryEventResponse getEvent(Long id) {
+        String currentUsername = AuthContext.getRequiredUsername();
         AnniversaryEvent event = requireEvent(id);
-        return toDetailResponse(event, buildNicknameMap());
+        Map<String, String> nicknameMap = buildNicknameMap();
+        List<InteractionLikeUserResponse> likeUsers = buildLikeUserResponses(NotificationBizTypeConstants.ANNIVERSARY, id, nicknameMap);
+        List<InteractionCommentResponse> commentList = listCommentResponses(NotificationBizTypeConstants.ANNIVERSARY, id, nicknameMap);
+        boolean likedByCurrentUser = likeUsers.stream()
+                .anyMatch(item -> currentUsername.equalsIgnoreCase(item.getUsername()));
+        return toDetailResponse(event, nicknameMap, likeUsers, commentList, likedByCurrentUser);
     }
 
     @Override
@@ -115,7 +152,7 @@ public class AnniversaryServiceImpl implements AnniversaryService {
                 Map.of("title", event.getTitle())
         );
         log.info("创建纪念日成功，creator={}, eventId={}", operator, event.getId());
-        return toDetailResponse(event, buildNicknameMap());
+        return getEvent(event.getId());
     }
 
     @Override
@@ -142,7 +179,7 @@ public class AnniversaryServiceImpl implements AnniversaryService {
                 Map.of("title", event.getTitle())
         );
         log.info("更新纪念日成功，operator={}, eventId={}", operator, event.getId());
-        return toDetailResponse(event, buildNicknameMap());
+        return getEvent(id);
     }
 
     @Override
@@ -152,25 +189,112 @@ public class AnniversaryServiceImpl implements AnniversaryService {
         AnniversaryEvent event = requireEvent(id);
         List<AnniversaryMedia> existingMedia = listMediaEntities(id);
         anniversaryMediaMapper.delete(new LambdaQueryWrapper<AnniversaryMedia>().eq(AnniversaryMedia::getEventId, id));
+        bizLikeRecordMapper.delete(new LambdaQueryWrapper<BizLikeRecord>()
+                .eq(BizLikeRecord::getBizType, NotificationBizTypeConstants.ANNIVERSARY)
+                .eq(BizLikeRecord::getBizId, id));
+        bizCommentRecordMapper.delete(new LambdaQueryWrapper<BizCommentRecord>()
+                .eq(BizCommentRecord::getBizType, NotificationBizTypeConstants.ANNIVERSARY)
+                .eq(BizCommentRecord::getBizId, id));
         anniversaryEventMapper.deleteById(id);
-        existingMedia.forEach(media -> localFileStorageService.deleteAnniversaryMediaQuietly(media.getFileUrl()));
+        existingMedia.forEach(media -> {
+            localFileStorageService.deleteAnniversaryMediaQuietly(media.getFileUrl());
+            localFileStorageService.deleteAnniversaryMediaQuietly(media.getThumbnailUrl());
+        });
         log.info("删除纪念日成功，operator={}, eventId={}", operator, event.getId());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public long increaseLikeCount(Long id) {
+    public InteractionLikeToggleResponse toggleLike(Long id) {
+        String operator = AuthContext.getRequiredUsername();
+        AnniversaryEvent event = requireEvent(id);
+
+        List<BizLikeRecord> existingLikes = bizLikeRecordMapper.selectList(new LambdaQueryWrapper<BizLikeRecord>()
+                .eq(BizLikeRecord::getBizType, NotificationBizTypeConstants.ANNIVERSARY)
+                .eq(BizLikeRecord::getBizId, id)
+                .eq(BizLikeRecord::getUsername, operator));
+
+        boolean liked;
+        if (existingLikes.isEmpty()) {
+            bizLikeRecordMapper.insert(BizLikeRecord.builder()
+                    .bizType(NotificationBizTypeConstants.ANNIVERSARY)
+                    .bizId(id)
+                    .username(operator)
+                    .createdAt(LocalDateTime.now())
+                    .build());
+            liked = true;
+            userNotificationService.notifyPartners(
+                    operator,
+                    NotificationTypeConstants.ANNIVERSARY_LIKED,
+                    "纪念日收到了一颗爱心",
+                    "「" + event.getTitle() + "」被轻轻点亮了一次喜欢。",
+                    NotificationBizTypeConstants.ANNIVERSARY,
+                    event.getId(),
+                    Map.of("title", event.getTitle(), "liked", true)
+            );
+        } else {
+            bizLikeRecordMapper.delete(new LambdaQueryWrapper<BizLikeRecord>()
+                    .eq(BizLikeRecord::getBizType, NotificationBizTypeConstants.ANNIVERSARY)
+                    .eq(BizLikeRecord::getBizId, id)
+                    .eq(BizLikeRecord::getUsername, operator));
+            liked = false;
+            userNotificationService.notifyPartners(
+                    operator,
+                    NotificationTypeConstants.ANNIVERSARY_UNLIKED,
+                    "纪念日少了一颗爱心",
+                    "「" + event.getTitle() + "」刚刚取消了一次点赞。",
+                    NotificationBizTypeConstants.ANNIVERSARY,
+                    event.getId(),
+                    Map.of("title", event.getTitle(), "liked", false)
+            );
+        }
+
+        long latestLikeCount = recountAnniversaryLikeCount(id);
+        log.info("纪念日点赞状态切换成功，operator={}, eventId={}, liked={}, likeCount={}", operator, id, liked, latestLikeCount);
+        return InteractionLikeToggleResponse.builder()
+                .liked(liked)
+                .likeCount(latestLikeCount)
+                .build();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public InteractionCommentResponse addComment(Long id, InteractionCommentRequest request) {
         String operator = AuthContext.getRequiredUsername();
         requireEvent(id);
-        LambdaUpdateWrapper<AnniversaryEvent> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(AnniversaryEvent::getId, id)
-                .setSql("like_count = like_count + 1");
-        anniversaryEventMapper.update(null, updateWrapper);
 
-        AnniversaryEvent latestEvent = anniversaryEventMapper.selectById(id);
-        long latestLikeCount = latestEvent == null || latestEvent.getLikeCount() == null ? 0L : latestEvent.getLikeCount();
-        log.info("纪念日点赞成功，operator={}, eventId={}, likeCount={}", operator, id, latestLikeCount);
-        return latestLikeCount;
+        String content = defaultIfBlank(request.getContent(), "");
+        if (!StringUtils.hasText(content)) {
+            throw new BusinessException("评论内容不能为空");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        BizCommentRecord comment = BizCommentRecord.builder()
+                .bizType(NotificationBizTypeConstants.ANNIVERSARY)
+                .bizId(id)
+                .username(operator)
+                .content(content)
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
+        bizCommentRecordMapper.insert(comment);
+        log.info("纪念日评论创建成功，operator={}, eventId={}, commentId={}", operator, id, comment.getId());
+        return toCommentResponse(comment, buildNicknameMap());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteComment(Long id, Long commentId) {
+        String operator = AuthContext.getRequiredUsername();
+        AnniversaryEvent event = requireEvent(id);
+        BizCommentRecord comment = requireComment(NotificationBizTypeConstants.ANNIVERSARY, id, commentId);
+        boolean canDelete = operator.equalsIgnoreCase(defaultIfBlank(comment.getUsername(), ""))
+                || operator.equalsIgnoreCase(defaultIfBlank(event.getUsername(), ""));
+        if (!canDelete) {
+            throw new BusinessException("当前没有权限删除这条评论");
+        }
+        bizCommentRecordMapper.deleteById(commentId);
+        log.info("纪念日评论删除成功，operator={}, eventId={}, commentId={}", operator, id, commentId);
     }
 
     @Override
@@ -257,6 +381,10 @@ public class AnniversaryServiceImpl implements AnniversaryService {
         List<String> newFileUrls = newMediaRequests == null ? new ArrayList<>() : newMediaRequests.stream()
                 .map(AnniversaryMediaRequest::getFileUrl)
                 .collect(Collectors.toList());
+        List<String> newThumbnailUrls = newMediaRequests == null ? new ArrayList<>() : newMediaRequests.stream()
+                .map(AnniversaryMediaRequest::getThumbnailUrl)
+                .filter(StringUtils::hasText)
+                .collect(Collectors.toList());
 
         if (newMediaRequests != null) {
             for (AnniversaryMediaRequest request : newMediaRequests) {
@@ -270,58 +398,178 @@ public class AnniversaryServiceImpl implements AnniversaryService {
             }
         }
 
-        existingMedia.stream()
-                .filter(item -> !newFileUrls.contains(item.getFileUrl()))
-                .forEach(item -> localFileStorageService.deleteAnniversaryMediaQuietly(item.getFileUrl()));
+        existingMedia.forEach(item -> {
+            if (!newFileUrls.contains(item.getFileUrl())) {
+                localFileStorageService.deleteAnniversaryMediaQuietly(item.getFileUrl());
+            }
+            if (StringUtils.hasText(item.getThumbnailUrl()) && !newThumbnailUrls.contains(item.getThumbnailUrl())) {
+                localFileStorageService.deleteAnniversaryMediaQuietly(item.getThumbnailUrl());
+            }
+        });
     }
 
     private List<AnniversaryMedia> listMediaEntities(Long eventId) {
-        LambdaQueryWrapper<AnniversaryMedia> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(AnniversaryMedia::getEventId, eventId)
+        return anniversaryMediaMapper.selectList(new LambdaQueryWrapper<AnniversaryMedia>()
+                .eq(AnniversaryMedia::getEventId, eventId)
                 .orderByAsc(AnniversaryMedia::getSortOrder)
-                .orderByAsc(AnniversaryMedia::getId);
-        return anniversaryMediaMapper.selectList(queryWrapper);
+                .orderByAsc(AnniversaryMedia::getId));
     }
 
-    private AnniversaryEventResponse toSummaryResponse(AnniversaryEvent event, Map<String, String> nicknameMap) {
-        return buildResponse(event, new ArrayList<>(), nicknameMap);
+    private AnniversaryEventResponse toSummaryResponse(AnniversaryEvent event,
+                                                       Map<String, String> nicknameMap,
+                                                       boolean likedByCurrentUser) {
+        return buildResponse(event, new ArrayList<>(), nicknameMap, new ArrayList<>(), new ArrayList<>(), likedByCurrentUser);
     }
 
-    private AnniversaryEventResponse toDetailResponse(AnniversaryEvent event, Map<String, String> nicknameMap) {
+    private AnniversaryEventResponse toDetailResponse(AnniversaryEvent event,
+                                                      Map<String, String> nicknameMap,
+                                                      List<InteractionLikeUserResponse> likeUsers,
+                                                      List<InteractionCommentResponse> commentList,
+                                                      boolean likedByCurrentUser) {
         List<AnniversaryMediaResponse> mediaList = listMediaEntities(event.getId()).stream()
                 .map(this::toMediaResponse)
                 .collect(Collectors.toList());
-        return buildResponse(event, mediaList, nicknameMap);
+        return buildResponse(event, mediaList, nicknameMap, likeUsers, commentList, likedByCurrentUser);
     }
 
     private AnniversaryEventResponse buildResponse(AnniversaryEvent event,
                                                    List<AnniversaryMediaResponse> mediaList,
-                                                   Map<String, String> nicknameMap) {
+                                                   Map<String, String> nicknameMap,
+                                                   List<InteractionLikeUserResponse> likeUsers,
+                                                   List<InteractionCommentResponse> commentList,
+                                                   boolean likedByCurrentUser) {
         long dayOffset = ChronoUnit.DAYS.between(LocalDate.now(), event.getEventDate());
         String timeStatus = dayOffset >= 0 ? "future" : "past";
+        long likeCount = likeUsers.isEmpty()
+                ? (event.getLikeCount() == null ? 0L : event.getLikeCount())
+                : likeUsers.size();
+
         return AnniversaryEventResponse.builder()
                 .id(event.getId())
                 .title(event.getTitle())
                 .type(event.getType())
                 .eventDate(event.getEventDate().toString())
-                .description(event.getDescription())
-                .location(event.getLocation())
-                .coverUrl(event.getCoverUrl())
-                .likeCount(event.getLikeCount() == null ? 0L : event.getLikeCount())
+                .description(defaultIfBlank(event.getDescription(), ""))
+                .location(defaultIfBlank(event.getLocation(), ""))
+                .coverUrl(defaultIfBlank(event.getCoverUrl(), ""))
+                .likeCount(likeCount)
+                .likedByCurrentUser(likedByCurrentUser)
                 .reminderType(event.getReminderType())
                 .timeStatus(timeStatus)
                 .dayOffset(dayOffset)
                 .creatorUsername(event.getUsername())
                 .creatorNickname(resolveCreatorNickname(event.getUsername(), nicknameMap))
                 .mediaList(mediaList)
+                .likeUsers(likeUsers)
+                .commentList(commentList)
                 .build();
     }
 
-    private String resolveCreatorNickname(String username, Map<String, String> nicknameMap) {
-        if (!StringUtils.hasText(username)) {
-            return "";
+    private List<BizLikeRecord> listLikeEntities(String bizType, Long bizId) {
+        return bizLikeRecordMapper.selectList(new LambdaQueryWrapper<BizLikeRecord>()
+                .eq(BizLikeRecord::getBizType, bizType)
+                .eq(BizLikeRecord::getBizId, bizId)
+                .orderByDesc(BizLikeRecord::getCreatedAt)
+                .orderByDesc(BizLikeRecord::getId));
+    }
+
+    private Set<Long> buildLikedBizIdSet(String bizType, List<Long> bizIds, String username) {
+        if (bizIds == null || bizIds.isEmpty() || !StringUtils.hasText(username)) {
+            return new HashSet<>();
         }
-        return nicknameMap.getOrDefault(username, username);
+        return bizLikeRecordMapper.selectList(new LambdaQueryWrapper<BizLikeRecord>()
+                        .eq(BizLikeRecord::getBizType, bizType)
+                        .in(BizLikeRecord::getBizId, bizIds)
+                        .eq(BizLikeRecord::getUsername, username))
+                .stream()
+                .map(BizLikeRecord::getBizId)
+                .collect(Collectors.toSet());
+    }
+
+    private Map<Long, Long> buildLikeCountMap(String bizType, List<Long> bizIds) {
+        if (bizIds == null || bizIds.isEmpty()) {
+            return new HashMap<>();
+        }
+        Map<Long, Set<String>> usernameMap = new HashMap<>();
+        for (BizLikeRecord record : bizLikeRecordMapper.selectList(new LambdaQueryWrapper<BizLikeRecord>()
+                .eq(BizLikeRecord::getBizType, bizType)
+                .in(BizLikeRecord::getBizId, bizIds))) {
+            String username = defaultIfBlank(record.getUsername(), "");
+            if (!StringUtils.hasText(username)) {
+                continue;
+            }
+            usernameMap.computeIfAbsent(record.getBizId(), key -> new HashSet<>()).add(username);
+        }
+
+        Map<Long, Long> likeCountMap = new HashMap<>();
+        usernameMap.forEach((bizId, usernames) -> likeCountMap.put(bizId, (long) usernames.size()));
+        return likeCountMap;
+    }
+
+    private List<InteractionLikeUserResponse> buildLikeUserResponses(String bizType,
+                                                                     Long bizId,
+                                                                     Map<String, String> nicknameMap) {
+        Map<String, InteractionLikeUserResponse> result = new LinkedHashMap<>();
+        for (BizLikeRecord like : listLikeEntities(bizType, bizId)) {
+            String username = defaultIfBlank(like.getUsername(), "");
+            if (!StringUtils.hasText(username) || result.containsKey(username)) {
+                continue;
+            }
+            result.put(username, InteractionLikeUserResponse.builder()
+                    .username(username)
+                    .nickname(resolveCreatorNickname(username, nicknameMap))
+                    .likeTimes(1L)
+                    .lastLikedAt(formatDateTime(like.getCreatedAt()))
+                    .build());
+        }
+        return new ArrayList<>(result.values());
+    }
+
+    private long recountAnniversaryLikeCount(Long eventId) {
+        List<BizLikeRecord> likeRecords = bizLikeRecordMapper.selectList(new LambdaQueryWrapper<BizLikeRecord>()
+                .eq(BizLikeRecord::getBizType, NotificationBizTypeConstants.ANNIVERSARY)
+                .eq(BizLikeRecord::getBizId, eventId));
+
+        long uniqueCount = likeRecords.stream()
+                .map(record -> defaultIfBlank(record.getUsername(), ""))
+                .filter(StringUtils::hasText)
+                .distinct()
+                .count();
+
+        AnniversaryEvent update = new AnniversaryEvent();
+        update.setId(eventId);
+        update.setLikeCount(uniqueCount);
+        anniversaryEventMapper.updateById(update);
+        return uniqueCount;
+    }
+
+    private List<BizCommentRecord> listCommentEntities(String bizType, Long bizId) {
+        return bizCommentRecordMapper.selectList(new LambdaQueryWrapper<BizCommentRecord>()
+                .eq(BizCommentRecord::getBizType, bizType)
+                .eq(BizCommentRecord::getBizId, bizId)
+                .orderByAsc(BizCommentRecord::getCreatedAt)
+                .orderByAsc(BizCommentRecord::getId));
+    }
+
+    private BizCommentRecord requireComment(String bizType, Long bizId, Long commentId) {
+        if (commentId == null) {
+            throw new BusinessException("评论编号不能为空");
+        }
+        BizCommentRecord comment = bizCommentRecordMapper.selectById(commentId);
+        if (comment == null
+                || !bizType.equals(defaultIfBlank(comment.getBizType(), ""))
+                || !bizId.equals(comment.getBizId())) {
+            throw new BusinessException("评论记录不存在");
+        }
+        return comment;
+    }
+
+    private List<InteractionCommentResponse> listCommentResponses(String bizType,
+                                                                  Long bizId,
+                                                                  Map<String, String> nicknameMap) {
+        return listCommentEntities(bizType, bizId).stream()
+                .map(comment -> toCommentResponse(comment, nicknameMap))
+                .collect(Collectors.toList());
     }
 
     private Map<String, String> buildNicknameMap() {
@@ -332,13 +580,31 @@ public class AnniversaryServiceImpl implements AnniversaryService {
         return nicknameMap;
     }
 
+    private String resolveCreatorNickname(String username, Map<String, String> nicknameMap) {
+        if (!StringUtils.hasText(username)) {
+            return "";
+        }
+        return nicknameMap.getOrDefault(username, username);
+    }
+
     private AnniversaryMediaResponse toMediaResponse(AnniversaryMedia media) {
         return AnniversaryMediaResponse.builder()
                 .id(media.getId())
                 .mediaType(media.getMediaType())
                 .fileUrl(media.getFileUrl())
-                .thumbnailUrl(media.getThumbnailUrl())
+                .thumbnailUrl(defaultIfBlank(media.getThumbnailUrl(), ""))
                 .sortOrder(media.getSortOrder())
+                .build();
+    }
+
+    private InteractionCommentResponse toCommentResponse(BizCommentRecord comment, Map<String, String> nicknameMap) {
+        return InteractionCommentResponse.builder()
+                .id(comment.getId())
+                .commenterUsername(comment.getUsername())
+                .commenterNickname(resolveCreatorNickname(comment.getUsername(), nicknameMap))
+                .content(defaultIfBlank(comment.getContent(), ""))
+                .createdAt(formatDateTime(comment.getCreatedAt()))
+                .updatedAt(formatDateTime(comment.getUpdatedAt()))
                 .build();
     }
 
@@ -359,17 +625,8 @@ public class AnniversaryServiceImpl implements AnniversaryService {
                 .orElse("");
     }
 
-    private LocalDate calculateRemindDate(LocalDate eventDate, String reminderType) {
-        if ("on_day".equals(reminderType)) {
-            return eventDate;
-        }
-        if ("one_day_before".equals(reminderType)) {
-            return eventDate.minusDays(1);
-        }
-        if ("three_days_before".equals(reminderType)) {
-            return eventDate.minusDays(3);
-        }
-        return null;
+    private String defaultIfBlank(String value, String fallback) {
+        return StringUtils.hasText(value) ? value.trim() : fallback;
     }
 
     private LocalDate parseDate(String value) {
@@ -381,19 +638,38 @@ public class AnniversaryServiceImpl implements AnniversaryService {
     }
 
     private String normalizeReminderType(String reminderType) {
-        String value = defaultIfBlank(reminderType, "none").toLowerCase(Locale.ROOT);
-        switch (value) {
-            case "none":
-            case "on_day":
-            case "one_day_before":
+        String safeValue = defaultIfBlank(reminderType, "none").toLowerCase(Locale.ROOT);
+        switch (safeValue) {
             case "three_days_before":
-                return value;
+            case "one_day_before":
+            case "same_day":
+            case "none":
+                return safeValue;
             default:
-                throw new BusinessException("提醒类型不正确");
+                return "none";
         }
     }
 
-    private String defaultIfBlank(String value, String fallback) {
-        return StringUtils.hasText(value) ? value.trim() : fallback;
+    private LocalDate calculateRemindDate(LocalDate eventDate, String reminderType) {
+        if (eventDate == null || !StringUtils.hasText(reminderType)) {
+            return null;
+        }
+        switch (reminderType) {
+            case "three_days_before":
+                return eventDate.minusDays(3);
+            case "one_day_before":
+                return eventDate.minusDays(1);
+            case "same_day":
+                return eventDate;
+            default:
+                return null;
+        }
+    }
+
+    private String formatDateTime(LocalDateTime value) {
+        if (value == null) {
+            return "";
+        }
+        return value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
 }
