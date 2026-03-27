@@ -8,6 +8,10 @@
     <view class="album-hero app-fade-up">
       <view class="album-hero-content">
         <view class="album-kicker">{{ TEXT.heroKicker }}</view>
+        <view v-if="featuredMemory" class="identity-badge" :class="identityBadgeClass(featuredMemory)">
+          <view class="identity-badge-dot"></view>
+          <text>{{ identityBadgeText(featuredMemory) }}</text>
+        </view>
         <view class="album-title">{{ featuredMemory?.title || TEXT.albumTitle }}</view>
         <view class="album-meta">{{ featuredMetaText }}</view>
         <view class="album-summary">{{ featuredMemory?.summary || TEXT.heroSummary }}</view>
@@ -78,6 +82,10 @@
             </view>
 
             <view class="memory-body">
+              <view class="identity-badge" :class="identityBadgeClass(item)">
+                <view class="identity-badge-dot"></view>
+                <text>{{ identityBadgeText(item) }}</text>
+              </view>
               <view class="memory-title app-line-clamp-2">{{ item.title }}</view>
               <view v-if="item.location" class="memory-location app-line-clamp-1">{{ item.location }}</view>
               <view v-if="item.summary" class="memory-summary app-line-clamp-2">{{ item.summary }}</view>
@@ -86,7 +94,7 @@
               </view>
 
               <view class="memory-footer">
-                <view class="memory-creator app-line-clamp-1">{{ creatorText(item) }}</view>
+                <view class="memory-creator app-line-clamp-1">{{ footerMetaText(item) }}</view>
                 <view class="like-wrap">
                   <view
                     v-if="Number(item.likeCount || 0) > 0"
@@ -115,36 +123,38 @@
 import { computed, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { fetchAlbumMemoryList } from '@/services/albums.js'
-import { requireAuth } from '@/utils/auth.js'
+import { getUser, requireAuth } from '@/utils/auth.js'
 import { resolveMediaUrl } from '@/utils/media-upload.js'
 import { goPage } from '@/utils/nav.js'
 import { useThemePage } from '@/utils/useThemePage.js'
 import AccountHeader from '@/pages/account/components/AccountHeader.vue'
 
-const FILLED_HEART = '♥'
+const FILLED_HEART = '❤'
 const TEXT = {
   albumTitle: '甜蜜相册',
   albumEyebrow: '回忆收藏',
-  heroKicker: '本月回忆',
-  heroSummary: '把见面、旅行、生日和纪念日都收进一册。',
+  heroKicker: '最近记录',
+  heroSummary: '把见面、旅行、生日和纪念日都认真收进一本相册里。',
   createButton: '新建回忆',
   groupUnit: '段回忆',
   memoryWord: '回忆',
   imageCountSuffix: '张图',
   videoCountSuffix: '个视频',
   emptyIcon: '相册',
-  emptyTitle: '还没有回忆',
-  emptyDesc: '先新建一段属于你们的甜蜜记录吧。',
+  emptyTitle: '还没有回忆记录',
+  emptyDesc: '先创建一段属于你们的甜蜜回忆吧。',
   all: '全部',
   month: '本月',
   year: '今年',
-  heroFallbackMeta: '把每次见面都收进时间里',
+  heroFallbackMeta: '把每一次相处都认真放进时间里',
   countSeparator: ' · ',
   ungrouped: '未分组',
   loadError: '甜蜜相册加载失败',
   creatorPrefix: '由 ',
   creatorSuffix: ' 收进相册',
-  creatorFallback: '把这段回忆认真收进了相册'
+  creatorFallback: '这段回忆已经被认真收进相册了',
+  identityMine: '我',
+  identityOther: 'TA'
 }
 
 const { themeStyle } = useThemePage()
@@ -156,6 +166,7 @@ const filters = [
   { key: 'year', label: TEXT.year }
 ]
 
+const currentUsername = computed(() => String(getUser()?.username || '').trim())
 const featuredMemory = computed(() => memoryList.value[0] || null)
 const featuredCover = computed(() => resolveCover(featuredMemory.value))
 const featuredMetaText = computed(() => {
@@ -251,323 +262,413 @@ function resolveCover(item) {
   return resolveMediaUrl(coverPath)
 }
 
-function creatorText(item) {
-  if (!item?.creatorNickname) return TEXT.creatorFallback
-  return `${TEXT.creatorPrefix}${item.creatorNickname}${TEXT.creatorSuffix}`
+function isMine(item) {
+  return String(item?.creatorUsername || '').trim() === currentUsername.value
+}
+
+function identityBadgeText(item) {
+  return isMine(item) ? TEXT.identityMine : TEXT.identityOther
+}
+
+function identityBadgeClass(item) {
+  return isMine(item) ? 'identity-badge-mine' : 'identity-badge-other'
+}
+
+function footerMetaText(item) {
+  const parts = [item?.memoryDate, item?.location].filter(Boolean)
+  if (parts.length) return parts.join(TEXT.countSeparator)
+  return TEXT.creatorFallback
 }
 </script>
 
 <style scoped>
-  .app-account-topbar-shell {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background: rgba(255, 250, 252, 0.88);
-  }
-  .album-page {
-    background:
-      radial-gradient(circle at 12% 10%, rgba(255, 208, 225, 0.42), transparent 26%),
-      radial-gradient(circle at 88% 18%, rgba(255, 234, 197, 0.38), transparent 22%),
-      linear-gradient(180deg, #fff9fb 0%, #fff6f8 52%, #fffaf6 100%);
-  }
-  .album-hero {
-    position: relative;
-    overflow: hidden;
-    padding: 38rpx 34rpx 34rpx;
-    border-radius: 34rpx;
-    background: linear-gradient(135deg, rgba(255, 248, 251, 0.98), rgba(255, 240, 245, 0.96));
-    box-shadow: 0 26rpx 52rpx rgba(227, 152, 181, 0.14);
-    min-height: 320rpx;
-  }
-  .album-hero-content {
-    position: relative;
-    z-index: 1;
-    max-width: 62%;
-  }
-  .album-kicker {
-    font-size: 22rpx;
-    font-weight: 700;
-    color: #c88498;
-    letter-spacing: 4rpx;
-  }
-  .album-title {
-    margin-top: 14rpx;
-    font-size: 48rpx;
-    line-height: 1.14;
-    color: #4f63d8;
-    font-weight: 800;
-  }
-  .album-meta {
-    margin-top: 14rpx;
-    font-size: 24rpx;
-    color: #b28594;
-  }
-  .album-summary {
-    margin-top: 14rpx;
-    font-size: 25rpx;
-    line-height: 1.7;
-    color: #926d79;
-  }
-  .album-create-btn {
-    width: 220rpx;
-    margin: 26rpx 0 0;
-  }
-  .album-hero-stack {
-    position: absolute;
-    right: 36rpx;
-    top: 38rpx;
-    width: 208rpx;
-    height: 224rpx;
-  }
-  .hero-photo {
-    position: absolute;
-    width: 168rpx;
-    height: 212rpx;
-    border-radius: 28rpx;
-    box-shadow: 0 18rpx 40rpx rgba(220, 148, 176, 0.18);
-    overflow: hidden;
-  }
-  .hero-photo-back {
-    right: 0;
-    top: 18rpx;
-    transform: rotate(10deg);
-    background: linear-gradient(135deg, #ffd6e4, #ffe7ef);
-  }
-  .hero-photo-front {
-    left: 10rpx;
-    top: 0;
-    transform: rotate(-8deg);
-    background: linear-gradient(135deg, #ffe2ec, #fff5f8);
-  }
-  .hero-photo-image,
-  .hero-photo-fallback {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
-  .hero-photo-fallback {
-    background: linear-gradient(135deg, #ffbfd3, #ffe8ef);
-  }
-  .hero-photo-badge {
-    position: absolute;
-    left: 18rpx;
-    bottom: 18rpx;
-    padding: 8rpx 16rpx;
-    border-radius: 999rpx;
-    background: rgba(255, 255, 255, 0.82);
-    font-size: 22rpx;
-    color: #c06a88;
-    font-weight: 700;
-  }
-  .filter-row {
-    display: flex;
-    gap: 16rpx;
-    margin-top: 26rpx;
-    flex-wrap: wrap;
-  }
-  .filter-chip {
-    padding: 12rpx 26rpx;
-    border-radius: 999rpx;
-    background: rgba(255, 245, 248, 0.92);
-    color: #bf8095;
-    font-size: 24rpx;
-    font-weight: 700;
-    box-shadow: inset 0 0 0 2rpx rgba(255, 220, 230, 0.72);
-  }
-  .filter-chip.active {
-    background: linear-gradient(135deg, #ff7fa8, #ff9fba);
-    color: #fff;
-    box-shadow: none;
-  }
-  .memory-group-list {
-    margin-top: 28rpx;
-    display: grid;
-    gap: 24rpx;
-  }
-  .memory-group {
-    display: grid;
-    gap: 16rpx;
-  }
-  .group-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16rpx;
-  }
-  .group-title {
-    font-size: 30rpx;
-    font-weight: 800;
-    color: #6e5b67;
-  }
-  .group-sub {
-    margin-top: 6rpx;
-    font-size: 22rpx;
-    color: #b18a98;
-  }
-  .group-chip {
-    padding: 10rpx 18rpx;
-    border-radius: 999rpx;
-    background: rgba(255, 246, 234, 0.95);
-    color: #c2926c;
-    font-size: 22rpx;
-    font-weight: 700;
-  }
-  .memory-card-list {
-    display: grid;
-    gap: 18rpx;
-  }
-  .memory-card {
-    overflow: hidden;
-    border-radius: 30rpx;
-    background: rgba(255, 255, 255, 0.94);
-    box-shadow: 0 18rpx 36rpx rgba(219, 153, 176, 0.12);
-  }
-  .memory-card-active {
-    transform: translateY(-2rpx) scale(0.995);
-  }
-  .memory-cover {
-    position: relative;
-    min-height: 220rpx;
-    padding: 24rpx;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    overflow: hidden;
-    background: linear-gradient(135deg, #fff3f7, #fffafc);
-  }
-  .memory-cover-bg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    filter: blur(16rpx) saturate(1.08);
-    transform: scale(1.14);
-    opacity: 0.82;
-  }
-  .memory-cover-overlay {
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 249, 251, 0.4)),
-      linear-gradient(135deg, rgba(255, 239, 245, 0.3), rgba(255, 252, 248, 0.18));
-  }
-  .memory-cover-top,
-  .memory-cover-bottom {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12rpx;
-  }
-  .memory-cover-chip,
-  .memory-cover-count,
-  .memory-cover-date,
-  .memory-cover-video {
-    padding: 8rpx 14rpx;
-    border-radius: 999rpx;
-    background: rgba(255, 255, 255, 0.76);
-    font-size: 22rpx;
-    font-weight: 700;
-    color: #946a79;
-  }
-  .memory-body {
-    padding: 24rpx 24rpx 26rpx;
-  }
-  .memory-title {
-    font-size: 34rpx;
-    line-height: 1.28;
-    color: #4e61d7;
-    font-weight: 800;
-  }
-  .memory-location {
-    margin-top: 12rpx;
-    font-size: 23rpx;
-    color: #bb8796;
-  }
-  .memory-summary {
-    margin-top: 12rpx;
-    font-size: 25rpx;
-    line-height: 1.7;
-    color: #896774;
-  }
-  .memory-tags {
-    margin-top: 16rpx;
-    display: flex;
-    gap: 12rpx;
-    flex-wrap: wrap;
-  }
-  .memory-tag {
-    padding: 8rpx 16rpx;
-    border-radius: 999rpx;
-    background: #fff5f8;
-    color: #c36f8f;
-    font-size: 22rpx;
-    font-weight: 700;
-  }
-  .memory-footer {
-    margin-top: 18rpx;
-    padding-top: 18rpx;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20rpx;
-  }
-  .memory-creator {
-    flex: 1;
-    min-width: 0;
-    font-size: 22rpx;
-    line-height: 1.6;
-    color: #b18a96;
-  }
-  .like-wrap {
-    position: relative;
-    min-width: 64rpx;
-    display: flex;
-    justify-content: flex-end;
-  }
-  .like-button {
-    position: relative;
-    z-index: 2;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 56rpx;
-    height: 56rpx;
-    padding: 0;
-    border-radius: 999rpx;
-    background: #fff1f5;
-    color: #ff5d8f;
-    font-size: 24rpx;
-    font-weight: 700;
-  }
-  .like-button.active {
-    background: #ffedf3;
-    box-shadow: inset 0 0 0 2rpx rgba(255, 150, 184, 0.34);
-  }
-  .like-icon {
-    font-size: 28rpx;
-    line-height: 1;
-  }
-  .empty-card {
-    margin-top: 30rpx;
-    padding: 48rpx 32rpx;
-    text-align: center;
-  }
-  .empty-icon {
-    font-size: 40rpx;
-    color: #ff8dac;
-    font-weight: 800;
-  }
-  .empty-title {
-    margin-top: 16rpx;
-    font-size: 30rpx;
-    font-weight: 800;
-    color: #6f5966;
-  }
-  .empty-desc {
-    margin-top: 12rpx;
-    font-size: 24rpx;
-    color: #a07d8a;
-  }
+.app-account-topbar-shell {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(255, 250, 252, 0.88);
+}
+
+.album-page {
+  background:
+    radial-gradient(circle at 12% 10%, rgba(255, 208, 225, 0.42), transparent 26%),
+    radial-gradient(circle at 88% 18%, rgba(255, 234, 197, 0.38), transparent 22%),
+    linear-gradient(180deg, #fff9fb 0%, #fff6f8 52%, #fffaf6 100%);
+}
+
+.album-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 38rpx 34rpx 34rpx;
+  border-radius: 34rpx;
+  background: linear-gradient(135deg, rgba(255, 248, 251, 0.98), rgba(255, 240, 245, 0.96));
+  box-shadow: 0 26rpx 52rpx rgba(227, 152, 181, 0.14);
+  min-height: 320rpx;
+}
+
+.album-hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 62%;
+}
+
+.album-kicker {
+  font-size: 22rpx;
+  font-weight: 700;
+  color: #c88498;
+  letter-spacing: 4rpx;
+}
+
+.album-title {
+  margin-top: 14rpx;
+  font-size: 48rpx;
+  line-height: 1.14;
+  color: #4f63d8;
+  font-weight: 800;
+}
+
+.album-meta {
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  color: #b28594;
+}
+
+.album-summary {
+  margin-top: 14rpx;
+  font-size: 25rpx;
+  line-height: 1.7;
+  color: #926d79;
+}
+
+.album-create-btn {
+  width: 220rpx;
+  margin: 26rpx 0 0;
+}
+
+.album-hero-stack {
+  position: absolute;
+  right: 36rpx;
+  top: 38rpx;
+  width: 208rpx;
+  height: 224rpx;
+}
+
+.hero-photo {
+  position: absolute;
+  width: 168rpx;
+  height: 212rpx;
+  border-radius: 28rpx;
+  box-shadow: 0 18rpx 40rpx rgba(220, 148, 176, 0.18);
+  overflow: hidden;
+}
+
+.hero-photo-back {
+  right: 0;
+  top: 18rpx;
+  transform: rotate(10deg);
+  background: linear-gradient(135deg, #ffd6e4, #ffe7ef);
+}
+
+.hero-photo-front {
+  left: 10rpx;
+  top: 0;
+  transform: rotate(-8deg);
+  background: linear-gradient(135deg, #ffe2ec, #fff5f8);
+}
+
+.hero-photo-image,
+.hero-photo-fallback {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.hero-photo-fallback {
+  background: linear-gradient(135deg, #ffbfd3, #ffe8ef);
+}
+
+.hero-photo-badge {
+  position: absolute;
+  left: 18rpx;
+  bottom: 18rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.82);
+  font-size: 22rpx;
+  color: #c06a88;
+  font-weight: 700;
+}
+
+.filter-row {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 26rpx;
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  padding: 12rpx 26rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 245, 248, 0.92);
+  color: #bf8095;
+  font-size: 24rpx;
+  font-weight: 700;
+  box-shadow: inset 0 0 0 2rpx rgba(255, 220, 230, 0.72);
+}
+
+.filter-chip.active {
+  background: linear-gradient(135deg, #ff7fa8, #ff9fba);
+  color: #fff;
+  box-shadow: none;
+}
+
+.memory-group-list {
+  margin-top: 28rpx;
+  display: grid;
+  gap: 24rpx;
+}
+
+.memory-group {
+  display: grid;
+  gap: 16rpx;
+}
+
+.group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.group-title {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #6e5b67;
+}
+
+.group-sub {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #b18a98;
+}
+
+.group-chip {
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 246, 234, 0.95);
+  color: #c2926c;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.memory-card-list {
+  display: grid;
+  gap: 18rpx;
+}
+
+.memory-card {
+  overflow: hidden;
+  border-radius: 30rpx;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18rpx 36rpx rgba(219, 153, 176, 0.12);
+}
+
+.memory-card-active {
+  transform: translateY(-2rpx) scale(0.995);
+}
+
+.memory-cover {
+  position: relative;
+  min-height: 220rpx;
+  padding: 24rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  background: linear-gradient(135deg, #fff3f7, #fffafc);
+}
+
+.memory-cover-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: blur(16rpx) saturate(1.08);
+  transform: scale(1.14);
+  opacity: 0.82;
+}
+
+.memory-cover-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 249, 251, 0.4)),
+    linear-gradient(135deg, rgba(255, 239, 245, 0.3), rgba(255, 252, 248, 0.18));
+}
+
+.memory-cover-top,
+.memory-cover-bottom {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+
+.memory-cover-chip,
+.memory-cover-count,
+.memory-cover-date,
+.memory-cover-video {
+  padding: 8rpx 14rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.76);
+  font-size: 22rpx;
+  font-weight: 700;
+  color: #946a79;
+}
+
+.memory-body {
+  padding: 24rpx 24rpx 26rpx;
+}
+
+.identity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  font-weight: 700;
+}
+
+.identity-badge-dot {
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.85;
+}
+
+.identity-badge-mine {
+  background: rgba(223, 246, 242, 0.96);
+  color: #3e9b92;
+}
+
+.identity-badge-other {
+  background: rgba(255, 238, 229, 0.96);
+  color: #d18264;
+}
+
+.memory-title {
+  margin-top: 16rpx;
+  font-size: 34rpx;
+  line-height: 1.28;
+  color: #4e61d7;
+  font-weight: 800;
+}
+
+.memory-location {
+  margin-top: 12rpx;
+  font-size: 23rpx;
+  color: #bb8796;
+}
+
+.memory-summary {
+  margin-top: 12rpx;
+  font-size: 25rpx;
+  line-height: 1.7;
+  color: #896774;
+}
+
+.memory-tags {
+  margin-top: 16rpx;
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+}
+
+.memory-tag {
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  background: #fff5f8;
+  color: #c36f8f;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.memory-footer {
+  margin-top: 18rpx;
+  padding-top: 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.memory-creator {
+  flex: 1;
+  min-width: 0;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: #b18a96;
+}
+
+.like-wrap {
+  position: relative;
+  min-width: 64rpx;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.like-button {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56rpx;
+  height: 56rpx;
+  padding: 0;
+  border-radius: 999rpx;
+  background: #fff1f5;
+  color: #ff5d8f;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.like-button.active {
+  background: #ffedf3;
+  box-shadow: inset 0 0 0 2rpx rgba(255, 150, 184, 0.34);
+}
+
+.like-icon {
+  font-size: 28rpx;
+  line-height: 1;
+}
+
+.empty-card {
+  margin-top: 30rpx;
+  padding: 48rpx 32rpx;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 40rpx;
+  color: #ff8dac;
+  font-weight: 800;
+}
+
+.empty-title {
+  margin-top: 16rpx;
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #6f5966;
+}
+
+.empty-desc {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #a07d8a;
+}
 </style>

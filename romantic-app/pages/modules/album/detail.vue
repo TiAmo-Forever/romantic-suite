@@ -32,6 +32,10 @@
       </view>
 
       <AccountPanel :title="detail.title" :description="detail.summary || ''">
+        <view class="identity-badge" :class="identityBadgeClass">
+          <view class="identity-badge-dot"></view>
+          <text>{{ identityBadgeText }}</text>
+        </view>
         <view class="detail-meta">
           <view v-if="detail.memoryDate" class="detail-chip">{{ detail.memoryDate }}</view>
           <view v-if="detail.location" class="detail-chip">{{ detail.location }}</view>
@@ -39,7 +43,6 @@
           <view v-if="detail.videoCount" class="detail-chip strong">{{ detail.videoCount }} {{ TEXT.videoUnit }}</view>
         </view>
 
-        <view class="detail-creator">{{ creatorText }}</view>
         <view v-if="detail.summary" class="detail-summary">{{ detail.summary }}</view>
 
         <view v-if="detail.tags.length" class="detail-tags">
@@ -248,9 +251,16 @@ const isDetailCreator = computed(() => {
   return currentUsername.value && currentUsername.value === String(detail.value?.creatorUsername || '').trim()
 })
 
-const creatorText = computed(() => {
-  if (!detail.value?.creatorNickname) return TEXT.creatorFallback
-  return `${TEXT.creatorPrefix}${detail.value.creatorNickname}${TEXT.creatorSuffix}`
+const identityBadgeText = computed(() => {
+  return currentUsername.value && currentUsername.value === String(detail.value?.creatorUsername || '').trim()
+    ? '我'
+    : 'TA'
+})
+
+const identityBadgeClass = computed(() => {
+  return currentUsername.value && currentUsername.value === String(detail.value?.creatorUsername || '').trim()
+    ? 'identity-badge-mine'
+    : 'identity-badge-other'
 })
 
 const likeActionText = computed(() => (detail.value?.likedByCurrentUser ? TEXT.unlikeAction : TEXT.likeAction))
@@ -597,7 +607,35 @@ function handleDelete() {
   display: flex;
   gap: 14rpx;
   flex-wrap: wrap;
-  margin-top: 8rpx;
+  margin-top: 16rpx;
+}
+
+.identity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  font-weight: 700;
+}
+
+.identity-badge-dot {
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.85;
+}
+
+.identity-badge-mine {
+  background: rgba(223, 246, 242, 0.96);
+  color: #3e9b92;
+}
+
+.identity-badge-other {
+  background: rgba(255, 238, 229, 0.96);
+  color: #d18264;
 }
 
 .detail-chip {
@@ -614,14 +652,8 @@ function handleDelete() {
   color: #ff6b97;
 }
 
-.detail-creator {
-  margin-top: 18rpx;
-  font-size: 23rpx;
-  color: #bc8b9b;
-}
-
 .detail-summary {
-  margin-top: 18rpx;
+  margin-top: 16rpx;
   font-size: 25rpx;
   line-height: 1.8;
   color: #8d6c77;

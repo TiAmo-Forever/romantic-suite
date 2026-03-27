@@ -231,6 +231,25 @@ public class ImprovementNoteServiceImpl implements ImprovementNoteService {
         return getNote(id);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ImprovementNoteResponse deleteFeedback(Long id, Long feedbackId) {
+        String operator = AuthContext.getRequiredUsername();
+        ImprovementNote note = requireNote(id);
+        requireFeedback(id, feedbackId);
+        List<ImprovementMedia> existingMedia = listMediaEntities(id, feedbackId);
+
+        improvementMediaMapper.delete(new LambdaQueryWrapper<ImprovementMedia>()
+                .eq(ImprovementMedia::getNoteId, id)
+                .eq(ImprovementMedia::getFeedbackId, feedbackId));
+        improvementFeedbackMapper.deleteById(feedbackId);
+        deleteMediaFiles(existingMedia);
+        refreshNoteLatestFeedback(note);
+
+        log.info("改进反馈删除成功，operator={}, noteId={}, feedbackId={}", operator, id, feedbackId);
+        return getNote(id);
+    }
+
     private ImprovementNote requireNote(Long id) {
         if (id == null) {
             throw new BusinessException("改进记录编号不能为空");
@@ -523,6 +542,17 @@ public class ImprovementNoteServiceImpl implements ImprovementNoteService {
         note.setLatestFeedback(feedbackContent);
         note.setUpdatedAt(LocalDateTime.now());
         improvementNoteMapper.updateById(note);
+    }
+
+    private void refreshNoteLatestFeedback(ImprovementNote note) {
+        ImprovementFeedback latestFeedback = getLatestFeedbackEntity(note.getId());
+        if (latestFeedback == null) {
+            note.setLatestFeedback("");
+            note.setUpdatedAt(LocalDateTime.now());
+            improvementNoteMapper.updateById(note);
+            return;
+        }
+        updateNoteLatestFeedback(note, latestFeedback.getStatus(), latestFeedback.getContent());
     }
 
     private String resolveNickname(String username, Map<String, String> nicknameMap) {

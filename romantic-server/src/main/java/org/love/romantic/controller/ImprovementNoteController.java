@@ -83,4 +83,11 @@ public class ImprovementNoteController {
                                                                @Validated @RequestBody ImprovementFeedbackRequest request) {
         return ApiResponse.ok("保存成功", improvementNoteService.updateFeedback(id, feedbackId, request));
     }
+
+    @ApiOperation("删除改进反馈")
+    @DeleteMapping("/{id}/feedback/{feedbackId}")
+    public ApiResponse<ImprovementNoteResponse> deleteFeedback(@ApiParam("记录 ID") @PathVariable Long id,
+                                                               @ApiParam("反馈 ID") @PathVariable Long feedbackId) {
+        return ApiResponse.ok("删除成功", improvementNoteService.deleteFeedback(id, feedbackId));
+    }
 }

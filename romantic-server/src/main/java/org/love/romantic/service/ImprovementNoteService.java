@@ -21,4 +21,6 @@ public interface ImprovementNoteService {
     ImprovementNoteResponse addFeedback(Long id, ImprovementFeedbackRequest request);
 
     ImprovementNoteResponse updateFeedback(Long id, Long feedbackId, ImprovementFeedbackRequest request);
+
+    ImprovementNoteResponse deleteFeedback(Long id, Long feedbackId);
 }

@@ -32,13 +32,16 @@
       </view>
 
       <AccountPanel :title="detail.title" :description="detail.location || ''">
+        <view class="identity-badge" :class="identityBadgeClass">
+          <view class="identity-badge-dot"></view>
+          <text>{{ identityBadgeText }}</text>
+        </view>
         <view class="detail-meta">
           <view class="detail-chip">{{ detail.eventDate }}</view>
           <view class="detail-chip strong">{{ formatStatus(detail) }}</view>
           <view v-if="detail.mediaList?.length" class="detail-chip">{{ detail.mediaList.length }} {{ TEXT.mediaUnit }}</view>
         </view>
 
-        <view v-if="detail.creatorNickname" class="detail-creator">{{ creatorText }}</view>
         <view class="detail-desc">{{ detail.description || TEXT.emptyDesc }}</view>
 
         <view class="interaction-row">
@@ -247,9 +250,16 @@ const isDetailCreator = computed(() => {
   return currentUsername.value && currentUsername.value === String(detail.value?.creatorUsername || '').trim()
 })
 
-const creatorText = computed(() => {
-  if (!detail.value?.creatorNickname) return ''
-  return `${TEXT.creatorPrefix}${detail.value.creatorNickname}${TEXT.creatorSuffix}`
+const identityBadgeText = computed(() => {
+  return currentUsername.value && currentUsername.value === String(detail.value?.creatorUsername || '').trim()
+    ? '我'
+    : 'TA'
+})
+
+const identityBadgeClass = computed(() => {
+  return currentUsername.value && currentUsername.value === String(detail.value?.creatorUsername || '').trim()
+    ? 'identity-badge-mine'
+    : 'identity-badge-other'
 })
 
 const likeActionText = computed(() => (detail.value?.likedByCurrentUser ? TEXT.unlikeAction : TEXT.likeAction))
@@ -604,7 +614,35 @@ function handleDelete() {
   display: flex;
   gap: 14rpx;
   flex-wrap: wrap;
-  margin-top: 8rpx;
+  margin-top: 16rpx;
+}
+
+.identity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  font-weight: 700;
+}
+
+.identity-badge-dot {
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.85;
+}
+
+.identity-badge-mine {
+  background: rgba(223, 246, 242, 0.96);
+  color: #3e9b92;
+}
+
+.identity-badge-other {
+  background: rgba(255, 238, 229, 0.96);
+  color: #d18264;
 }
 
 .detail-chip {
@@ -621,14 +659,8 @@ function handleDelete() {
   color: #ff6b97;
 }
 
-.detail-creator {
-  margin-top: 18rpx;
-  font-size: 23rpx;
-  color: #bc8b9b;
-}
-
 .detail-desc {
-  margin-top: 18rpx;
+  margin-top: 16rpx;
   font-size: 25rpx;
   line-height: 1.8;
   color: #8d6c77;
