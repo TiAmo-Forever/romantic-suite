@@ -38,6 +38,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/profiles/**",
                         "/api/files/**",
                         "/api/countdown/**",
+                        "/api/daily-summaries/**",
                         "/api/albums/**",
                         "/api/anniversaries/**",
                         "/api/notifications/**",

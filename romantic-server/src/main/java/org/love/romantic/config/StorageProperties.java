@@ -28,6 +28,8 @@ public class StorageProperties {
 
     private String albumDirectory = "albums";
 
+    private String dailySummaryDirectory = "daily-summaries";
+
     public Path getRootDirectory() {
         return Paths.get(rootPath).toAbsolutePath().normalize();
     }
@@ -46,6 +48,10 @@ public class StorageProperties {
 
     public Path getAlbumStorageDirectory() {
         return getRootDirectory().resolve(normalizeSegment(albumDirectory)).normalize();
+    }
+
+    public Path getDailySummaryStorageDirectory() {
+        return getRootDirectory().resolve(normalizeSegment(dailySummaryDirectory)).normalize();
     }
 
     public String getPublicPathPrefixNormalized() {
@@ -67,6 +73,10 @@ public class StorageProperties {
 
     public String buildAlbumRelativePath(String fileName) {
         return getPublicPathPrefixNormalized() + "/" + normalizeSegment(albumDirectory) + "/" + fileName;
+    }
+
+    public String buildDailySummaryRelativePath(String fileName) {
+        return getPublicPathPrefixNormalized() + "/" + normalizeSegment(dailySummaryDirectory) + "/" + fileName;
     }
 
     private String normalizeSegment(String value) {

@@ -15,7 +15,7 @@
 				<view class="page-eyebrow app-topbar-eyebrow">倒计时计划</view>
 				<view class="page-title app-topbar-title">见面倒计时</view>
 			</view>
-			<view class="top-ghost-btn app-topbar-btn" @click.stop="handleReset">重置计划</view>
+			<view class="top-ghost-btn app-topbar-btn top-menu-trigger" @click.stop="toggleActionMenu">···</view>
 		</view>
 
 		<view class="content" @click.stop>
@@ -63,15 +63,46 @@
 				</view>
 			</view>
 
-			<view class="editor-card app-card app-card-gradient">
+			<view class="plan-summary-card app-card">
 				<view class="section-row">
 					<view>
 						<view class="app-section-kicker">见面计划</view>
-						<view class="app-section-title">见面计划</view>
+						<view class="app-section-title">把这次期待慢慢写下来</view>
 					</view>
-					<view class="section-tip">保存后自动更新</view>
+					<view class="section-tip">{{ meetingPlan.isAllDay ? '全天安排' : nextMeetingClockText }}</view>
 				</view>
-				<view class="editor-desc">填写见面时间、地点和计划。</view>
+				<view class="plan-summary-note">{{ meetingPlan.note || '还没有补充这次见面的安排，可以先写下想去的地方和想一起做的小事。' }}</view>
+				<view class="plan-summary-meta">
+					<view class="plan-meta-chip app-pill app-pill-soft">📍 {{ meetingPlan.place || '还没有设置地点' }}</view>
+					<view class="plan-meta-chip app-pill app-pill-soft">💌 {{ meetingPlan.loverName || '宝贝' }}</view>
+				</view>
+			</view>
+
+			<view class="action-bar">
+				<button class="save-btn app-primary-btn app-primary-btn-shadow" @click.stop="openEditorSheet">编辑见面计划</button>
+			</view>
+		</view>
+
+		<view v-if="showActionMenu" class="floating-layer" @click.stop="closeActionMenu">
+			<view class="floating-mask"></view>
+			<view class="top-action-menu app-card" @click.stop>
+				<view class="menu-action-item" @click.stop="handleMenuEdit">编辑计划</view>
+				<view class="menu-action-item menu-action-item-danger" @click.stop="handleResetConfirm">重置计划</view>
+			</view>
+		</view>
+
+		<view v-if="showEditorSheet" class="floating-layer" @click.stop="closeEditorSheet">
+			<view class="floating-mask"></view>
+			<view class="editor-sheet app-card app-card-gradient" @click.stop>
+				<view class="sheet-handle"></view>
+				<view class="sheet-head">
+					<view>
+						<view class="app-section-kicker">见面计划编辑</view>
+						<view class="app-section-title">把新的安排悄悄更新一下</view>
+					</view>
+					<view class="sheet-close" @click.stop="closeEditorSheet">取消</view>
+				</view>
+				<view class="editor-desc">修改见面时间、地点和这次想一起完成的小计划。</view>
 
 				<view class="form-item">
 					<view class="label">称呼</view>
@@ -110,7 +141,10 @@
 					<textarea v-model="form.note" class="textarea app-input-shell app-textarea" maxlength="120" placeholder="请输入计划内容" placeholder-class="input-placeholder" />
 				</view>
 
-				<button class="save-btn app-primary-btn app-primary-btn-shadow" @click.stop="handleSave">保存见面计划</button>
+				<view class="sheet-actions">
+					<button class="sheet-btn sheet-btn-secondary" @click.stop="closeEditorSheet">取消</button>
+					<button class="sheet-btn app-primary-btn app-primary-btn-shadow" @click.stop="handleSave">保存计划</button>
+				</view>
 			</view>
 		</view>
 	</view>
@@ -130,6 +164,8 @@ const countdown = reactive({ days: '00', hours: '00', minutes: '00', seconds: '0
 const meetingPlan = reactive({ loverName: '', place: '', note: '', nextMeetingAt: '', lastMeetingAt: '', isAllDay: false })
 const form = reactive({ loverName: '', place: '', note: '', nextDate: '', nextTime: '00:00', lastDate: '', isAllDay: false })
 const hearts = ref([])
+const showActionMenu = ref(false)
+const showEditorSheet = ref(false)
 const currentTime = ref(Date.now())
 let timer = null
 let heartTimer = null
@@ -206,6 +242,11 @@ function initSystemInfo() { try { const info = uni.getSystemInfoSync(); screenWi
 function createHeart(x = null, y = null) { const left = x !== null ? x : random(30, screenWidth - 30); const bottom = y !== null ? y : random(20, 120); const item = { id: heartId++, left: Math.max(10, Math.min(left, screenWidth - 30)), bottom, size: random(18, 42), duration: random(3.2, 5.5), drift: random(-40, 40), rotate: random(-25, 25), text: heartTexts[Math.floor(Math.random() * heartTexts.length)], color: heartColors[Math.floor(Math.random() * heartColors.length)] }; hearts.value.push(item); setTimeout(() => { hearts.value = hearts.value.filter((value) => value.id !== item.id) }, item.duration * 1000) }
 function getHeartStyle(heart) { return { left: `${heart.left}px`, bottom: `${heart.bottom}px`, fontSize: `${heart.size}px`, color: heart.color, '--float-x': `${heart.drift}px`, '--float-y': `${screenHeight - heart.bottom + 50}px`, '--rotate-deg': `${heart.rotate}deg`, '--duration': `${heart.duration}s` } }
 function handlePageTap(event) { const x = event?.detail?.x; const y = event?.detail?.y; if (typeof x !== 'number' || typeof y !== 'number') return; const bottomY = screenHeight - y; for (let i = 0; i < 4; i += 1) setTimeout(() => createHeart(x + random(-18, 18), bottomY + random(-18, 18)), i * 60) }
+function toggleActionMenu() { showActionMenu.value = !showActionMenu.value }
+function closeActionMenu() { showActionMenu.value = false }
+function openEditorSheet() { showActionMenu.value = false; showEditorSheet.value = true }
+function closeEditorSheet() { showEditorSheet.value = false }
+function handleMenuEdit() { openEditorSheet() }
 function handleNextDateChange(event) { form.nextDate = event.detail.value }
 function handleNextTimeChange(event) { form.nextTime = event.detail.value }
 function handleLastDateChange(event) { form.lastDate = event.detail.value }
@@ -231,10 +272,25 @@ async function handleSave() {
 		})
 		applyPlan(payload)
 		updateCountdown()
+		closeEditorSheet()
 		uni.showToast({ title: '见面计划已保存', icon: 'success' })
 	} catch (error) {
 		uni.showToast({ title: error?.message || '见面计划保存失败', icon: 'none' })
 	}
+}
+function handleResetConfirm() {
+	closeActionMenu()
+	uni.showModal({
+		title: '重置见面计划',
+		content: '要恢复默认的见面计划吗？当前填写的内容会被覆盖。',
+		confirmText: '重置',
+		cancelText: '取消',
+		success: (result) => {
+			if (result.confirm) {
+				handleReset()
+			}
+		}
+	})
 }
 async function handleReset() {
 	try {
@@ -281,7 +337,8 @@ onUnmounted(() => {
 	.top-bar { position: sticky; top: 0; z-index: 30; padding: 24rpx 28rpx; background: rgba(255, 255, 255, 0.58); backdrop-filter: blur(12px); }
 	.top-nav-icon { width: 18rpx; height: 18rpx; border-left: 4rpx solid currentColor; border-bottom: 4rpx solid currentColor; border-radius: 2rpx; box-sizing: border-box; transform: rotate(45deg); flex-shrink: 0; }
 	.top-ghost-btn { font-size: 24rpx; border: 2rpx solid rgba(255, 126, 166, 0.16); color: #c06f88; background: rgba(255, 255, 255, 0.7); }
-	.content { position: relative; z-index: 10; padding: 16rpx 24rpx 44rpx; }
+	.top-menu-trigger { min-width: 74rpx; justify-content: center; letter-spacing: 4rpx; }
+	.content { position: relative; z-index: 10; padding: 16rpx 24rpx 196rpx; }
 	.hero-card { padding: 36rpx 30rpx; border-radius: 32rpx; box-shadow: var(--app-shadow-card); background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.24), transparent 30%), var(--app-gradient-hero); color: #fff; }
 	.hero-title { margin-top: 22rpx; font-size: 28rpx; line-height: 1.6; font-weight: 600; color: rgba(255, 255, 255, 0.96); }
 	.hero-plan-label { margin-top: 20rpx; font-size: 24rpx; color: rgba(255, 255, 255, 0.76); }
@@ -308,7 +365,11 @@ onUnmounted(() => {
 	.info-sub { margin-top: 12rpx; font-size: 22rpx; line-height: 1.7; color: #8f6b77; }
 	.progress-bar { height: 12rpx; margin-top: 18rpx; border-radius: 999rpx; background: #ffe3ec; overflow: hidden; }
 	.progress-fill { height: 100%; border-radius: inherit; background: var(--app-gradient-primary); }
-	.editor-card { margin-top: 22rpx; padding: 30rpx 26rpx 34rpx; }
+	.plan-summary-card { margin-top: 22rpx; padding: 30rpx 26rpx; }
+	.plan-summary-note { margin-top: 18rpx; font-size: 26rpx; line-height: 1.85; color: #735560; }
+	.plan-summary-meta { display: flex; flex-wrap: wrap; gap: 14rpx; margin-top: 20rpx; }
+	.plan-meta-chip { color: #9a7080; background: rgba(255, 245, 248, 0.92); }
+	.action-bar { position: fixed; left: 24rpx; right: 24rpx; bottom: calc(26rpx + env(safe-area-inset-bottom)); z-index: 26; padding: 18rpx 20rpx 20rpx; border-radius: 32rpx; background: rgba(255, 250, 252, 0.88); backdrop-filter: blur(16px); box-shadow: 0 -4rpx 22rpx rgba(194, 143, 160, 0.08), 0 18rpx 34rpx rgba(201, 154, 169, 0.16); }
 	.form-item { margin-top: 24rpx; }
 	.label { margin-bottom: 14rpx; font-size: 26rpx; font-weight: 600; color: #8e6673; }
 	.input, .picker { min-height: 92rpx; padding: 0 24rpx; display: flex; align-items: center; font-size: 28rpx; color: #5c4550; }
@@ -321,7 +382,20 @@ onUnmounted(() => {
 	.textarea { height: 190rpx; padding: 22rpx 24rpx; font-size: 28rpx; color: #5c4550; }
 	.save-btn { margin-top: 30rpx; font-size: 30rpx; font-weight: 700; }
 	.location-picker { justify-content: space-between; }
+	.floating-layer { position: fixed; inset: 0; z-index: 40; }
+	.floating-mask { position: absolute; inset: 0; background: rgba(75, 49, 60, 0.16); backdrop-filter: blur(6px); }
+	.top-action-menu { position: absolute; top: calc(108rpx + env(safe-area-inset-top)); right: 28rpx; width: 220rpx; padding: 10rpx 0; border-radius: 24rpx; box-shadow: 0 18rpx 42rpx rgba(116, 76, 91, 0.2); }
+	.menu-action-item { padding: 22rpx 26rpx; font-size: 26rpx; color: #735560; }
+	.menu-action-item + .menu-action-item { border-top: 1rpx solid rgba(214, 183, 195, 0.34); }
+	.menu-action-item-danger { color: #c25e78; }
+	.editor-sheet { position: absolute; left: 18rpx; right: 18rpx; bottom: 0; max-height: calc(100vh - 132rpx); padding: 18rpx 24rpx calc(30rpx + env(safe-area-inset-bottom)); border-bottom-left-radius: 0; border-bottom-right-radius: 0; overflow-y: auto; box-shadow: 0 -18rpx 40rpx rgba(137, 91, 108, 0.16); }
+	.sheet-handle { width: 76rpx; height: 8rpx; margin: 4rpx auto 18rpx; border-radius: 999rpx; background: rgba(199, 161, 174, 0.48); }
+	.sheet-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18rpx; }
+	.sheet-close { padding: 10rpx 0 10rpx 18rpx; font-size: 24rpx; color: #bc8295; }
+	.sheet-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18rpx; margin-top: 30rpx; }
+	.sheet-btn { min-height: 92rpx; border-radius: 999rpx; font-size: 28rpx; font-weight: 600; line-height: 92rpx; }
+	.sheet-btn-secondary { color: #8d6975; background: rgba(255, 255, 255, 0.92); box-shadow: inset 0 0 0 2rpx rgba(226, 196, 207, 0.36); }
 	.heart { position: absolute; z-index: 5; pointer-events: none; animation: float var(--duration) ease-in-out forwards; transform-origin: center center; }
 	@keyframes float { 0% { transform: translate(0, 0) rotate(var(--rotate-deg)); opacity: 1; } 100% { transform: translate(var(--float-x), calc(-1 * var(--float-y))) rotate(var(--rotate-deg)); opacity: 0; } }
-	@media screen and (max-width: 520px) { .countdown-grid, .overview-grid, .picker-row { grid-template-columns: repeat(2, 1fr); } .time-box { padding: 22rpx 8rpx; } }
+	@media screen and (max-width: 520px) { .countdown-grid, .overview-grid, .picker-row, .sheet-actions { grid-template-columns: repeat(2, 1fr); } .time-box { padding: 22rpx 8rpx; } .top-action-menu { width: 208rpx; } }
 </style>

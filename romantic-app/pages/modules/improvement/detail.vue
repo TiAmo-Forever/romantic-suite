@@ -1,5 +1,5 @@
 <template>
-  <view class="page app-account-page" :style="themeStyle">
+  <view class="page app-account-page" :style="themeStyle" @click="handleDetailTap">
     <GlobalNotificationBanner />
     <view class="app-account-topbar-shell">
       <AccountHeader title="恋爱改进簿" eyebrow="记录详情" />
@@ -8,11 +8,21 @@
     <view v-if="detail" class="app-account-content detail-content">
       <AccountPanel :title="detail.title" :description="detail.description || '把这件在意的小事认真记下来，后续的每次推进都会留在这里。'">
         <view class="record-head">
-          <view class="identity-badge" :class="identityBadgeClass(detail)">
-            <view class="identity-badge-dot"></view>
-            <text>{{ identityBadgeText(detail) }}</text>
+          <view class="record-head-main">
+            <view class="identity-badge" :class="identityBadgeClass(detail)">
+              <view class="identity-badge-dot"></view>
+              <text>{{ identityBadgeText(detail) }}</text>
+            </view>
+            <view class="status-chip" :class="`status-chip-${currentStatusKey}`">{{ currentStatusText }}</view>
           </view>
-          <view class="status-chip" :class="`status-chip-${currentStatusKey}`">{{ currentStatusText }}</view>
+          <view class="detail-manage-wrap" @click.stop>
+            <view class="detail-manage-btn" @click.stop="toggleRecordMenu">管理</view>
+            <view v-if="showRecordMenu" class="detail-manage-pop">
+              <view class="detail-manage-item" @click.stop="handleRecordEdit">编辑主记录</view>
+              <view class="detail-manage-divider"></view>
+              <view class="detail-manage-item danger" @click.stop="handleRecordDelete">删除主记录</view>
+            </view>
+          </view>
         </view>
 
         <view class="detail-meta">
@@ -165,10 +175,6 @@
         </view>
       </AccountPanel>
 
-      <view class="detail-actions">
-        <button class="detail-action-btn" @click="goEdit">编辑主记录</button>
-        <button class="detail-action-btn detail-action-btn-danger" @click="handleDelete">删除主记录</button>
-      </view>
     </view>
 
     <view class="feedback-fixed-bar">
@@ -308,6 +314,7 @@ const noteMediaExpanded = ref(false)
 const expandedFeedbackIds = ref([])
 const showAllFeedback = ref(false)
 const feedbackSheetVisible = ref(false)
+const showRecordMenu = ref(false)
 const feedbackSheetMode = ref('create')
 const feedbackSheetTargetId = ref(0)
 const sheetStatusIndex = ref(1)
@@ -437,7 +444,30 @@ function goEdit() {
   goPage(`/pages/modules/improvement/edit?id=${detail.value.id}`)
 }
 
+function toggleRecordMenu() {
+  showRecordMenu.value = !showRecordMenu.value
+}
+
+function closeRecordMenu() {
+  showRecordMenu.value = false
+}
+
+function handleDetailTap() {
+  closeRecordMenu()
+}
+
+function handleRecordEdit() {
+  closeRecordMenu()
+  goEdit()
+}
+
+function handleRecordDelete() {
+  closeRecordMenu()
+  handleDelete()
+}
+
 function openFeedbackSheet(mode, item = null) {
+  closeRecordMenu()
   feedbackSheetMode.value = mode
   feedbackSheetTargetId.value = item?.id || 0
   feedbackSheetVisible.value = true
@@ -637,13 +667,21 @@ function handleDelete() {
 
 <style scoped>
 .detail-content { padding-bottom: 200rpx; }
-.record-head, .feedback-top, .feedback-leading, .feedback-actions, .detail-meta, .action-row, .history-head { display: flex; align-items: center; gap: 14rpx; flex-wrap: wrap; }
+.record-head, .record-head-main, .feedback-top, .feedback-leading, .feedback-actions, .detail-meta, .action-row, .history-head { display: flex; align-items: center; gap: 14rpx; flex-wrap: wrap; }
 .record-head, .feedback-top, .history-head { justify-content: space-between; }
+.record-head { margin-bottom: 4rpx; }
+.record-head-main { flex: 1; min-width: 0; }
 .identity-badge { display: inline-flex; align-items: center; gap: 8rpx; width: fit-content; padding: 6rpx 14rpx; border-radius: 999rpx; font-size: 20rpx; font-weight: 700; }
 .identity-badge-feedback { font-size: 19rpx; padding: 6rpx 12rpx; }
 .identity-badge-dot { width: 10rpx; height: 10rpx; border-radius: 50%; background: currentColor; opacity: 0.85; }
 .identity-badge-mine { background: rgba(223, 246, 242, 0.96); color: #3e9b92; }
 .identity-badge-other { background: rgba(255, 238, 229, 0.96); color: #d18264; }
+.detail-manage-wrap { position: relative; flex-shrink: 0; }
+.detail-manage-btn { min-width: 84rpx; padding: 10rpx 18rpx; border-radius: 999rpx; background: rgba(255, 249, 251, 0.96); box-shadow: inset 0 0 0 2rpx rgba(233, 207, 216, 0.52); font-size: 22rpx; line-height: 1; color: #ad8090; text-align: center; }
+.detail-manage-pop { position: absolute; top: calc(100% + 12rpx); right: 0; min-width: 220rpx; padding: 10rpx 0; border-radius: 24rpx; background: rgba(255, 252, 253, 0.98); box-shadow: 0 16rpx 38rpx rgba(114, 80, 92, 0.18); z-index: 8; }
+.detail-manage-item { padding: 22rpx 24rpx; font-size: 25rpx; line-height: 1.4; color: #7c5f68; }
+.detail-manage-item.danger { color: #cf6d78; }
+.detail-manage-divider { height: 1rpx; margin: 0 18rpx; background: rgba(224, 196, 206, 0.64); }
 .status-chip, .detail-chip, .feedback-status { padding: 8rpx 16rpx; border-radius: 999rpx; font-size: 21rpx; font-weight: 700; }
 .status-chip-resolved, .feedback-status-resolved { background: linear-gradient(135deg, #fff7d9, #ffe08d); color: #9b6a08; }
 .status-chip-improving, .feedback-status-improving { background: linear-gradient(135deg, #ffeaf0, #ffc6d6); color: #b54876; }
@@ -651,7 +689,7 @@ function handleDelete() {
 .detail-meta { margin-top: 18rpx; }
 .detail-chip { background: #fff5f8; color: #bc7990; }
 .detail-chip-soft { color: #9b7b86; }
-.status-banner { margin-top: 18rpx; padding: 20rpx 22rpx; border-radius: 26rpx; }
+.status-banner { margin-top: 20rpx; padding: 22rpx 24rpx; border-radius: 28rpx; box-shadow: inset 0 0 0 1rpx rgba(255, 255, 255, 0.42); }
 .status-banner-title { font-size: 25rpx; font-weight: 800; }
 .status-banner-desc { margin-top: 8rpx; font-size: 23rpx; line-height: 1.7; }
 .status-banner.mini { margin-top: 16rpx; }
@@ -666,7 +704,7 @@ function handleDelete() {
 .fold-desc { margin-top: 6rpx; font-size: 22rpx; color: #b98a99; }
 .fold-action { flex-shrink: 0; font-size: 22rpx; font-weight: 700; color: #c07892; }
 .focus-card, .timeline-card { border-radius: 28rpx; padding: 22rpx; }
-.focus-card { box-shadow: 0 16rpx 34rpx rgba(204, 148, 166, 0.12); }
+.focus-card { box-shadow: 0 18rpx 38rpx rgba(204, 148, 166, 0.12); }
 .feedback-card-own { background: linear-gradient(135deg, rgba(235, 249, 247, 0.98), rgba(223, 246, 242, 0.96)); }
 .feedback-card-other { background: linear-gradient(135deg, rgba(255, 247, 241, 0.98), rgba(255, 238, 229, 0.96)); }
 .feedback-actions { justify-content: flex-end; gap: 18rpx; }
@@ -676,14 +714,14 @@ function handleDelete() {
 .feedback-content { margin-top: 14rpx; font-size: 24rpx; line-height: 1.8; color: #886a75; }
 .focus-content { font-size: 25rpx; color: #7f5f6c; }
 .feedback-media-wrap { margin-top: 12rpx; }
-.history-summary { font-size: 22rpx; color: #a17a87; }
-.history-toggle { padding: 10rpx 18rpx; border-radius: 999rpx; background: #fff4f8; color: #b97089; font-size: 22rpx; font-weight: 700; }
+.history-summary { font-size: 22rpx; color: #a17a87; line-height: 1.7; }
+.history-toggle { padding: 10rpx 18rpx; border-radius: 999rpx; background: rgba(255, 244, 248, 0.96); box-shadow: inset 0 0 0 1rpx rgba(233, 208, 217, 0.72); color: #b97089; font-size: 22rpx; font-weight: 700; }
 .timeline { display: grid; gap: 18rpx; margin-top: 18rpx; }
 .timeline-item { display: flex; }
 .timeline-item-other { justify-content: flex-start; }
 .timeline-item-own { justify-content: flex-end; }
-.timeline-card { width: min(100%, 620rpx); box-shadow: inset 0 0 0 2rpx rgba(255, 255, 255, 0.38); }
-.empty-block { padding: 8rpx 0 2rpx; }
+.timeline-card { width: min(100%, 620rpx); box-shadow: inset 0 0 0 2rpx rgba(255, 255, 255, 0.38), 0 12rpx 28rpx rgba(204, 165, 179, 0.08); }
+.empty-block { padding: 12rpx 0 4rpx; }
 .empty-title { font-size: 28rpx; font-weight: 800; color: var(--app-color-primary-strong); }
 .empty-desc { margin-top: 10rpx; font-size: 23rpx; line-height: 1.7; color: #9a7682; }
 .media-grid { margin-top: 16rpx; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14rpx; }
@@ -693,7 +731,6 @@ function handleDelete() {
 .media-video-fallback { display: flex; align-items: center; justify-content: center; color: #fff; background: linear-gradient(135deg, #ffcedd, #ff9db7); }
 .media-type { position: absolute; left: 12rpx; bottom: 12rpx; padding: 6rpx 12rpx; border-radius: 999rpx; background: rgba(0, 0, 0, 0.45); color: #fff; font-size: 20rpx; }
 .media-remove { position: absolute; right: 12rpx; top: 12rpx; width: 42rpx; height: 42rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.45); color: #fff; font-size: 30rpx; }
-.detail-actions { display: flex; gap: 18rpx; flex-wrap: wrap; margin-top: 22rpx; }
 .detail-action-btn, .mini-btn { margin: 0; padding: 0 28rpx; height: 82rpx; line-height: 82rpx; border-radius: 999rpx; background: #fff; box-shadow: inset 0 0 0 2rpx rgba(255, 214, 226, 0.7); color: var(--app-color-primary-strong); font-size: 23rpx; font-weight: 700; }
 .detail-action-btn-danger { color: #cf6d78; }
 .picker-row-shell { display: block; margin-top: 18rpx; }
@@ -701,7 +738,7 @@ function handleDelete() {
 .picker-row-label { font-size: 22rpx; color: #b58b99; }
 .picker-row-value { margin-top: 8rpx; font-size: 27rpx; line-height: 1.5; color: #8f6d78; font-weight: 700; }
 .media-tips { margin-top: 14rpx; font-size: 22rpx; color: #bc8b9b; }
-.feedback-fixed-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; padding: 18rpx 24rpx calc(18rpx + env(safe-area-inset-bottom)); background: rgba(255, 250, 252, 0.96); box-shadow: 0 -14rpx 36rpx rgba(188, 145, 160, 0.14); }
+.feedback-fixed-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; padding: 18rpx 24rpx calc(18rpx + env(safe-area-inset-bottom)); background: rgba(255, 250, 252, 0.92); backdrop-filter: blur(16px); box-shadow: 0 -14rpx 36rpx rgba(188, 145, 160, 0.12); }
 .feedback-fixed-btn { width: 100%; }
 .feedback-sheet-mask { position: fixed; inset: 0; z-index: 70; background: rgba(18, 22, 28, 0.22); }
 .feedback-sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 71; max-height: 84vh; overflow-y: auto; border-radius: 32rpx 32rpx 0 0; background: rgba(255, 251, 252, 0.99); padding: 24rpx 24rpx calc(24rpx + env(safe-area-inset-bottom)); box-shadow: 0 -16rpx 42rpx rgba(76, 53, 63, 0.18); }

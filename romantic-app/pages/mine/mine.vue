@@ -40,7 +40,7 @@
 
     <view class="menu-grid app-fade-up app-delay-2">
       <view class="menu-card app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goAccountSettings">
-        <view class="menu-icon">设</view>
+        <view class="menu-icon">账号</view>
         <view class="menu-copy">
           <view class="menu-title">{{ TEXT.accountTitle }}</view>
           <view class="menu-desc">{{ TEXT.accountMenuDesc }}</view>
@@ -49,7 +49,7 @@
       </view>
 
       <view class="menu-card app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goThemeSettings">
-        <view class="menu-icon">彩</view>
+        <view class="menu-icon">主题</view>
         <view class="menu-copy">
           <view class="menu-title">{{ TEXT.themeTitle }}</view>
           <view class="menu-desc">{{ TEXT.themeMenuDesc }}</view>
@@ -59,7 +59,7 @@
 
       <view class="menu-card app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goNotifications">
         <view class="menu-icon menu-icon-with-dot">
-          信
+          消息
           <view v-if="unreadNotificationCount > 0" class="menu-icon-dot"></view>
         </view>
         <view class="menu-copy">
@@ -72,7 +72,7 @@
       </view>
 
       <view class="menu-card app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="handleLogout">
-        <view class="menu-icon">退</view>
+        <view class="menu-icon">退出</view>
         <view class="menu-copy">
           <view class="menu-title">{{ TEXT.logoutTitle }}</view>
           <view class="menu-desc">{{ TEXT.logoutDesc }}</view>

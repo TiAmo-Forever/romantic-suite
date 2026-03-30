@@ -2,6 +2,7 @@ package org.love.romantic.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.love.romantic.auth.AuthContext;
@@ -11,6 +12,7 @@ import org.love.romantic.exception.BusinessException;
 import org.love.romantic.mapper.CoupleProfileMapper;
 import org.love.romantic.mapper.UserNotificationMapper;
 import org.love.romantic.model.NotificationRealtimeEvent;
+import org.love.romantic.model.UserNotificationPageResponse;
 import org.love.romantic.model.UserNotificationResponse;
 import org.love.romantic.service.NotificationRealtimePushService;
 import org.love.romantic.service.UserNotificationService;
@@ -22,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -47,6 +50,39 @@ public class UserNotificationServiceImpl implements UserNotificationService {
     }
 
     @Override
+    public UserNotificationPageResponse pageCurrentUserNotifications(String filter, long pageNo, long pageSize) {
+        String username = AuthContext.getRequiredUsername();
+        long safePageNo = Math.max(1L, pageNo);
+        long safePageSize = Math.min(Math.max(1L, pageSize), 50L);
+        Page<UserNotification> page = new Page<>(safePageNo, safePageSize);
+        LambdaQueryWrapper<UserNotification> wrapper = new LambdaQueryWrapper<UserNotification>()
+                .eq(UserNotification::getRecipientUsername, username);
+
+        String safeFilter = StringUtils.hasText(filter) ? filter.trim().toLowerCase(Locale.ROOT) : "all";
+        if ("unread".equals(safeFilter)) {
+            wrapper.eq(UserNotification::getIsRead, false);
+        } else if ("read".equals(safeFilter)) {
+            wrapper.eq(UserNotification::getIsRead, true);
+        }
+
+        wrapper.orderByDesc(UserNotification::getCreatedAt)
+                .orderByDesc(UserNotification::getId);
+        Page<UserNotification> result = userNotificationMapper.selectPage(page, wrapper);
+        Map<String, String> nicknameMap = buildNicknameMap();
+        List<UserNotificationResponse> list = result.getRecords().stream()
+                .map(item -> toResponse(item, nicknameMap))
+                .collect(Collectors.toList());
+        long total = result.getTotal();
+        return UserNotificationPageResponse.builder()
+                .pageNo(safePageNo)
+                .pageSize(safePageSize)
+                .total(total)
+                .hasMore(safePageNo * safePageSize < total)
+                .list(list)
+                .build();
+    }
+
+    @Override
     public List<UserNotificationResponse> listCurrentUserNotifications() {
         String username = AuthContext.getRequiredUsername();
         return listNotificationsByUsername(username);
@@ -56,6 +92,12 @@ public class UserNotificationServiceImpl implements UserNotificationService {
     public long countCurrentUserUnreadNotifications() {
         String username = AuthContext.getRequiredUsername();
         return countUnreadByUsername(username);
+    }
+
+    @Override
+    public long countCurrentUserTotalNotifications() {
+        String username = AuthContext.getRequiredUsername();
+        return countTotalByUsername(username);
     }
 
     @Override
@@ -149,6 +191,11 @@ public class UserNotificationServiceImpl implements UserNotificationService {
         return userNotificationMapper.selectCount(new LambdaQueryWrapper<UserNotification>()
                 .eq(UserNotification::getRecipientUsername, username)
                 .eq(UserNotification::getIsRead, false));
+    }
+
+    private long countTotalByUsername(String username) {
+        return userNotificationMapper.selectCount(new LambdaQueryWrapper<UserNotification>()
+                .eq(UserNotification::getRecipientUsername, username));
     }
 
     private UserNotification findLatestNotification(String username) {

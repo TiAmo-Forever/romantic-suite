@@ -32,9 +32,19 @@
       </view>
 
       <AccountPanel :title="detail.title" :description="detail.summary || ''">
-        <view class="identity-badge" :class="identityBadgeClass">
-          <view class="identity-badge-dot"></view>
-          <text>{{ identityBadgeText }}</text>
+        <view class="detail-head">
+          <view class="identity-badge" :class="identityBadgeClass">
+            <view class="identity-badge-dot"></view>
+            <text>{{ identityBadgeText }}</text>
+          </view>
+          <view class="detail-manage-wrap" @click.stop>
+            <view class="detail-manage-btn" @click.stop="toggleManageMenu">管理</view>
+            <view v-if="showManageMenu" class="detail-manage-pop">
+              <view class="detail-manage-item" @click.stop="handleManageEdit">{{ TEXT.editButton }}</view>
+              <view class="detail-manage-divider"></view>
+              <view class="detail-manage-item danger" @click.stop="handleManageDelete">{{ TEXT.deleteButton }}</view>
+            </view>
+          </view>
         </view>
         <view class="detail-meta">
           <view v-if="detail.memoryDate" class="detail-chip">{{ detail.memoryDate }}</view>
@@ -121,10 +131,6 @@
         <view v-else class="detail-empty">{{ TEXT.emptyMedia }}</view>
       </AccountPanel>
 
-      <view class="detail-actions">
-        <button class="detail-action-btn" @click="goEdit">{{ TEXT.editButton }}</button>
-        <button class="detail-action-btn" @click="handleDelete">{{ TEXT.deleteButton }}</button>
-      </view>
     </view>
 
     <view v-if="commentInputVisible" class="comment-composer" @click.stop>
@@ -236,6 +242,7 @@ const liking = ref(false)
 const submittingComment = ref(false)
 const deletingComment = ref(false)
 const showActionMenu = ref(false)
+const showManageMenu = ref(false)
 const commentInputVisible = ref(false)
 const commentFocus = ref(false)
 const commentActionSheetVisible = ref(false)
@@ -352,12 +359,23 @@ function isOwnComment(comment) {
 }
 
 function toggleActionMenu() {
+  closeManageMenu()
   closeCommentMenus()
   showActionMenu.value = !showActionMenu.value
 }
 
 function closeActionMenu() {
   showActionMenu.value = false
+}
+
+function toggleManageMenu() {
+  closeActionMenu()
+  closeCommentMenus()
+  showManageMenu.value = !showManageMenu.value
+}
+
+function closeManageMenu() {
+  showManageMenu.value = false
 }
 
 function closeCommentActionSheet() {
@@ -374,11 +392,13 @@ function closeCommentMenus() {
 }
 
 function handlePageTap() {
+  closeManageMenu()
   closeActionMenu()
   closeCommentMenus()
 }
 
 function openCommentComposer(targetComment = null) {
+  closeManageMenu()
   closeActionMenu()
   closeCommentMenus()
   replyTargetComment.value = targetComment
@@ -398,6 +418,7 @@ function closeCommentComposer() {
 function handleCommentTap(comment) {
   if (!comment || Date.now() < suppressCommentTapUntil.value) return
   selectedComment.value = comment
+  closeManageMenu()
   closeActionMenu()
   closeCommentPopover()
 
@@ -508,6 +529,16 @@ function handleCopySelectedComment() {
   })
 }
 
+function handleManageEdit() {
+  closeManageMenu()
+  goEdit()
+}
+
+function handleManageDelete() {
+  closeManageMenu()
+  handleDelete()
+}
+
 function goEdit() {
   if (!detail.value?.id) return
   goPage(`/pages/modules/album/edit?id=${detail.value.id}`)
@@ -610,6 +641,14 @@ function handleDelete() {
   margin-top: 16rpx;
 }
 
+.detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+  margin-bottom: 4rpx;
+}
+
 .identity-badge {
   display: inline-flex;
   align-items: center;
@@ -638,6 +677,52 @@ function handleDelete() {
   color: #d18264;
 }
 
+.detail-manage-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.detail-manage-btn {
+  min-width: 84rpx;
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 249, 251, 0.96);
+  box-shadow: inset 0 0 0 2rpx rgba(233, 207, 216, 0.52);
+  font-size: 22rpx;
+  line-height: 1;
+  color: #ad8090;
+  text-align: center;
+}
+
+.detail-manage-pop {
+  position: absolute;
+  top: calc(100% + 12rpx);
+  right: 0;
+  min-width: 220rpx;
+  padding: 10rpx 0;
+  border-radius: 24rpx;
+  background: rgba(255, 252, 253, 0.98);
+  box-shadow: 0 16rpx 38rpx rgba(114, 80, 92, 0.18);
+  z-index: 8;
+}
+
+.detail-manage-item {
+  padding: 22rpx 24rpx;
+  font-size: 25rpx;
+  line-height: 1.4;
+  color: #7c5f68;
+}
+
+.detail-manage-item.danger {
+  color: #cf6d78;
+}
+
+.detail-manage-divider {
+  height: 1rpx;
+  margin: 0 18rpx;
+  background: rgba(224, 196, 206, 0.64);
+}
+
 .detail-chip {
   padding: 10rpx 16rpx;
   border-radius: 999rpx;
@@ -653,14 +738,14 @@ function handleDelete() {
 }
 
 .detail-summary {
-  margin-top: 16rpx;
+  margin-top: 18rpx;
   font-size: 25rpx;
-  line-height: 1.8;
-  color: #8d6c77;
+  line-height: 1.9;
+  color: #866670;
 }
 
 .detail-tags {
-  margin-top: 18rpx;
+  margin-top: 20rpx;
   display: flex;
   gap: 12rpx;
   flex-wrap: wrap;
@@ -677,6 +762,8 @@ function handleDelete() {
 
 .interaction-row {
   margin-top: 24rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid rgba(233, 214, 222, 0.72);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -762,9 +849,10 @@ function handleDelete() {
 }
 
 .interaction-feed {
-  margin-top: 18rpx;
-  border-radius: 22rpx;
-  background: #f3f5f8;
+  margin-top: 20rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(180deg, rgba(244, 246, 249, 0.98), rgba(240, 243, 247, 0.94));
+  box-shadow: inset 0 0 0 1rpx rgba(220, 226, 235, 0.7);
   overflow: hidden;
 }
 
@@ -828,13 +916,14 @@ function handleDelete() {
 }
 
 .detail-empty {
-  margin-top: 16rpx;
+  margin-top: 18rpx;
   font-size: 24rpx;
-  line-height: 1.7;
-  color: #98707d;
+  line-height: 1.8;
+  color: #9d7884;
 }
 
 .media-grid {
+  margin-top: 18rpx;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16rpx;
@@ -863,14 +952,6 @@ function handleDelete() {
   background: rgba(0, 0, 0, 0.42);
   color: #fff;
   font-size: 20rpx;
-}
-
-.detail-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20rpx 28rpx;
-  margin-top: 20rpx;
-  padding-bottom: 180rpx;
 }
 
 .detail-action-btn {
@@ -903,8 +984,9 @@ function handleDelete() {
   align-items: center;
   gap: 18rpx;
   padding: 18rpx 24rpx calc(18rpx + env(safe-area-inset-bottom));
-  background: rgba(255, 251, 252, 0.98);
-  box-shadow: 0 -16rpx 40rpx rgba(186, 146, 161, 0.14);
+  background: rgba(255, 251, 252, 0.94);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 -16rpx 40rpx rgba(186, 146, 161, 0.12);
 }
 
 .comment-input {

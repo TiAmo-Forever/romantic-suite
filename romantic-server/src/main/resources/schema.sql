@@ -204,3 +204,39 @@ CREATE TABLE IF NOT EXISTS biz_comment_record (
     KEY idx_biz_comment_record_biz (biz_type, biz_id),
     KEY idx_biz_comment_record_created_at (created_at)
 ) COMMENT='通用业务评论记录表';
+
+CREATE TABLE IF NOT EXISTS daily_summary (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键 ID',
+    summary_date DATE NOT NULL COMMENT '对应日期',
+    mood VARCHAR(32) NOT NULL COMMENT '最新一条氛围标识',
+    content VARCHAR(300) NOT NULL COMMENT '最新一条预览内容',
+    creator_username VARCHAR(64) NOT NULL COMMENT '首次创建账号',
+    updated_by VARCHAR(64) NOT NULL COMMENT '最近更新账号',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    UNIQUE KEY uk_daily_summary_date (summary_date),
+    KEY idx_daily_summary_updated_at (updated_at)
+) COMMENT='今日小计共享记录表';
+
+CREATE TABLE IF NOT EXISTS daily_summary_entry (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键 ID',
+    summary_id BIGINT NOT NULL COMMENT '所属日期记录 ID',
+    mood VARCHAR(32) NOT NULL COMMENT '条目氛围标识',
+    content VARCHAR(300) NOT NULL COMMENT '条目内容',
+    creator_username VARCHAR(64) NOT NULL COMMENT '创建账号',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    KEY idx_daily_summary_entry_summary_id (summary_id),
+    KEY idx_daily_summary_entry_updated_at (updated_at)
+) COMMENT='今日小计条目表';
+
+CREATE TABLE IF NOT EXISTS daily_summary_media (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键 ID',
+    entry_id BIGINT NOT NULL COMMENT '所属条目 ID',
+    media_type VARCHAR(16) NOT NULL COMMENT '媒体类型',
+    file_url VARCHAR(255) NOT NULL COMMENT '媒体文件路径',
+    thumbnail_url VARCHAR(255) NOT NULL DEFAULT '' COMMENT '缩略图路径',
+    sort_order INT NOT NULL DEFAULT 0 COMMENT '排序值',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    KEY idx_daily_summary_media_entry_id (entry_id)
+) COMMENT='今日小计媒体资源表';

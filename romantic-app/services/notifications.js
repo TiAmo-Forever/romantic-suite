@@ -7,23 +7,49 @@ function ensureSuccess(response, fallbackMessage) {
   return response.data
 }
 
-export async function fetchNotificationList() {
+function normalizeNotificationList(list) {
+  return Array.isArray(list) ? list : []
+}
+
+export async function fetchNotificationList(params = {}) {
   const response = await request({
-    url: '/api/notifications'
+    url: '/api/notifications/page',
+    data: {
+      filter: params.filter || 'all',
+      page: Number(params.page || 1),
+      pageSize: Number(params.pageSize || 10)
+    }
   })
-  return ensureSuccess(response, '获取消息列表失败') || []
+  const data = ensureSuccess(response, '获取消息列表失败') || {}
+  return {
+    page: Number(data.pageNo || 1),
+    pageSize: Number(data.pageSize || params.pageSize || 10),
+    total: Number(data.total || 0),
+    hasMore: Boolean(data.hasMore),
+    list: normalizeNotificationList(data.list)
+  }
 }
 
 export async function fetchLatestNotification() {
-  const list = await fetchNotificationList()
-  return Array.isArray(list) && list.length ? list[0] : null
+  const pageData = await fetchNotificationList({ page: 1, pageSize: 1, filter: 'all' })
+  return pageData.list.length ? pageData.list[0] : null
 }
 
-export async function fetchUnreadNotificationCount() {
+export async function fetchNotificationStats() {
   const response = await request({
     url: '/api/notifications/unread-count'
   })
-  return ensureSuccess(response, '获取未读数量失败')?.unreadCount || 0
+  const data = ensureSuccess(response, '获取消息统计失败') || {}
+  return {
+    unreadCount: Number(data.unreadCount || 0),
+    readCount: Number(data.readCount || 0),
+    totalCount: Number(data.totalCount || 0)
+  }
+}
+
+export async function fetchUnreadNotificationCount() {
+  const stats = await fetchNotificationStats()
+  return stats.unreadCount
 }
 
 export async function markNotificationRead(id) {

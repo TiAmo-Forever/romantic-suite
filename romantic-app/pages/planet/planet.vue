@@ -27,7 +27,7 @@
       <view class="planet-chip-row">
         <view class="planet-chip">{{ TEXT.chipAnniversary }}</view>
         <view class="planet-chip">{{ TEXT.chipAlbum }}</view>
-        <view class="planet-chip">{{ TEXT.chipPlan }}</view>
+        <view class="planet-chip">{{ TEXT.chipDailySummary }}</view>
       </view>
     </view>
 
@@ -89,6 +89,23 @@
         <view class="planet-card-desc">{{ TEXT.improvementDesc }}</view>
       </view>
 
+      <view class="planet-card app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goDailySummary">
+        <view class="planet-card-head">
+          <view class="status-badge status-badge-open">{{ TEXT.opened }}</view>
+        </view>
+        <view class="planet-icon planet-icon-frame">
+          <view class="icon-daily">
+            <view class="icon-daily-sheet"></view>
+            <view class="icon-daily-sun"></view>
+            <view class="icon-daily-line icon-daily-line-a"></view>
+            <view class="icon-daily-line icon-daily-line-b"></view>
+            <view class="icon-daily-dot"></view>
+          </view>
+        </view>
+        <view class="planet-card-title">{{ TEXT.dailySummaryTitle }}</view>
+        <view class="planet-card-desc">{{ TEXT.dailySummaryDesc }}</view>
+      </view>
+
       <view class="planet-card planet-card-subtle app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goComingSoon(TEXT.planTitle)">
         <view class="planet-card-head">
           <view class="status-badge status-badge-reserve">{{ TEXT.reserve }}</view>
@@ -104,6 +121,23 @@
         <view class="planet-card-title">{{ TEXT.planTitle }}</view>
         <view class="planet-card-desc">{{ TEXT.planDesc }}</view>
       </view>
+
+      <view class="planet-card planet-card-subtle app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goComingSoon(TEXT.cookingTitle)">
+        <view class="planet-card-head">
+          <view class="status-badge status-badge-reserve">{{ TEXT.reserve }}</view>
+        </view>
+        <view class="planet-icon planet-icon-frame">
+          <view class="icon-pan">
+            <view class="icon-pan-pot"></view>
+            <view class="icon-pan-handle"></view>
+            <view class="icon-pan-steam icon-pan-steam-a"></view>
+            <view class="icon-pan-steam icon-pan-steam-b"></view>
+            <view class="icon-pan-heart"></view>
+          </view>
+        </view>
+        <view class="planet-card-title">{{ TEXT.cookingTitle }}</view>
+        <view class="planet-card-desc">{{ TEXT.cookingDesc }}</view>
+      </view>
     </view>
 
     <BottomTab activeKey="planet" />
@@ -116,16 +150,17 @@ import { requireAuth } from '@/utils/auth.js'
 import { goPage } from '@/utils/nav.js'
 import { useThemePage } from '@/utils/useThemePage.js'
 import BottomTab from '@/pages/components/BottomTab.vue'
+
 const TEXT = {
   brandKicker: '模块星球',
   brand: '浪漫星球',
-  brandSub: '把想继续完善的功能都收进这里',
+  brandSub: '把常用的甜蜜模块都轻轻收进这里',
   brandIcon: '✦',
-  heroTitle: '把常用模块放在更顺手的位置',
-  heroDesc: '这里承接纪念、相册、改进和后续会继续扩展的能力。',
+  heroTitle: '把每天会点开的模块放在更顺手的位置',
+  heroDesc: '这里承接纪念日、相册、今日小计和改进簿，也为后续想做的小日常留好了位置。',
   chipAnniversary: '纪念日',
   chipAlbum: '相册',
-  chipPlan: '计划卡',
+  chipDailySummary: '今日小计',
   opened: '已开放',
   reserve: '预留',
   anniversaryTitle: '恋爱纪念日',
@@ -134,16 +169,35 @@ const TEXT = {
   albumDesc: '照片记录',
   improvementTitle: '恋爱改进簿',
   improvementDesc: '改进记录',
+  dailySummaryTitle: '今日小计',
+  dailySummaryDesc: '今天的小小记录',
   planTitle: '浪漫计划',
-  planDesc: '计划记录'
+  planDesc: '计划记录',
+  cookingTitle: '一起做饭',
+  cookingDesc: '每日做菜'
 }
 
 const { themeStyle } = useThemePage()
 
-function goComingSoon(title) { goPage(`/pages/modules/coming-soon/index?title=${encodeURIComponent(title)}`) }
-function goAnniversary() { goPage('/pages/modules/anniversary/index') }
-function goAlbum() { goPage('/pages/modules/album/index') }
-function goImprovement() { goPage('/pages/modules/improvement/index') }
+function goAnniversary() {
+  goPage('/pages/modules/anniversary/index')
+}
+
+function goAlbum() {
+  goPage('/pages/modules/album/index')
+}
+
+function goImprovement() {
+  goPage('/pages/modules/improvement/index')
+}
+
+function goDailySummary() {
+  goPage('/pages/modules/daily-summary/detail')
+}
+
+function goComingSoon(title) {
+  goPage(`/pages/modules/coming-soon/index?title=${encodeURIComponent(title)}`)
+}
 
 onMounted(() => {
   requireAuth()
@@ -263,8 +317,13 @@ onMounted(() => {
     box-shadow: 0 0 0 6rpx rgba(255, 255, 255, 0.24);
   }
 
-  .planet-brand-star-left { transform: scale(0.88); }
-  .planet-brand-star-right { transform: scale(1.02); }
+  .planet-brand-star-left {
+    transform: scale(0.88);
+  }
+
+  .planet-brand-star-right {
+    transform: scale(1.02);
+  }
 
   .planet-hero {
     margin-top: 28rpx;
@@ -309,6 +368,7 @@ onMounted(() => {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18rpx;
+    padding-bottom: 28rpx;
   }
 
   .planet-card {
@@ -327,7 +387,10 @@ onMounted(() => {
     transform: translateY(2rpx) scale(0.986);
     box-shadow: 0 10rpx 24rpx rgba(0, 0, 0, 0.08);
   }
-  .planet-card-subtle { opacity: 0.94; }
+
+  .planet-card-subtle {
+    opacity: 0.96;
+  }
 
   .planet-card-head {
     display: flex;
@@ -350,8 +413,8 @@ onMounted(() => {
   }
 
   .status-badge-reserve {
-    background: #f7f4ee;
-    color: var(--planet-text-sub);
+    background: rgba(247, 244, 238, 0.96);
+    color: color-mix(in srgb, var(--planet-text-sub) 78%, #d1bfab 22%);
   }
 
   .planet-icon {
@@ -431,8 +494,14 @@ onMounted(() => {
     border-right: 16rpx solid transparent;
   }
 
-  .icon-album-mountain-left { left: 8rpx; }
-  .icon-album-mountain-right { right: 8rpx; border-bottom-color: #94a56f; }
+  .icon-album-mountain-left {
+    left: 8rpx;
+  }
+
+  .icon-album-mountain-right {
+    right: 8rpx;
+    border-bottom-color: #94a56f;
+  }
 
   .icon-album-flower {
     position: absolute;
@@ -478,8 +547,13 @@ onMounted(() => {
     z-index: 2;
   }
 
-  .icon-calendar-ring-left { left: 18rpx; }
-  .icon-calendar-ring-right { right: 18rpx; }
+  .icon-calendar-ring-left {
+    left: 18rpx;
+  }
+
+  .icon-calendar-ring-right {
+    right: 18rpx;
+  }
 
   .icon-calendar-heart {
     position: absolute;
@@ -501,8 +575,15 @@ onMounted(() => {
     background: #e7a08f;
   }
 
-  .icon-calendar-heart::before { top: -10rpx; left: 0; }
-  .icon-calendar-heart::after { left: 10rpx; top: 0; }
+  .icon-calendar-heart::before {
+    top: -10rpx;
+    left: 0;
+  }
+
+  .icon-calendar-heart::after {
+    left: 10rpx;
+    top: 0;
+  }
 
   .icon-calendar-dot {
     position: absolute;
@@ -512,10 +593,25 @@ onMounted(() => {
     background: rgba(211, 193, 168, 0.8);
   }
 
-  .icon-calendar-dot-a { left: 16rpx; bottom: 18rpx; }
-  .icon-calendar-dot-b { left: 28rpx; bottom: 18rpx; }
-  .icon-calendar-dot-c { right: 28rpx; bottom: 18rpx; }
-  .icon-calendar-dot-d { right: 16rpx; bottom: 18rpx; }
+  .icon-calendar-dot-a {
+    left: 16rpx;
+    bottom: 18rpx;
+  }
+
+  .icon-calendar-dot-b {
+    left: 28rpx;
+    bottom: 18rpx;
+  }
+
+  .icon-calendar-dot-c {
+    right: 28rpx;
+    bottom: 18rpx;
+  }
+
+  .icon-calendar-dot-d {
+    right: 16rpx;
+    bottom: 18rpx;
+  }
 
   .icon-book {
     position: relative;
@@ -531,8 +627,17 @@ onMounted(() => {
     border-radius: 8rpx;
   }
 
-  .icon-book-cover-left { left: 10rpx; background: #aebc94; transform: skewY(-8deg); }
-  .icon-book-cover-right { right: 10rpx; background: #f4ead8; transform: skewY(8deg); }
+  .icon-book-cover-left {
+    left: 10rpx;
+    background: #aebc94;
+    transform: skewY(-8deg);
+  }
+
+  .icon-book-cover-right {
+    right: 10rpx;
+    background: #f4ead8;
+    transform: skewY(8deg);
+  }
 
   .icon-book-page {
     position: absolute;
@@ -554,8 +659,13 @@ onMounted(() => {
     background: rgba(206, 189, 163, 0.82);
   }
 
-  .icon-book-line-a { top: 24rpx; }
-  .icon-book-line-b { top: 34rpx; }
+  .icon-book-line-a {
+    top: 24rpx;
+  }
+
+  .icon-book-line-b {
+    top: 34rpx;
+  }
 
   .icon-book-pen {
     position: absolute;
@@ -578,6 +688,59 @@ onMounted(() => {
     border-bottom: 5rpx solid transparent;
   }
 
+  .icon-daily {
+    position: relative;
+    width: 78rpx;
+    height: 78rpx;
+  }
+
+  .icon-daily-sheet {
+    position: absolute;
+    inset: 8rpx 10rpx 6rpx 10rpx;
+    border-radius: 16rpx;
+    background: linear-gradient(180deg, #fffaf4, #f8f1e7);
+    box-shadow: 0 8rpx 18rpx rgba(0, 0, 0, 0.06), inset 0 0 0 2rpx rgba(235, 224, 207, 0.92);
+  }
+
+  .icon-daily-sun {
+    position: absolute;
+    top: 18rpx;
+    right: 18rpx;
+    width: 14rpx;
+    height: 14rpx;
+    border-radius: 50%;
+    background: #efc680;
+    box-shadow: 0 0 0 6rpx rgba(239, 198, 128, 0.16);
+  }
+
+  .icon-daily-line {
+    position: absolute;
+    left: 20rpx;
+    right: 24rpx;
+    height: 4rpx;
+    border-radius: 999rpx;
+    background: rgba(197, 175, 146, 0.86);
+  }
+
+  .icon-daily-line-a {
+    top: 26rpx;
+  }
+
+  .icon-daily-line-b {
+    top: 38rpx;
+  }
+
+  .icon-daily-dot {
+    position: absolute;
+    left: 22rpx;
+    bottom: 18rpx;
+    width: 12rpx;
+    height: 12rpx;
+    border-radius: 50%;
+    background: #e6a598;
+    box-shadow: 18rpx 0 0 rgba(174, 197, 156, 0.9);
+  }
+
   .icon-grid {
     width: 68rpx;
     display: grid;
@@ -593,4 +756,81 @@ onMounted(() => {
     box-shadow: inset 0 0 0 2rpx rgba(230, 218, 199, 0.96);
   }
 
+  .icon-pan {
+    position: relative;
+    width: 88rpx;
+    height: 78rpx;
+  }
+
+  .icon-pan-pot {
+    position: absolute;
+    left: 14rpx;
+    right: 20rpx;
+    bottom: 16rpx;
+    height: 26rpx;
+    border-radius: 18rpx 18rpx 14rpx 14rpx;
+    background: linear-gradient(180deg, #f4e4d3, #e7c4a3);
+    box-shadow: 0 8rpx 16rpx rgba(0, 0, 0, 0.06);
+  }
+
+  .icon-pan-handle {
+    position: absolute;
+    right: 10rpx;
+    bottom: 22rpx;
+    width: 18rpx;
+    height: 8rpx;
+    border-radius: 999rpx;
+    background: #c89f77;
+  }
+
+  .icon-pan-steam {
+    position: absolute;
+    width: 10rpx;
+    height: 24rpx;
+    border-radius: 999rpx;
+    border: 3rpx solid rgba(219, 197, 173, 0.84);
+    border-left-color: transparent;
+    border-bottom-color: transparent;
+    transform: rotate(16deg);
+  }
+
+  .icon-pan-steam-a {
+    left: 24rpx;
+    top: 10rpx;
+  }
+
+  .icon-pan-steam-b {
+    left: 42rpx;
+    top: 6rpx;
+  }
+
+  .icon-pan-heart {
+    position: absolute;
+    left: 34rpx;
+    bottom: 20rpx;
+    width: 12rpx;
+    height: 12rpx;
+    transform: rotate(-45deg);
+    background: #e59b93;
+  }
+
+  .icon-pan-heart::before,
+  .icon-pan-heart::after {
+    content: '';
+    position: absolute;
+    width: 12rpx;
+    height: 12rpx;
+    border-radius: 50%;
+    background: #e59b93;
+  }
+
+  .icon-pan-heart::before {
+    top: -6rpx;
+    left: 0;
+  }
+
+  .icon-pan-heart::after {
+    left: 6rpx;
+    top: 0;
+  }
 </style>

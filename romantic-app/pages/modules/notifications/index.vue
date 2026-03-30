@@ -35,9 +35,9 @@
             <view class="toolbar-action" :class="{ disabled: unreadCount <= 0 }" @click="handleMarkAllRead">全部已读</view>
           </view>
 
-          <view v-if="filteredNotificationList.length" class="notification-list">
+          <view v-if="notificationList.length" class="notification-list">
             <view
-              v-for="item in filteredNotificationList"
+              v-for="item in notificationList"
               :key="item.id"
               class="notification-card app-card-soft"
               :class="{ unread: !item.isRead }"
@@ -64,6 +64,12 @@
             </view>
           </view>
 
+          <view v-if="notificationList.length" class="pagination-state">
+            <view v-if="loadingMore" class="pagination-copy">正在加载更多提醒...</view>
+            <view v-else-if="hasMore" class="pagination-copy">上滑继续查看更早的提醒</view>
+            <view v-else class="pagination-copy pagination-copy-finished">已经看到最后一条提醒了</view>
+          </view>
+
           <view v-else class="empty-state">
             <view class="empty-badge">{{ activeFilterLabel }}</view>
             <view class="empty-title">{{ emptyState.title }}</view>
@@ -77,8 +83,14 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { onHide, onShow, onUnload } from '@dcloudio/uni-app'
-import { fetchNotificationList, fetchUnreadNotificationCount, markAllNotificationsRead, markNotificationRead } from '@/services/notifications.js'
+import { onHide, onReachBottom, onShow, onUnload } from '@dcloudio/uni-app'
+import {
+  fetchLatestNotification,
+  fetchNotificationList,
+  fetchNotificationStats,
+  markAllNotificationsRead,
+  markNotificationRead
+} from '@/services/notifications.js'
 import { requireAuth } from '@/utils/auth.js'
 import { goPage } from '@/utils/nav.js'
 import { syncNotificationUnreadCount } from '@/utils/notification-indicator.js'
@@ -88,6 +100,7 @@ import AccountHeader from '@/pages/account/components/AccountHeader.vue'
 import AccountIntroCard from '@/pages/account/components/AccountIntroCard.vue'
 import AccountPanel from '@/pages/account/components/AccountPanel.vue'
 
+const PAGE_SIZE = 10
 const FILTER_OPTIONS = [
   { key: 'all', label: '全部' },
   { key: 'unread', label: '未读' },
@@ -97,26 +110,22 @@ const FILTER_OPTIONS = [
 const { themeStyle } = useThemePage()
 const notificationList = ref([])
 const unreadCount = ref(0)
+const readCount = ref(0)
+const totalCount = ref(0)
 const activeFilter = ref('all')
+const pageNo = ref(1)
+const hasMore = ref(false)
+const loadingInitial = ref(false)
+const loadingMore = ref(false)
+const latestNotification = ref(null)
 let unsubscribeNotificationSocket = null
 
-const latestNotification = computed(() => (Array.isArray(notificationList.value) && notificationList.value.length ? notificationList.value[0] : null))
 const latestNotificationTime = computed(() => String(latestNotification.value?.createdAt || '').trim())
-const readCount = computed(() => Math.max(0, notificationList.value.length - unreadCount.value))
 const activeFilterLabel = computed(() => FILTER_OPTIONS.find((item) => item.key === activeFilter.value)?.label || '全部')
 const introTags = computed(() => [
   unreadCount.value > 0 ? `${unreadCount.value} 条未读` : '已全部看过',
-  `${notificationList.value.length} 条提醒`
+  `${totalCount.value} 条提醒`
 ])
-const filteredNotificationList = computed(() => {
-  if (activeFilter.value === 'unread') {
-    return notificationList.value.filter((item) => !item.isRead)
-  }
-  if (activeFilter.value === 'read') {
-    return notificationList.value.filter((item) => item.isRead)
-  }
-  return notificationList.value
-})
 const emptyState = computed(() => {
   if (activeFilter.value === 'unread') {
     return {
@@ -140,34 +149,72 @@ onShow(async () => {
   if (!requireAuth()) return
   if (!unsubscribeNotificationSocket) {
     unsubscribeNotificationSocket = subscribeNotificationSocket(() => {
-      loadNotifications()
+      loadNotifications({ reset: true, silent: true })
     })
   }
-  await loadNotifications()
+  await loadNotifications({ reset: true })
 })
 
-async function loadNotifications() {
+onReachBottom(() => {
+  loadNotifications()
+})
+
+async function loadNotifications(options = {}) {
+  const reset = Boolean(options.reset)
+  const silent = Boolean(options.silent)
+
+  if (loadingInitial.value || loadingMore.value) return
+  if (!reset && !hasMore.value) return
+
+  if (reset) {
+    loadingInitial.value = true
+  } else {
+    loadingMore.value = true
+  }
+
+  const targetPage = reset ? 1 : pageNo.value + 1
+
   try {
-    const [list, unread] = await Promise.all([
-      fetchNotificationList(),
-      fetchUnreadNotificationCount()
+    const [pageData, stats, latest] = await Promise.all([
+      fetchNotificationList({
+        filter: activeFilter.value,
+        page: targetPage,
+        pageSize: PAGE_SIZE
+      }),
+      fetchNotificationStats(),
+      reset ? fetchLatestNotification() : Promise.resolve(latestNotification.value)
     ])
-    notificationList.value = Array.isArray(list) ? list : []
-    unreadCount.value = Number(unread || 0)
+
+    notificationList.value = reset
+      ? pageData.list
+      : notificationList.value.concat(pageData.list)
+    pageNo.value = pageData.page
+    hasMore.value = pageData.hasMore
+    latestNotification.value = latest
+    unreadCount.value = stats.unreadCount
+    readCount.value = stats.readCount
+    totalCount.value = stats.totalCount
     syncNotificationUnreadCount(unreadCount.value)
   } catch (error) {
-    uni.showToast({ title: error?.message || '消息加载失败', icon: 'none' })
+    if (!silent) {
+      uni.showToast({ title: error?.message || '消息加载失败', icon: 'none' })
+    }
+  } finally {
+    loadingInitial.value = false
+    loadingMore.value = false
   }
 }
 
 function handleFilterChange(filterKey) {
+  if (activeFilter.value === filterKey) return
   activeFilter.value = filterKey
+  loadNotifications({ reset: true })
 }
 
 function resolveFilterCount(filterKey) {
   if (filterKey === 'unread') return unreadCount.value
   if (filterKey === 'read') return readCount.value
-  return notificationList.value.length
+  return totalCount.value
 }
 
 function resolveBizLabel(bizType) {
@@ -184,6 +231,9 @@ function resolveBizLabel(bizType) {
       return '倒计时'
     case 'login':
       return '登录提醒'
+    case 'daily_summary':
+    case 'daily_summary_entry':
+      return '今日小计'
     default:
       return '共享动态'
   }
@@ -212,6 +262,11 @@ function resolveNotificationRoute(item) {
       return payload.noteId ? `/pages/modules/improvement/detail?id=${payload.noteId}` : ''
     case 'countdown':
       return '/pages/modules/countdown/index'
+    case 'daily_summary':
+    case 'daily_summary_entry':
+      return payload.summaryDate
+        ? `/pages/modules/daily-summary/detail?date=${encodeURIComponent(payload.summaryDate)}`
+        : '/pages/modules/daily-summary/detail'
     default:
       return ''
   }
@@ -221,9 +276,14 @@ async function handleOpenNotification(item) {
   try {
     if (!item.isRead) {
       await markNotificationRead(item.id)
-      item.isRead = true
-      unreadCount.value = Math.max(0, unreadCount.value - 1)
-      syncNotificationUnreadCount(unreadCount.value)
+      if (activeFilter.value === 'unread') {
+        await loadNotifications({ reset: true, silent: true })
+      } else {
+        item.isRead = true
+        unreadCount.value = Math.max(0, unreadCount.value - 1)
+        readCount.value += 1
+        syncNotificationUnreadCount(unreadCount.value)
+      }
     }
   } catch (error) {
     uni.showToast({ title: error?.message || '消息状态更新失败', icon: 'none' })
@@ -239,15 +299,13 @@ async function handleOpenNotification(item) {
 }
 
 async function handleMarkAllRead() {
-  if (!notificationList.value.length || unreadCount.value <= 0) {
+  if (unreadCount.value <= 0) {
     uni.showToast({ title: '当前没有未读消息', icon: 'none' })
     return
   }
   try {
     await markAllNotificationsRead()
-    notificationList.value = notificationList.value.map((item) => ({ ...item, isRead: true }))
-    unreadCount.value = 0
-    syncNotificationUnreadCount(0)
+    await loadNotifications({ reset: true, silent: true })
     uni.showToast({ title: '已全部标记为已读', icon: 'success' })
   } catch (error) {
     uni.showToast({ title: error?.message || '全部已读失败', icon: 'none' })
@@ -462,6 +520,24 @@ onUnload(() => {
   border-radius: 2rpx;
   transform: rotate(45deg);
   box-sizing: border-box;
+}
+
+.pagination-state {
+  margin-top: 18rpx;
+  display: flex;
+  justify-content: center;
+}
+
+.pagination-copy {
+  padding: 12rpx 22rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  color: #b28a96;
+  background: rgba(255, 245, 248, 0.92);
+}
+
+.pagination-copy-finished {
+  color: #a18b95;
 }
 
 .empty-state {

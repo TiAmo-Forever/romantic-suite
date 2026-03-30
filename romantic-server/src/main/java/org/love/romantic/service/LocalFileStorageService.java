@@ -37,6 +37,10 @@ public class LocalFileStorageService {
         return isManagedPath(relativePath, storageProperties.getAlbumDirectory());
     }
 
+    public boolean isManagedDailySummaryPath(String relativePath) {
+        return isManagedPath(relativePath, storageProperties.getDailySummaryDirectory());
+    }
+
     public String normalizeManagedAvatarPath(String relativePath) {
         return normalizeManagedPath(relativePath, this::isManagedAvatarPath);
     }
@@ -53,6 +57,10 @@ public class LocalFileStorageService {
         return normalizeManagedPath(relativePath, this::isManagedAlbumPath);
     }
 
+    public String normalizeManagedDailySummaryPath(String relativePath) {
+        return normalizeManagedPath(relativePath, this::isManagedDailySummaryPath);
+    }
+
     public void deleteAvatarQuietly(String relativePath) {
         deleteManagedFileQuietly(relativePath, this::isManagedAvatarPath);
     }
@@ -67,6 +75,10 @@ public class LocalFileStorageService {
 
     public void deleteAlbumMediaQuietly(String relativePath) {
         deleteManagedFileQuietly(relativePath, this::isManagedAlbumPath);
+    }
+
+    public void deleteDailySummaryMediaQuietly(String relativePath) {
+        deleteManagedFileQuietly(relativePath, this::isManagedDailySummaryPath);
     }
 
     private boolean isManagedPath(String relativePath, String directory) {

@@ -108,6 +108,16 @@ public class FileController {
         ));
     }
 
+    @ApiOperation("上传今日小计媒体")
+    @PostMapping(value = "/daily-summary-media", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<AvatarUploadResponse> uploadDailySummaryMedia(
+            @ApiParam("今日小计图片或视频文件")
+            @RequestPart("file") MultipartFile file) {
+        return ApiResponse.ok("上传成功", new AvatarUploadResponse(
+                storeMediaFile(file, storageProperties.getDailySummaryStorageDirectory(), "daily-summary")
+        ));
+    }
+
     private String storeMediaFile(MultipartFile file, Path mediaDirectory, String category) {
         if (file == null || file.isEmpty()) {
             throw new BusinessException("请选择要上传的图片或视频");
@@ -140,6 +150,8 @@ public class FileController {
             relativePath = storageProperties.buildImprovementRelativePath(fileName);
         } else if ("album".equals(category)) {
             relativePath = storageProperties.buildAlbumRelativePath(fileName);
+        } else if ("daily-summary".equals(category)) {
+            relativePath = storageProperties.buildDailySummaryRelativePath(fileName);
         } else {
             relativePath = storageProperties.buildAnniversaryRelativePath(fileName);
         }

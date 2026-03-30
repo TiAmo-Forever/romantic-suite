@@ -130,3 +130,7 @@ export function uploadImprovementMedia(filePath) {
 export function uploadAlbumMedia(filePath) {
 	return uploadMedia(filePath, '/api/files/album-media')
 }
+
+export function uploadDailySummaryMedia(filePath) {
+	return uploadMedia(filePath, '/api/files/daily-summary-media')
+}

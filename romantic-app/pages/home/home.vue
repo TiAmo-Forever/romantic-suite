@@ -61,12 +61,14 @@
       </view>
     </view>
 
-    <view class="memo-card app-fade-up app-delay-2">
+    <view class="memo-card app-fade-up app-delay-2" hover-class="surface-press" hover-stay-time="70" @click="goMemo">
       <view class="memo-head">
-        <view class="memo-title">{{ TEXT.memoTitle }}</view>
-        <view class="memo-add" hover-class="memo-add-active" hover-stay-time="60" @click="goMemo">
-          <text class="memo-add-plus">+</text>
-          <text class="memo-add-text">{{ TEXT.memoAdd }}</text>
+        <view class="memo-head-main">
+          <view class="memo-title">{{ TEXT.memoTitle }}</view>
+          <view class="memo-mood-pill" :class="`memo-mood-pill-${memoSummary.mood}`">{{ memoSummary.moodLabel }}</view>
+        </view>
+        <view class="memo-add" hover-class="memo-add-active" hover-stay-time="60" @click.stop="goMemoEdit">
+          <text class="memo-add-text">{{ memoSummary.actionText }}</text>
         </view>
       </view>
       <view class="memo-content">{{ memoSummary.content }}</view>
@@ -139,10 +141,11 @@
 <script setup>
 import { computed, onMounted, reactive } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import { requireAuth } from '@/utils/auth.js'
+import { getUser, requireAuth } from '@/utils/auth.js'
 import { goPage } from '@/utils/nav.js'
 import { useThemePage } from '@/utils/useThemePage.js'
 import { fetchSharedCountdownPlan } from '@/services/countdown.js'
+import { fetchTodayDailySummary, getDailySummaryMoodMeta } from '@/services/daily-summaries.js'
 import { fetchAnniversaryList } from '@/services/anniversaries.js'
 import { fetchImprovementNoteList } from '@/services/improvement-notes.js'
 import BottomTab from '@/pages/components/BottomTab.vue'
@@ -160,8 +163,7 @@ const TEXT = {
   improvementShort: '改进簿',
   improvementPrefix: '本周待改进',
   improvementSuffix: '项',
-  memoTitle: '今日小记',
-  memoAdd: '添加',
+  memoTitle: '今日小计',
   albumTitle: '甜蜜相册',
   moreTitle: '更多功能'
 }
@@ -188,8 +190,10 @@ const improvementState = reactive({
 })
 
 const memoState = reactive({
+  mood: 'gentle',
   content: '记录今日的心情与点滴，让每一天都有被认真收藏。',
-  meta: '今日可记录'
+  meta: '今天 · 等你们写下这一页',
+  hasRecord: false
 })
 
 const countdownSummary = computed(() => {
@@ -243,8 +247,12 @@ const improvementSummary = computed(() => {
 })
 
 const memoSummary = computed(() => ({
+  mood: memoState.mood,
+  moodLabel: getDailySummaryMoodMeta(memoState.mood).label,
   content: memoState.content,
-  meta: memoState.meta
+  meta: memoState.meta,
+  hasRecord: memoState.hasRecord,
+  actionText: memoState.hasRecord ? '编辑今天' : '去记录'
 }))
 
 function parseDateTime(value) {
@@ -275,8 +283,9 @@ function formatDate(date) {
 
 async function loadHomeSummary() {
   try {
-    const [countdown, anniversaries, notes] = await Promise.all([
+    const [countdown, dailySummary, anniversaries, notes] = await Promise.all([
       fetchSharedCountdownPlan(),
+      fetchTodayDailySummary(),
       fetchAnniversaryList('all'),
       fetchImprovementNoteList('all')
     ])
@@ -304,19 +313,27 @@ async function loadHomeSummary() {
     improvementState.pendingCount = list.filter((item) => ['pending', 'improving'].includes(String(item.status || '').trim())).length
     improvementState.activeCount = list.length
 
-    if (countdown?.note) {
-      memoState.content = countdown.note
-      memoState.meta = `${formatMonthDay(parseDateTime(countdown.nextMeetingAt)) || '今日'} · 关于见面的期待`
-    } else if (anniversary) {
-      memoState.content = String(anniversary.description || anniversary.summary || anniversary.title || '').trim() || '今天也值得留下一个温柔的小记。'
-      memoState.meta = `${formatMonthDay(parseDateTime(anniversary.eventDate || '')) || '今日'} · 纪念感进行中`
-    } else {
-      memoState.content = '今天也值得留下一个温柔的小记。'
-      memoState.meta = '今日 · 适合记录心情'
-    }
+    memoState.mood = dailySummary?.mood || 'gentle'
+    memoState.hasRecord = Boolean(dailySummary?.hasRecord)
+    memoState.content = dailySummary?.hasRecord
+      ? (String(dailySummary.content || '').trim() || '今天的小计已经写下来了。')
+      : '今天也值得留下一个温柔的小计，让普通的一天也有被认真看见的地方。'
+    memoState.meta = dailySummary?.hasRecord
+      ? `今天 · ${dailySummary.updaterUsername === getCurrentUsername() ? '我' : 'TA'}刚刚更新过`
+      : '今天 · 等你们写下这一页'
   } catch (error) {
+    memoState.mood = 'gentle'
+    memoState.hasRecord = false
     memoState.content = '把今天的心情记下来，下一次回头看也会觉得很温柔。'
     memoState.meta = '离线展示'
+  }
+}
+
+function getCurrentUsername() {
+  try {
+    return String(getUser()?.username || '')
+  } catch (error) {
+    return ''
   }
 }
 
@@ -324,7 +341,8 @@ function goCountdown() { goPage('/pages/modules/countdown/index') }
 function goAnniversary() { goPage('/pages/modules/anniversary/index') }
 function goAlbum() { goPage('/pages/modules/album/index') }
 function goImprovement() { goPage('/pages/modules/improvement/index') }
-function goMemo() { goPage('/pages/modules/coming-soon/index?title=' + encodeURIComponent('今日小记')) }
+function goMemo() { goPage('/pages/modules/daily-summary/detail') }
+function goMemoEdit() { goPage('/pages/modules/daily-summary/edit') }
 function goPlanet() { goPage('/pages/planet/planet') }
 function goSettings() { goPage('/pages/account/settings') }
 
@@ -734,16 +752,41 @@ onShow(() => {
     gap: 20rpx;
   }
 
+  .memo-head-main {
+    display: flex;
+    align-items: center;
+    gap: 14rpx;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
   .memo-title {
     font-size: 32rpx;
     font-weight: 600;
     color: var(--home-text-main);
   }
 
+  .memo-mood-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46rpx;
+    padding: 0 16rpx;
+    border-radius: 999rpx;
+    font-size: 22rpx;
+    font-weight: 600;
+  }
+
+  .memo-mood-pill-gentle { background: #fff1f5; color: #c66e89; }
+  .memo-mood-pill-sweet { background: #fff0e7; color: #cc815d; }
+  .memo-mood-pill-calm { background: #eef7ef; color: #70936a; }
+  .memo-mood-pill-missing { background: #f6efff; color: #8f78ba; }
+  .memo-mood-pill-busy { background: #fff6e5; color: #bf8c45; }
+  .memo-mood-pill-closer { background: #edf6fb; color: #5a8dae; }
+
   .memo-add {
     display: inline-flex;
     align-items: center;
-    gap: 8rpx;
     padding: 12rpx 20rpx;
     border-radius: 999rpx;
     background: rgba(255, 255, 255, 0.95);
@@ -752,7 +795,6 @@ onShow(() => {
   }
 
   .memo-add-active { transform: scale(0.97); }
-  .memo-add-plus { font-size: 34rpx; line-height: 1; font-weight: 400; }
   .memo-add-text { font-size: 27rpx; line-height: 1; font-weight: 600; }
 
   .memo-content {

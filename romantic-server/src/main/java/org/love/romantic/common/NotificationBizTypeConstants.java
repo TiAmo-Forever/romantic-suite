@@ -12,6 +12,8 @@ public final class NotificationBizTypeConstants {
     public static final String IMPROVEMENT_NOTE = "improvement_note";
     public static final String IMPROVEMENT_FEEDBACK = "improvement_feedback";
     public static final String ALBUM = "album";
+    public static final String DAILY_SUMMARY = "daily_summary";
+    public static final String DAILY_SUMMARY_ENTRY = "daily_summary_entry";
 
     private NotificationBizTypeConstants() {
     }

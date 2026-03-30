@@ -11,9 +11,15 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ApiModel("站内通知未读数响应")
+@ApiModel("站内通知统计响应")
 public class UserNotificationUnreadResponse {
 
     @ApiModelProperty("未读数量")
     private Long unreadCount;
+
+    @ApiModelProperty("已读数量")
+    private Long readCount;
+
+    @ApiModelProperty("总条数")
+    private Long totalCount;
 }

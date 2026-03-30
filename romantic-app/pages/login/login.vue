@@ -37,7 +37,7 @@
 				<view class="card-outline"></view>
 
 				<view class="field-shell">
-					<view class="field-icon" aria-hidden="true">账</view>
+					<view class="field-icon" aria-hidden="true">账号</view>
 					<input
 						v-model.trim="form.username"
 						class="field-input"
@@ -47,16 +47,18 @@
 				</view>
 
 				<view class="field-shell">
-					<view class="field-icon" aria-hidden="true">锁</view>
+					<view class="field-icon" aria-hidden="true">密码</view>
 					<input
 						v-model="form.password"
-						class="field-input"
+						class="field-input field-input-with-action"
 						:password="!showPassword"
 						placeholder="输入密码，赴约今天的甜蜜"
 						placeholder-class="field-placeholder"
 					/>
-					<view class="field-action" @click.stop="togglePassword">
-						{{ showPassword ? '隐藏' : '显示' }}
+					<view class="field-action" :class="{ active: showPassword }" @click.stop="togglePassword">
+						<view class="eye-icon" :class="{ active: showPassword }" aria-hidden="true">
+							<view class="eye-pupil"></view>
+						</view>
 					</view>
 				</view>
 
@@ -509,10 +511,14 @@ onUnmounted(() => {
 
 	.field-icon {
 		flex-shrink: 0;
-		width: 40rpx;
-		font-size: 30rpx;
+		min-width: 74rpx;
+		padding-right: 10rpx;
+		font-size: 28rpx;
+		font-weight: 600;
+		line-height: 1;
 		text-align: center;
-		opacity: 0.72;
+		white-space: nowrap;
+		color: rgba(141, 117, 92, 0.78);
 	}
 
 	.field-input {
@@ -523,16 +529,69 @@ onUnmounted(() => {
 		color: #7d6a58;
 	}
 
+	.field-input-with-action {
+		padding-right: 74rpx;
+	}
+
 	.field-placeholder {
 		color: #c6b9aa;
 	}
 
 	.field-action {
-		flex-shrink: 0;
-		padding-left: 12rpx;
-		font-size: 26rpx;
-		font-weight: 600;
-		color: #9b958d;
+		position: absolute;
+		right: 18rpx;
+		top: 50%;
+		width: 56rpx;
+		height: 56rpx;
+		border-radius: 16rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: linear-gradient(180deg, #fffcf8 0%, #fff7ef 100%);
+		box-shadow: inset 0 0 0 2rpx rgba(228, 211, 186, 0.72);
+		transform: translateY(-50%);
+	}
+
+	.field-action.active {
+		box-shadow: inset 0 0 0 2rpx rgba(214, 186, 140, 0.9);
+	}
+
+	.eye-icon {
+		position: relative;
+		width: 24rpx;
+		height: 15rpx;
+		border: 2.5rpx solid rgba(150, 137, 118, 0.88);
+		border-radius: 34rpx / 22rpx;
+		box-sizing: border-box;
+	}
+
+	.eye-icon::after {
+		content: '';
+		position: absolute;
+		left: 50%;
+		top: -1rpx;
+		width: 28rpx;
+		height: 3rpx;
+		border-radius: 999rpx;
+		background: rgba(176, 156, 132, 0.88);
+		transform: translateX(-50%) rotate(-28deg) scaleX(0);
+		transform-origin: center;
+		transition: transform 0.18s ease;
+	}
+
+	.eye-icon.active::after {
+		transform: translateX(-50%) rotate(-28deg) scaleX(1);
+	}
+
+	.eye-pupil {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		width: 6rpx;
+		height: 6rpx;
+		border-radius: 50%;
+		background: rgba(150, 137, 118, 0.92);
+		transform: translate(-50%, -50%);
 	}
 
 	.assist-row {

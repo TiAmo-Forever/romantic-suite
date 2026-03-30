@@ -28,6 +28,7 @@ public class SchemaMigrationRunner {
     @PostConstruct
     public void migrate() {
         ensureCountdownPlanTable();
+        ensureDailySummaryTable();
         ensureImprovementTables();
         ensureNotificationTable();
         ensureAlbumTables();
@@ -49,6 +50,44 @@ public class SchemaMigrationRunner {
                 + "updated_by VARCHAR(64) NOT NULL DEFAULT '',"
                 + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
                 + "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+                + ")");
+    }
+
+    private void ensureDailySummaryTable() {
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS daily_summary ("
+                + "id BIGINT PRIMARY KEY AUTO_INCREMENT,"
+                + "summary_date DATE NOT NULL,"
+                + "mood VARCHAR(32) NOT NULL,"
+                + "content VARCHAR(300) NOT NULL,"
+                + "creator_username VARCHAR(64) NOT NULL,"
+                + "updated_by VARCHAR(64) NOT NULL,"
+                + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+                + "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+                + "UNIQUE KEY uk_daily_summary_date (summary_date),"
+                + "KEY idx_daily_summary_updated_at (updated_at)"
+                + ")");
+
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS daily_summary_entry ("
+                + "id BIGINT PRIMARY KEY AUTO_INCREMENT,"
+                + "summary_id BIGINT NOT NULL,"
+                + "mood VARCHAR(32) NOT NULL,"
+                + "content VARCHAR(300) NOT NULL,"
+                + "creator_username VARCHAR(64) NOT NULL,"
+                + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+                + "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+                + "KEY idx_daily_summary_entry_summary_id (summary_id),"
+                + "KEY idx_daily_summary_entry_updated_at (updated_at)"
+                + ")");
+
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS daily_summary_media ("
+                + "id BIGINT PRIMARY KEY AUTO_INCREMENT,"
+                + "entry_id BIGINT NOT NULL,"
+                + "media_type VARCHAR(16) NOT NULL,"
+                + "file_url VARCHAR(255) NOT NULL,"
+                + "thumbnail_url VARCHAR(255) NOT NULL DEFAULT '',"
+                + "sort_order INT NOT NULL DEFAULT 0,"
+                + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+                + "KEY idx_daily_summary_media_entry_id (entry_id)"
                 + ")");
     }
 
@@ -306,6 +345,9 @@ public class SchemaMigrationRunner {
         executeCommentSql("ALTER TABLE album_memory_comment COMMENT = '甜蜜相册评论记录表（兼容迁移保留）'");
         executeCommentSql("ALTER TABLE biz_like_record COMMENT = '通用业务点赞记录表'");
         executeCommentSql("ALTER TABLE biz_comment_record COMMENT = '通用业务评论记录表'");
+        executeCommentSql("ALTER TABLE daily_summary COMMENT = '今日小计共享记录表'");
+        executeCommentSql("ALTER TABLE daily_summary_entry COMMENT = '今日小计条目表'");
+        executeCommentSql("ALTER TABLE daily_summary_media COMMENT = '今日小计媒体资源表'");
         executeCommentSql("ALTER TABLE user_notification COMMENT = '用户站内通知表'");
 
         executeCommentSql("ALTER TABLE album_memory MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
@@ -345,6 +387,31 @@ public class SchemaMigrationRunner {
         executeCommentSql("ALTER TABLE biz_comment_record MODIFY COLUMN content VARCHAR(200) NOT NULL COMMENT '评论内容'");
         executeCommentSql("ALTER TABLE biz_comment_record MODIFY COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT '评论时间'");
         executeCommentSql("ALTER TABLE biz_comment_record MODIFY COLUMN updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'");
+
+        executeCommentSql("ALTER TABLE daily_summary MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
+        executeCommentSql("ALTER TABLE daily_summary MODIFY COLUMN summary_date DATE NOT NULL COMMENT '对应日期'");
+        executeCommentSql("ALTER TABLE daily_summary MODIFY COLUMN mood VARCHAR(32) NOT NULL COMMENT '最新一条氛围标识'");
+        executeCommentSql("ALTER TABLE daily_summary MODIFY COLUMN content VARCHAR(300) NOT NULL COMMENT '最新一条预览内容'");
+        executeCommentSql("ALTER TABLE daily_summary MODIFY COLUMN creator_username VARCHAR(64) NOT NULL COMMENT '首次创建账号'");
+        executeCommentSql("ALTER TABLE daily_summary MODIFY COLUMN updated_by VARCHAR(64) NOT NULL COMMENT '最近更新账号'");
+        executeCommentSql("ALTER TABLE daily_summary MODIFY COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'");
+        executeCommentSql("ALTER TABLE daily_summary MODIFY COLUMN updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'");
+
+        executeCommentSql("ALTER TABLE daily_summary_entry MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
+        executeCommentSql("ALTER TABLE daily_summary_entry MODIFY COLUMN summary_id BIGINT NOT NULL COMMENT '所属日期记录 ID'");
+        executeCommentSql("ALTER TABLE daily_summary_entry MODIFY COLUMN mood VARCHAR(32) NOT NULL COMMENT '条目氛围标识'");
+        executeCommentSql("ALTER TABLE daily_summary_entry MODIFY COLUMN content VARCHAR(300) NOT NULL COMMENT '条目内容'");
+        executeCommentSql("ALTER TABLE daily_summary_entry MODIFY COLUMN creator_username VARCHAR(64) NOT NULL COMMENT '创建账号'");
+        executeCommentSql("ALTER TABLE daily_summary_entry MODIFY COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'");
+        executeCommentSql("ALTER TABLE daily_summary_entry MODIFY COLUMN updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'");
+
+        executeCommentSql("ALTER TABLE daily_summary_media MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
+        executeCommentSql("ALTER TABLE daily_summary_media MODIFY COLUMN entry_id BIGINT NOT NULL COMMENT '所属条目 ID'");
+        executeCommentSql("ALTER TABLE daily_summary_media MODIFY COLUMN media_type VARCHAR(16) NOT NULL COMMENT '媒体类型'");
+        executeCommentSql("ALTER TABLE daily_summary_media MODIFY COLUMN file_url VARCHAR(255) NOT NULL COMMENT '媒体文件路径'");
+        executeCommentSql("ALTER TABLE daily_summary_media MODIFY COLUMN thumbnail_url VARCHAR(255) NOT NULL DEFAULT '' COMMENT '缩略图路径'");
+        executeCommentSql("ALTER TABLE daily_summary_media MODIFY COLUMN sort_order INT NOT NULL DEFAULT 0 COMMENT '排序值'");
+        executeCommentSql("ALTER TABLE daily_summary_media MODIFY COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'");
     }
 
     private void executeCommentSql(String sql) {
