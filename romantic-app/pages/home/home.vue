@@ -193,7 +193,7 @@ const memoState = reactive({
   mood: 'gentle',
   content: '记录今日的心情与点滴，让每一天都有被认真收藏。',
   meta: '今天 · 等你们写下这一页',
-  hasRecord: false
+  hasRecord: false,
 })
 
 const countdownSummary = computed(() => {
@@ -245,7 +245,6 @@ const improvementSummary = computed(() => {
     tagClass: 'status-badge-quiet'
   }
 })
-
 const memoSummary = computed(() => ({
   mood: memoState.mood,
   moodLabel: getDailySummaryMoodMeta(memoState.mood).label,
@@ -297,7 +296,9 @@ async function loadHomeSummary() {
       loverName: countdown?.loverName || ''
     })
 
-    const anniversary = Array.isArray(anniversaries) ? anniversaries[0] : null
+    const anniversary = Array.isArray(anniversaries)
+      ? anniversaries.find((item) => item?.isPinned)
+      : null
     if (anniversary) {
       const eventDate = parseDateTime(anniversary.eventDate || '')
       anniversaryState.days = Math.abs(Number(anniversary.dayOffset || 0))
@@ -305,8 +306,8 @@ async function loadHomeSummary() {
       anniversaryState.meta = formatDate(eventDate)
     } else {
       anniversaryState.days = 0
-      anniversaryState.label = '还没有设置纪念日'
-      anniversaryState.meta = '日期待设置'
+      anniversaryState.label = '还没有置顶纪念日'
+      anniversaryState.meta = '去纪念日里置顶一个重要的日子'
     }
 
     const list = Array.isArray(notes) ? notes : []
@@ -741,9 +742,10 @@ onShow(() => {
     margin-top: 24rpx;
     padding: 24rpx;
     border-radius: 34rpx;
-    background: linear-gradient(180deg, var(--home-surface), color-mix(in srgb, var(--home-surface-soft) 55%, #fff9f4 45%));
+    background: var(--home-surface);
     box-shadow: var(--home-shadow), inset 0 0 0 2rpx var(--home-border);
   }
+
 
   .memo-head {
     display: flex;

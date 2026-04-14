@@ -72,3 +72,28 @@ export async function deleteImprovementFeedback(id, feedbackId) {
   })
   return ensureSuccess(response, '删除反馈失败')
 }
+
+export async function toggleImprovementFeedbackLike(id, feedbackId) {
+  const response = await request({
+    url: `/api/improvement-notes/${encodeURIComponent(id)}/feedback/${encodeURIComponent(feedbackId)}/likes`,
+    method: 'POST'
+  })
+  return ensureSuccess(response, '反馈点赞失败')
+}
+
+export async function createImprovementFeedbackComment(id, feedbackId, payload) {
+  const response = await request({
+    url: `/api/improvement-notes/${encodeURIComponent(id)}/feedback/${encodeURIComponent(feedbackId)}/comments`,
+    method: 'POST',
+    data: payload
+  })
+  return ensureSuccess(response, '反馈评论失败')
+}
+
+export async function deleteImprovementFeedbackComment(id, feedbackId, commentId) {
+  const response = await request({
+    url: `/api/improvement-notes/${encodeURIComponent(id)}/feedback/${encodeURIComponent(feedbackId)}/comments/${encodeURIComponent(commentId)}`,
+    method: 'DELETE'
+  })
+  return ensureSuccess(response, '删除反馈评论失败')
+}

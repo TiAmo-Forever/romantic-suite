@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="page app-account-page" :style="themeStyle" @click="handleDetailTap">
     <GlobalNotificationBanner />
     <view class="app-account-topbar-shell">
@@ -101,6 +101,74 @@
               </view>
             </view>
           </view>
+
+          <view class="interaction-row">
+            <view class="interaction-time">{{ latestFeedback.createdAt }}</view>
+            <view class="interaction-more-wrap" @click.stop>
+              <view class="interaction-more-btn" @click.stop="toggleFeedbackActionMenu(latestFeedback)">
+                <text class="interaction-more-dot"></text>
+                <text class="interaction-more-dot"></text>
+                <text class="interaction-more-dot"></text>
+              </view>
+
+              <view v-if="feedbackActionMenuId === latestFeedback.id" class="interaction-action-pop">
+                <view class="interaction-pop-item" @click.stop="handleFeedbackLikeFromMenu(latestFeedback)">
+                  <text class="interaction-pop-icon">{{ FILLED_HEART }}</text>
+                  <text class="interaction-pop-label">{{ feedbackLikeActionText(latestFeedback) }}</text>
+                </view>
+                <view class="interaction-pop-divider"></view>
+                <view class="interaction-pop-item comment-only" @click.stop="openFeedbackCommentComposer(latestFeedback)">
+                  <text class="interaction-pop-label">{{ TEXT.feedbackCommentAction }}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+
+          <view v-if="hasFeedbackInteractionFeed(latestFeedback) || feedbackCommentVisibleId === latestFeedback.id" class="interaction-feed">
+            <view v-if="latestFeedback.likeUsers?.length" class="interaction-feed-line interaction-feed-like">
+              <text class="interaction-feed-heart">{{ FILLED_HEART }}</text>
+              <text class="interaction-feed-text">{{ feedbackLikeUserSummary(latestFeedback) }}</text>
+            </view>
+            <view
+              v-for="comment in latestFeedback.commentList || []"
+              :key="`latest_comment_${comment.id}`"
+              class="interaction-feed-line interaction-feed-comment"
+            >
+              <view class="interaction-comment-head">
+                <text class="interaction-feed-name">{{ getCommentDisplayName(comment) }}</text>
+                <view class="interaction-comment-meta">
+                  <text class="interaction-comment-time">{{ formatCommentTime(comment.createdAt || comment.updatedAt) }}</text>
+                  <text
+                    v-if="canDeleteFeedbackComment(latestFeedback, comment)"
+                    class="interaction-comment-delete"
+                    @click.stop="handleDeleteFeedbackComment(latestFeedback, comment)"
+                  >
+                    删除
+                  </text>
+                </view>
+              </view>
+              <text class="interaction-comment-content">{{ comment.content }}</text>
+            </view>
+
+            <view v-if="feedbackCommentVisibleId === latestFeedback.id" class="comment-composer feedback-comment-composer" @click.stop>
+              <input
+                v-model="feedbackCommentForm.content"
+                class="comment-input"
+                :maxlength="200"
+                :cursor-spacing="24"
+                :placeholder="feedbackCommentPlaceholder(latestFeedback)"
+                placeholder-class="app-account-input-placeholder"
+                confirm-type="send"
+                @confirm="handleSubmitFeedbackComment(latestFeedback)"
+              />
+              <view class="comment-composer-actions">
+                <view class="comment-limit">{{ feedbackCommentLengthText }}</view>
+                <button class="comment-send-btn" :disabled="submittingFeedbackComment" @click="handleSubmitFeedbackComment(latestFeedback)">
+                  {{ submittingFeedbackComment ? TEXT.feedbackCommentSending : TEXT.feedbackCommentSend }}
+                </button>
+              </view>
+            </view>
+          </view>
         </view>
 
         <view v-else class="empty-block">
@@ -162,6 +230,74 @@
                     <image v-else-if="media.thumbnailUrl" class="media-thumb" :src="resolveMedia(media.thumbnailUrl)" mode="aspectFill" />
                     <view v-else class="media-thumb media-video-fallback">视频</view>
                     <view class="media-type">{{ media.mediaType === 'video' ? '视频' : '图片' }}</view>
+                  </view>
+                </view>
+              </view>
+
+              <view class="interaction-row">
+                <view class="interaction-time">{{ item.createdAt }}</view>
+                <view class="interaction-more-wrap" @click.stop>
+                  <view class="interaction-more-btn" @click.stop="toggleFeedbackActionMenu(item)">
+                    <text class="interaction-more-dot"></text>
+                    <text class="interaction-more-dot"></text>
+                    <text class="interaction-more-dot"></text>
+                  </view>
+
+                  <view v-if="feedbackActionMenuId === item.id" class="interaction-action-pop">
+                    <view class="interaction-pop-item" @click.stop="handleFeedbackLikeFromMenu(item)">
+                      <text class="interaction-pop-icon">{{ FILLED_HEART }}</text>
+                      <text class="interaction-pop-label">{{ feedbackLikeActionText(item) }}</text>
+                    </view>
+                    <view class="interaction-pop-divider"></view>
+                    <view class="interaction-pop-item comment-only" @click.stop="openFeedbackCommentComposer(item)">
+                      <text class="interaction-pop-label">{{ TEXT.feedbackCommentAction }}</text>
+                    </view>
+                  </view>
+                </view>
+              </view>
+
+              <view v-if="hasFeedbackInteractionFeed(item) || feedbackCommentVisibleId === item.id" class="interaction-feed">
+                <view v-if="item.likeUsers?.length" class="interaction-feed-line interaction-feed-like">
+                  <text class="interaction-feed-heart">{{ FILLED_HEART }}</text>
+                  <text class="interaction-feed-text">{{ feedbackLikeUserSummary(item) }}</text>
+                </view>
+                <view
+                  v-for="comment in item.commentList || []"
+                  :key="`history_comment_${item.id}_${comment.id}`"
+                  class="interaction-feed-line interaction-feed-comment"
+                >
+                  <view class="interaction-comment-head">
+                    <text class="interaction-feed-name">{{ getCommentDisplayName(comment) }}</text>
+                    <view class="interaction-comment-meta">
+                      <text class="interaction-comment-time">{{ formatCommentTime(comment.createdAt || comment.updatedAt) }}</text>
+                      <text
+                        v-if="canDeleteFeedbackComment(item, comment)"
+                        class="interaction-comment-delete"
+                        @click.stop="handleDeleteFeedbackComment(item, comment)"
+                      >
+                        删除
+                      </text>
+                    </view>
+                  </view>
+                  <text class="interaction-comment-content">{{ comment.content }}</text>
+                </view>
+
+                <view v-if="feedbackCommentVisibleId === item.id" class="comment-composer feedback-comment-composer" @click.stop>
+                  <input
+                    v-model="feedbackCommentForm.content"
+                    class="comment-input"
+                    :maxlength="200"
+                    :cursor-spacing="24"
+                    :placeholder="feedbackCommentPlaceholder(item)"
+                    placeholder-class="app-account-input-placeholder"
+                    confirm-type="send"
+                    @confirm="handleSubmitFeedbackComment(item)"
+                  />
+                  <view class="comment-composer-actions">
+                    <view class="comment-limit">{{ feedbackCommentLengthText }}</view>
+                    <button class="comment-send-btn" :disabled="submittingFeedbackComment" @click="handleSubmitFeedbackComment(item)">
+                      {{ submittingFeedbackComment ? TEXT.feedbackCommentSending : TEXT.feedbackCommentSend }}
+                    </button>
                   </view>
                 </view>
               </view>
@@ -257,9 +393,12 @@ import { computed, reactive, ref } from 'vue'
 import { onLoad, onShow } from '@dcloudio/uni-app'
 import {
   addImprovementFeedback,
+  createImprovementFeedbackComment,
   deleteImprovementFeedback,
+  deleteImprovementFeedbackComment,
   deleteImprovementNote,
   fetchImprovementNoteDetail,
+  toggleImprovementFeedbackLike,
   updateImprovementFeedback
 } from '@/services/improvement-notes.js'
 import { getUser, requireAuth } from '@/utils/auth.js'
@@ -297,6 +436,22 @@ const TEXT = {
   addFeedbackSuccess: '反馈已记录',
   updateFeedbackFailed: '反馈更新失败',
   updateFeedbackSuccess: '反馈已更新',
+  feedbackLikeAction: '点赞',
+  feedbackUnlikeAction: '取消点赞',
+  feedbackCommentAction: '评论',
+  feedbackCommentPlaceholder: '写下一句想留给这条反馈的话',
+  feedbackCommentSend: '发送',
+  feedbackCommentSending: '发送中',
+  feedbackCommentFailed: '反馈评论失败',
+  feedbackCommentEmptyError: '请先写下评论内容',
+  feedbackCommentSuccess: '评论已发送',
+  feedbackCommentDeleted: '评论已删除',
+  feedbackCommentDeleteFailed: '删除反馈评论失败',
+  feedbackLikeFailed: '反馈点赞失败',
+  feedbackCommentDeleteTitle: '删除反馈评论',
+  feedbackCommentDeleteContent: '删除后这条评论会立即移除，是否继续？',
+  commentFallbackUser: '未命名',
+  commentLengthSuffix: '/200',
   sheetCreateTitle: '记录新反馈',
   sheetCreateDesc: '把这次新的变化认真记下来。',
   sheetEditTitle: '编辑反馈',
@@ -307,6 +462,7 @@ const TEXT = {
 }
 
 const collapsedFeedbackCount = 2
+const FILLED_HEART = '❤'
 const { themeStyle } = useThemePage()
 const detail = ref(null)
 const noteId = ref('')
@@ -315,10 +471,15 @@ const expandedFeedbackIds = ref([])
 const showAllFeedback = ref(false)
 const feedbackSheetVisible = ref(false)
 const showRecordMenu = ref(false)
+const feedbackActionMenuId = ref(0)
 const feedbackSheetMode = ref('create')
 const feedbackSheetTargetId = ref(0)
+const feedbackCommentVisibleId = ref(0)
+const togglingFeedbackLikeId = ref(0)
+const submittingFeedbackComment = ref(false)
 const sheetStatusIndex = ref(1)
 const skipNextOnShowReload = ref(false)
+const feedbackCommentForm = reactive({ content: '' })
 const sheetForm = reactive({ status: 'improving', content: '' })
 const sheetMediaList = ref([])
 
@@ -342,6 +503,7 @@ const sheetVideoCount = computed(() => sheetMediaList.value.filter((item) => ite
 const feedbackSheetTitle = computed(() => (feedbackSheetMode.value === 'edit' ? TEXT.sheetEditTitle : TEXT.sheetCreateTitle))
 const feedbackSheetDesc = computed(() => (feedbackSheetMode.value === 'edit' ? TEXT.sheetEditDesc : TEXT.sheetCreateDesc))
 const feedbackSheetSubmitText = computed(() => (feedbackSheetMode.value === 'edit' ? '保存反馈' : '记录反馈'))
+const feedbackCommentLengthText = computed(() => `${String(feedbackCommentForm.content || '').length}${TEXT.commentLengthSuffix}`)
 const historyPanelDescription = computed(() => {
   if (!latestFeedback.value) return '还没有反馈时，这里会保持干净，等第一条记录出现后再慢慢展开。'
   if (!historyFeedbackList.value.length) return '最近这次已经是当前唯一的一条反馈，后续的推进会继续叠在这里。'
@@ -409,6 +571,45 @@ function feedbackCardClass(item) {
   return isOwnFeedback(item) ? 'feedback-card-own' : 'feedback-card-other'
 }
 
+function feedbackLikeActionText(item) {
+  return item?.likedByCurrentUser ? TEXT.feedbackUnlikeAction : TEXT.feedbackLikeAction
+}
+
+function hasFeedbackInteractionFeed(item) {
+  const likeUsers = Array.isArray(item?.likeUsers) ? item.likeUsers : []
+  const commentList = Array.isArray(item?.commentList) ? item.commentList : []
+  return likeUsers.length > 0 || commentList.length > 0
+}
+
+function feedbackLikeUserSummary(item) {
+  return (Array.isArray(item?.likeUsers) ? item.likeUsers : [])
+    .map((user) => user?.nickname || user?.username || TEXT.commentFallbackUser)
+    .join('、')
+}
+
+function feedbackCommentPlaceholder(item) {
+  return item ? `${TEXT.feedbackCommentPlaceholder}` : TEXT.feedbackCommentPlaceholder
+}
+
+function getCommentDisplayName(comment) {
+  return comment?.commenterNickname || comment?.commenterUsername || TEXT.commentFallbackUser
+}
+
+function formatCommentTime(value) {
+  const source = String(value || '').replace('T', ' ').trim()
+  if (!source) return ''
+  if (source.length >= 16) return source.slice(5, 16)
+  return source
+}
+
+function isOwnFeedbackComment(comment) {
+  return String(comment?.commenterUsername || '').trim() === currentUsername.value
+}
+
+function canDeleteFeedbackComment(feedback, comment) {
+  return isOwnFeedbackComment(comment) || isOwnFeedback(feedback)
+}
+
 function toggleNoteMedia() {
   noteMediaExpanded.value = !noteMediaExpanded.value
 }
@@ -452,8 +653,18 @@ function closeRecordMenu() {
   showRecordMenu.value = false
 }
 
+function toggleFeedbackActionMenu(item) {
+  if (!item?.id) return
+  feedbackActionMenuId.value = feedbackActionMenuId.value === item.id ? 0 : item.id
+}
+
+function closeFeedbackActionMenu() {
+  feedbackActionMenuId.value = 0
+}
+
 function handleDetailTap() {
   closeRecordMenu()
+  closeFeedbackActionMenu()
 }
 
 function handleRecordEdit() {
@@ -466,8 +677,80 @@ function handleRecordDelete() {
   handleDelete()
 }
 
+function openFeedbackCommentComposer(item) {
+  if (!item?.id) return
+  closeFeedbackActionMenu()
+  if (feedbackCommentVisibleId.value === item.id) {
+    feedbackCommentVisibleId.value = 0
+    feedbackCommentForm.content = ''
+    return
+  }
+  feedbackCommentVisibleId.value = item.id
+  feedbackCommentForm.content = ''
+}
+
+async function handleFeedbackLikeFromMenu(item) {
+  closeFeedbackActionMenu()
+  await handleFeedbackLike(item)
+}
+
+async function handleFeedbackLike(item) {
+  if (!detail.value?.id || !item?.id || togglingFeedbackLikeId.value) return
+  try {
+    togglingFeedbackLikeId.value = item.id
+    await toggleImprovementFeedbackLike(detail.value.id, item.id)
+    await loadDetail()
+  } catch (error) {
+    uni.showToast({ title: error?.message || TEXT.feedbackLikeFailed, icon: 'none' })
+  } finally {
+    togglingFeedbackLikeId.value = 0
+  }
+}
+
+async function handleSubmitFeedbackComment(item) {
+  if (!detail.value?.id || !item?.id || submittingFeedbackComment.value) return
+  if (!feedbackCommentForm.content.trim()) {
+    uni.showToast({ title: TEXT.feedbackCommentEmptyError, icon: 'none' })
+    return
+  }
+  try {
+    submittingFeedbackComment.value = true
+    await createImprovementFeedbackComment(detail.value.id, item.id, {
+      content: feedbackCommentForm.content.trim()
+    })
+    feedbackCommentForm.content = ''
+    await loadDetail()
+    uni.showToast({ title: TEXT.feedbackCommentSuccess, icon: 'success' })
+  } catch (error) {
+    uni.showToast({ title: error?.message || TEXT.feedbackCommentFailed, icon: 'none' })
+  } finally {
+    submittingFeedbackComment.value = false
+  }
+}
+
+function handleDeleteFeedbackComment(feedback, comment) {
+  if (!detail.value?.id || !feedback?.id || !comment?.id) return
+  uni.showModal({
+    title: TEXT.feedbackCommentDeleteTitle,
+    content: TEXT.feedbackCommentDeleteContent,
+    success: async (result) => {
+      if (!result.confirm) return
+      try {
+        await deleteImprovementFeedbackComment(detail.value.id, feedback.id, comment.id)
+        await loadDetail()
+        uni.showToast({ title: TEXT.feedbackCommentDeleted, icon: 'success' })
+      } catch (error) {
+        uni.showToast({ title: error?.message || TEXT.feedbackCommentDeleteFailed, icon: 'none' })
+      }
+    }
+  })
+}
+
 function openFeedbackSheet(mode, item = null) {
   closeRecordMenu()
+  closeFeedbackActionMenu()
+  feedbackCommentVisibleId.value = 0
+  feedbackCommentForm.content = ''
   feedbackSheetMode.value = mode
   feedbackSheetTargetId.value = item?.id || 0
   feedbackSheetVisible.value = true
@@ -639,6 +922,10 @@ function confirmDeleteFeedback(item) {
       try {
         detail.value = await deleteImprovementFeedback(detail.value.id, item.id)
         expandedFeedbackIds.value = expandedFeedbackIds.value.filter((feedbackId) => feedbackId !== item.id)
+        if (feedbackCommentVisibleId.value === item.id) {
+          feedbackCommentVisibleId.value = 0
+          feedbackCommentForm.content = ''
+        }
         uni.showToast({ title: TEXT.feedbackDeleted, icon: 'success' })
       } catch (error) {
         uni.showToast({ title: error?.message || TEXT.feedbackDeleteFailed, icon: 'none' })
@@ -714,6 +1001,55 @@ function handleDelete() {
 .feedback-content { margin-top: 14rpx; font-size: 24rpx; line-height: 1.8; color: #886a75; }
 .focus-content { font-size: 25rpx; color: #7f5f6c; }
 .feedback-media-wrap { margin-top: 12rpx; }
+.feedback-interaction-bar { margin-top: 16rpx; display: flex; align-items: center; gap: 12rpx; flex-wrap: wrap; }
+.feedback-interaction-btn { padding: 10rpx 18rpx; border-radius: 999rpx; background: rgba(255, 250, 252, 0.9); box-shadow: inset 0 0 0 2rpx rgba(233, 208, 217, 0.72); color: #b26d86; font-size: 22rpx; font-weight: 700; line-height: 1; }
+.feedback-interaction-btn.active { background: rgba(255, 236, 242, 0.96); color: var(--app-color-primary-strong); }
+.feedback-interaction-btn.loading { opacity: 0.6; }
+.feedback-interaction-feed { margin-top: 14rpx; padding: 18rpx 18rpx 16rpx; border-radius: 22rpx; background: rgba(255, 255, 255, 0.66); }
+.feedback-like-summary { font-size: 22rpx; line-height: 1.7; color: #b06f86; }
+.feedback-comment-item { margin-top: 12rpx; padding-top: 12rpx; border-top: 1rpx solid rgba(229, 205, 214, 0.7); }
+.feedback-comment-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12rpx; }
+.feedback-comment-meta { min-width: 0; display: flex; align-items: center; gap: 10rpx; flex-wrap: wrap; }
+.feedback-comment-name { font-size: 22rpx; font-weight: 700; color: #8e6071; }
+.feedback-comment-time { font-size: 20rpx; color: #b28b98; }
+.feedback-comment-content { margin-top: 8rpx; font-size: 23rpx; line-height: 1.7; color: #876874; }
+.feedback-comment-delete { flex-shrink: 0; font-size: 21rpx; color: #cf6d78; }
+.feedback-comment-composer { margin-top: 14rpx; }
+.feedback-comment-input { width: 100%; min-height: 84rpx; padding: 0 22rpx; border-radius: 999rpx; background: rgba(255, 255, 255, 0.96); box-shadow: inset 0 0 0 2rpx rgba(233, 208, 217, 0.7); font-size: 24rpx; color: #7e5d6a; }
+.feedback-comment-actions { margin-top: 10rpx; display: flex; align-items: center; justify-content: space-between; gap: 14rpx; }
+.feedback-comment-limit { font-size: 21rpx; color: #b7919d; }
+.feedback-comment-send-btn { margin: 0; min-width: 120rpx; height: 72rpx; line-height: 72rpx; padding: 0 24rpx; border-radius: 999rpx; background: var(--app-gradient-primary); color: #fff; font-size: 22rpx; font-weight: 700; box-shadow: none; }
+.interaction-row { margin-top: 24rpx; padding-top: 20rpx; border-top: 1rpx solid rgba(233, 214, 222, 0.72); display: flex; align-items: center; justify-content: space-between; gap: 24rpx; }
+.interaction-time { font-size: 22rpx; color: #b997a4; }
+.interaction-more-wrap { position: relative; flex-shrink: 0; }
+.interaction-more-btn { width: 72rpx; height: 52rpx; border-radius: 16rpx; background: #f1f3f6; display: flex; align-items: center; justify-content: center; gap: 8rpx; }
+.interaction-more-dot { width: 8rpx; height: 8rpx; border-radius: 50%; background: #78828f; }
+.interaction-action-pop { position: absolute; right: 84rpx; top: 50%; transform: translateY(-50%); display: flex; align-items: center; padding: 0 14rpx; border-radius: 22rpx; background: rgba(30, 35, 41, 0.96); box-shadow: 0 14rpx 32rpx rgba(27, 31, 37, 0.18); white-space: nowrap; z-index: 8; }
+.interaction-pop-item { min-width: 152rpx; height: 84rpx; padding: 0 24rpx; display: flex; align-items: center; justify-content: center; gap: 10rpx; color: #fff8fb; font-size: 24rpx; font-weight: 700; line-height: 1; }
+.interaction-pop-item.comment-only { min-width: 108rpx; }
+.interaction-pop-icon { flex-shrink: 0; font-size: 26rpx; line-height: 1; }
+.interaction-pop-label { flex-shrink: 0; white-space: nowrap; line-height: 1; }
+.interaction-pop-divider { width: 2rpx; height: 32rpx; background: rgba(255, 255, 255, 0.16); }
+.interaction-feed { margin-top: 20rpx; border-radius: 24rpx; background: linear-gradient(180deg, rgba(244, 246, 249, 0.98), rgba(240, 243, 247, 0.94)); box-shadow: inset 0 0 0 1rpx rgba(220, 226, 235, 0.7); overflow: hidden; }
+.interaction-feed-line { padding: 18rpx 20rpx; font-size: 23rpx; line-height: 1.7; color: #6d5c66; word-break: break-word; }
+.interaction-feed-line + .interaction-feed-line { border-top: 1rpx solid rgba(196, 204, 214, 0.5); }
+.interaction-feed-like { display: flex; align-items: flex-start; gap: 12rpx; }
+.interaction-feed-heart { margin-top: 4rpx; color: #ff6b97; font-size: 24rpx; line-height: 1; }
+.interaction-feed-text { color: #6d5c66; }
+.interaction-feed-comment { display: flex; flex-direction: column; gap: 8rpx; }
+.interaction-comment-head { display: flex; align-items: center; justify-content: space-between; gap: 18rpx; }
+.interaction-comment-meta { flex-shrink: 0; display: inline-flex; align-items: center; gap: 14rpx; }
+.interaction-feed-name { color: #4f7aaf; font-weight: 700; flex: 1; }
+.interaction-comment-time { flex-shrink: 0; font-size: 22rpx; color: #b49eaa; }
+.interaction-comment-delete { flex-shrink: 0; font-size: 21rpx; color: #cf6d78; }
+.interaction-comment-content { color: #6d5c66; line-height: 1.75; }
+.comment-composer { display: flex; align-items: center; gap: 18rpx; padding: 18rpx 24rpx; background: rgba(255, 251, 252, 0.94); box-shadow: 0 -16rpx 40rpx rgba(186, 146, 161, 0.12); }
+.feedback-comment-composer.comment-composer { position: static; left: auto; right: auto; bottom: auto; z-index: auto; margin-top: 0; border-top: 1rpx solid rgba(196, 204, 214, 0.5); backdrop-filter: none; }
+.comment-input { flex: 1; height: 76rpx; padding: 0 22rpx; border-radius: 999rpx; background: #f4f6f8; color: #6c5963; font-size: 24rpx; }
+.comment-composer-actions { display: inline-flex; align-items: center; gap: 16rpx; flex-shrink: 0; }
+.comment-limit { font-size: 22rpx; color: #b08a97; }
+.comment-send-btn { height: 72rpx; margin: 0; padding: 0 28rpx; border: none; border-radius: 999rpx; background: linear-gradient(135deg, #ff8fb2, #ff719c); color: #fff; font-size: 24rpx; font-weight: 700; line-height: 72rpx; }
+.comment-send-btn[disabled] { opacity: 0.6; }
 .history-summary { font-size: 22rpx; color: #a17a87; line-height: 1.7; }
 .history-toggle { padding: 10rpx 18rpx; border-radius: 999rpx; background: rgba(255, 244, 248, 0.96); box-shadow: inset 0 0 0 1rpx rgba(233, 208, 217, 0.72); color: #b97089; font-size: 22rpx; font-weight: 700; }
 .timeline { display: grid; gap: 18rpx; margin-top: 18rpx; }

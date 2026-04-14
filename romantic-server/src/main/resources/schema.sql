@@ -44,12 +44,14 @@ CREATE TABLE IF NOT EXISTS anniversary_event (
     description TEXT NOT NULL COMMENT '纪念日说明',
     location VARCHAR(100) NOT NULL DEFAULT '' COMMENT '地点描述',
     cover_url VARCHAR(255) NOT NULL DEFAULT '' COMMENT '封面资源相对路径',
+    is_pinned TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否置顶到首页',
     like_count BIGINT NOT NULL DEFAULT 0 COMMENT '点赞次数',
     reminder_type VARCHAR(32) NOT NULL DEFAULT 'none' COMMENT '提醒类型',
     last_reminded_on DATE NULL COMMENT '最近一次提醒日期',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     KEY idx_anniversary_event_username (username),
+    KEY idx_anniversary_event_pinned (is_pinned, event_date),
     KEY idx_anniversary_event_date (event_date)
 ) COMMENT='恋爱纪念日主表';
 

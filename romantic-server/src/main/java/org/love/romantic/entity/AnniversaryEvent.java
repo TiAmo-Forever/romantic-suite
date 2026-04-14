@@ -2,6 +2,7 @@ package org.love.romantic.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -48,6 +49,10 @@ public class AnniversaryEvent {
 
     @ApiModelProperty("封面相对路径")
     private String coverUrl;
+
+    @TableField("is_pinned")
+    @ApiModelProperty("是否置顶到首页")
+    private Boolean pinned;
 
     @ApiModelProperty("点赞次数")
     private Long likeCount;

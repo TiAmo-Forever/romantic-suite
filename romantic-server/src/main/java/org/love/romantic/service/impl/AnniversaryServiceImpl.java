@@ -95,7 +95,9 @@ public class AnniversaryServiceImpl implements AnniversaryService {
             queryWrapper.ge(AnniversaryEvent::getEventDate, today);
         }
 
-        queryWrapper.orderByDesc(AnniversaryEvent::getEventDate).orderByDesc(AnniversaryEvent::getId);
+        queryWrapper.orderByDesc(AnniversaryEvent::getPinned)
+                .orderByDesc(AnniversaryEvent::getEventDate)
+                .orderByDesc(AnniversaryEvent::getId);
         List<AnniversaryEvent> events = anniversaryEventMapper.selectList(queryWrapper);
         Map<String, String> nicknameMap = buildNicknameMap();
         Map<Long, Long> likeCountMap = buildLikeCountMap(
@@ -135,12 +137,14 @@ public class AnniversaryServiceImpl implements AnniversaryService {
         LocalDateTime now = LocalDateTime.now();
         AnniversaryEvent event = AnniversaryEvent.builder()
                 .username(operator)
+                .pinned(false)
                 .likeCount(0L)
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
-        applyRequest(event, request);
+        applyRequest(event, request, false);
         anniversaryEventMapper.insert(event);
+        syncPinnedState(event.getId(), Boolean.TRUE.equals(event.getPinned()));
         replaceMedia(event.getId(), new ArrayList<>(), request.getMediaList());
         userNotificationService.notifyPartners(
                 operator,
@@ -163,11 +167,13 @@ public class AnniversaryServiceImpl implements AnniversaryService {
         List<AnniversaryMedia> existingMedia = listMediaEntities(id);
         String creatorUsername = event.getUsername();
         LocalDateTime createdAt = event.getCreatedAt();
-        applyRequest(event, request);
+        boolean existingPinned = Boolean.TRUE.equals(event.getPinned());
+        applyRequest(event, request, existingPinned);
         event.setUsername(creatorUsername);
         event.setCreatedAt(createdAt);
         event.setUpdatedAt(LocalDateTime.now());
         anniversaryEventMapper.updateById(event);
+        syncPinnedState(id, Boolean.TRUE.equals(event.getPinned()));
         replaceMedia(id, existingMedia, request.getMediaList());
         userNotificationService.notifyPartners(
                 operator,
@@ -184,9 +190,38 @@ public class AnniversaryServiceImpl implements AnniversaryService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public AnniversaryEventResponse setPinned(Long id, boolean pinned) {
+        String operator = AuthContext.getRequiredUsername();
+        AnniversaryEvent event = requireEvent(id);
+        if (Boolean.TRUE.equals(event.getPinned()) == pinned) {
+            return getEvent(id);
+        }
+
+        event.setPinned(pinned);
+        event.setUpdatedAt(LocalDateTime.now());
+        anniversaryEventMapper.updateById(event);
+        syncPinnedState(id, pinned);
+        userNotificationService.notifyPartners(
+                operator,
+                pinned ? NotificationTypeConstants.ANNIVERSARY_PINNED : NotificationTypeConstants.ANNIVERSARY_UNPINNED,
+                pinned ? "首页纪念日换成了这一天" : "这条纪念日已从首页撤下",
+                pinned
+                        ? "「" + event.getTitle() + "」现在会展示在首页纪念日板块。"
+                        : "「" + event.getTitle() + "」已经不再固定展示在首页纪念日板块。",
+                NotificationBizTypeConstants.ANNIVERSARY,
+                event.getId(),
+                Map.of("title", event.getTitle(), "pinned", pinned)
+        );
+        log.info("更新纪念日置顶状态成功，operator={}, eventId={}, pinned={}", operator, id, pinned);
+        return getEvent(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteEvent(Long id) {
         String operator = AuthContext.getRequiredUsername();
         AnniversaryEvent event = requireEvent(id);
+        String title = event.getTitle();
         List<AnniversaryMedia> existingMedia = listMediaEntities(id);
         anniversaryMediaMapper.delete(new LambdaQueryWrapper<AnniversaryMedia>().eq(AnniversaryMedia::getEventId, id));
         bizLikeRecordMapper.delete(new LambdaQueryWrapper<BizLikeRecord>()
@@ -200,6 +235,15 @@ public class AnniversaryServiceImpl implements AnniversaryService {
             localFileStorageService.deleteAnniversaryMediaQuietly(media.getFileUrl());
             localFileStorageService.deleteAnniversaryMediaQuietly(media.getThumbnailUrl());
         });
+        userNotificationService.notifyPartners(
+                operator,
+                NotificationTypeConstants.ANNIVERSARY_DELETED,
+                "一条纪念日被收起了",
+                "「" + title + "」刚刚从你们的纪念日清单里移除了。",
+                NotificationBizTypeConstants.ANNIVERSARY,
+                0L,
+                Map.of("title", title, "deleted", true)
+        );
         log.info("删除纪念日成功，operator={}, eventId={}", operator, event.getId());
     }
 
@@ -261,7 +305,7 @@ public class AnniversaryServiceImpl implements AnniversaryService {
     @Transactional(rollbackFor = Exception.class)
     public InteractionCommentResponse addComment(Long id, InteractionCommentRequest request) {
         String operator = AuthContext.getRequiredUsername();
-        requireEvent(id);
+        AnniversaryEvent event = requireEvent(id);
 
         String content = defaultIfBlank(request.getContent(), "");
         if (!StringUtils.hasText(content)) {
@@ -278,6 +322,15 @@ public class AnniversaryServiceImpl implements AnniversaryService {
                 .updatedAt(now)
                 .build();
         bizCommentRecordMapper.insert(comment);
+        userNotificationService.notifyPartners(
+                operator,
+                NotificationTypeConstants.ANNIVERSARY_COMMENTED,
+                "纪念日下多了一句回应",
+                "「" + event.getTitle() + "」下面刚刚多了一条新的评论。",
+                NotificationBizTypeConstants.ANNIVERSARY,
+                id,
+                Map.of("title", event.getTitle(), "commentId", comment.getId())
+        );
         log.info("纪念日评论创建成功，operator={}, eventId={}, commentId={}", operator, id, comment.getId());
         return toCommentResponse(comment, buildNicknameMap());
     }
@@ -294,6 +347,15 @@ public class AnniversaryServiceImpl implements AnniversaryService {
             throw new BusinessException("当前没有权限删除这条评论");
         }
         bizCommentRecordMapper.deleteById(commentId);
+        userNotificationService.notifyPartners(
+                operator,
+                NotificationTypeConstants.ANNIVERSARY_COMMENT_DELETED,
+                "纪念日里撤回了一句回应",
+                "「" + event.getTitle() + "」下面有一条评论刚刚被删除了。",
+                NotificationBizTypeConstants.ANNIVERSARY,
+                id,
+                Map.of("title", event.getTitle(), "commentId", commentId, "deleted", true)
+        );
         log.info("纪念日评论删除成功，operator={}, eventId={}, commentId={}", operator, id, commentId);
     }
 
@@ -336,7 +398,7 @@ public class AnniversaryServiceImpl implements AnniversaryService {
         return event;
     }
 
-    private void applyRequest(AnniversaryEvent event, AnniversaryEventRequest request) {
+    private void applyRequest(AnniversaryEvent event, AnniversaryEventRequest request, boolean fallbackPinned) {
         List<AnniversaryMediaRequest> mediaList = request.getMediaList() == null ? new ArrayList<>() : request.getMediaList();
         validateMediaList(mediaList);
 
@@ -346,7 +408,26 @@ public class AnniversaryServiceImpl implements AnniversaryService {
         event.setDescription(defaultIfBlank(request.getDescription(), ""));
         event.setLocation(defaultIfBlank(request.getLocation(), ""));
         event.setReminderType(normalizeReminderType(request.getReminderType()));
+        event.setPinned(request.getPinned() == null ? fallbackPinned : Boolean.TRUE.equals(request.getPinned()));
         event.setCoverUrl(resolveCoverUrl(mediaList));
+    }
+
+    private void syncPinnedState(Long currentEventId, boolean pinned) {
+        if (!pinned) {
+            return;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        List<AnniversaryEvent> pinnedEvents = anniversaryEventMapper.selectList(new LambdaQueryWrapper<AnniversaryEvent>()
+                .eq(AnniversaryEvent::getPinned, true)
+                .ne(AnniversaryEvent::getId, currentEventId));
+        for (AnniversaryEvent pinnedEvent : pinnedEvents) {
+            AnniversaryEvent update = new AnniversaryEvent();
+            update.setId(pinnedEvent.getId());
+            update.setPinned(false);
+            update.setUpdatedAt(now);
+            anniversaryEventMapper.updateById(update);
+        }
     }
 
     private void validateMediaList(List<AnniversaryMediaRequest> mediaList) {
@@ -452,6 +533,7 @@ public class AnniversaryServiceImpl implements AnniversaryService {
                 .description(defaultIfBlank(event.getDescription(), ""))
                 .location(defaultIfBlank(event.getLocation(), ""))
                 .coverUrl(defaultIfBlank(event.getCoverUrl(), ""))
+                .pinned(Boolean.TRUE.equals(event.getPinned()))
                 .likeCount(likeCount)
                 .likedByCurrentUser(likedByCurrentUser)
                 .reminderType(event.getReminderType())

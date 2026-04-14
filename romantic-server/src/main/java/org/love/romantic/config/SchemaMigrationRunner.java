@@ -274,8 +274,12 @@ public class SchemaMigrationRunner {
                 "ALTER TABLE couple_profile ADD COLUMN avatar_image LONGTEXT NOT NULL");
         ensureColumn("couple_profile", "theme_preset_key",
                 "ALTER TABLE couple_profile ADD COLUMN theme_preset_key VARCHAR(32) NOT NULL DEFAULT 'pink'");
+        ensureColumn("anniversary_event", "is_pinned",
+                "ALTER TABLE anniversary_event ADD COLUMN is_pinned TINYINT(1) NOT NULL DEFAULT 0");
         ensureColumn("anniversary_event", "like_count",
                 "ALTER TABLE anniversary_event ADD COLUMN like_count BIGINT NOT NULL DEFAULT 0");
+        ensureIndex("anniversary_event", "idx_anniversary_event_pinned",
+                "CREATE INDEX idx_anniversary_event_pinned ON anniversary_event (is_pinned, event_date)");
         ensureColumn("album_memory", "like_count",
                 "ALTER TABLE album_memory ADD COLUMN like_count BIGINT NOT NULL DEFAULT 0");
     }
@@ -284,6 +288,13 @@ public class SchemaMigrationRunner {
         if (!tableColumnExists(tableName, columnName)) {
             log.info("检测到字段缺失，开始补齐字段：{}.{}", tableName, columnName);
             jdbcTemplate.execute(alterSql);
+        }
+    }
+
+    private void ensureIndex(String tableName, String indexName, String createSql) {
+        if (!tableIndexExists(tableName, indexName)) {
+            log.info("检测到索引缺失，开始补齐索引：{}.{}", tableName, indexName);
+            jdbcTemplate.execute(createSql);
         }
     }
 
@@ -313,9 +324,34 @@ public class SchemaMigrationRunner {
         }
     }
 
+    private boolean tableIndexExists(String tableName, String indexName) {
+        Connection connection = DataSourceUtils.getConnection(dataSource);
+        try {
+            DatabaseMetaData metaData = connection.getMetaData();
+            return hasIndex(metaData, tableName.toUpperCase(Locale.ROOT), indexName)
+                    || hasIndex(metaData, tableName.toLowerCase(Locale.ROOT), indexName);
+        } catch (SQLException exception) {
+            throw new IllegalStateException("检查索引是否存在失败：" + tableName + "." + indexName, exception);
+        } finally {
+            DataSourceUtils.releaseConnection(connection, dataSource);
+        }
+    }
+
     private boolean hasColumn(DatabaseMetaData metaData, String tableName, String columnName) throws SQLException {
         try (ResultSet resultSet = metaData.getColumns(null, null, tableName, columnName)) {
             return resultSet.next();
+        }
+    }
+
+    private boolean hasIndex(DatabaseMetaData metaData, String tableName, String indexName) throws SQLException {
+        try (ResultSet resultSet = metaData.getIndexInfo(null, null, tableName, false, false)) {
+            while (resultSet.next()) {
+                String currentIndexName = resultSet.getString("INDEX_NAME");
+                if (currentIndexName != null && currentIndexName.equalsIgnoreCase(indexName)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
@@ -339,6 +375,7 @@ public class SchemaMigrationRunner {
             return;
         }
 
+        executeCommentSql("ALTER TABLE anniversary_event COMMENT = '恋爱纪念日主表'");
         executeCommentSql("ALTER TABLE album_memory COMMENT = '甜蜜相册回忆主表'");
         executeCommentSql("ALTER TABLE album_media COMMENT = '甜蜜相册媒体资源表'");
         executeCommentSql("ALTER TABLE album_memory_like COMMENT = '甜蜜相册点赞记录表（兼容迁移保留）'");
@@ -361,6 +398,9 @@ public class SchemaMigrationRunner {
         executeCommentSql("ALTER TABLE album_memory MODIFY COLUMN like_count BIGINT NOT NULL DEFAULT 0 COMMENT '点赞次数'");
         executeCommentSql("ALTER TABLE album_memory MODIFY COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'");
         executeCommentSql("ALTER TABLE album_memory MODIFY COLUMN updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'");
+
+        executeCommentSql("ALTER TABLE anniversary_event MODIFY COLUMN is_pinned TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否置顶到首页'");
+        executeCommentSql("ALTER TABLE anniversary_event MODIFY COLUMN like_count BIGINT NOT NULL DEFAULT 0 COMMENT '点赞次数'");
 
         executeCommentSql("ALTER TABLE album_memory_like MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
         executeCommentSql("ALTER TABLE album_memory_like MODIFY COLUMN memory_id BIGINT NOT NULL COMMENT '所属回忆 ID'");

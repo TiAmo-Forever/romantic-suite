@@ -25,6 +25,24 @@ public class DailySummaryHistoryItemResponse {
     @ApiModelProperty("条目数量")
     private Integer entryCount;
 
+    @ApiModelProperty("创建账号")
+    private String creatorUsername;
+
+    @ApiModelProperty("创建显示名")
+    private String creatorNickname;
+
+    @ApiModelProperty("最近更新账号")
+    private String updaterUsername;
+
+    @ApiModelProperty("最近更新显示名")
+    private String updaterNickname;
+
+    @ApiModelProperty("用于展示的作者账号")
+    private String authorUsername;
+
+    @ApiModelProperty("用于展示的作者显示名")
+    private String authorNickname;
+
     @ApiModelProperty("更新时间")
     private String updatedAt;
 }

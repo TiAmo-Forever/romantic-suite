@@ -1,36 +1,47 @@
-2026-03-24 11:49:36 INFO  [main] [] o.l.r.RomanticServerApplicationTests - Starting RomanticServerApplicationTests using Java 11.0.0.2 on DESKTOP-R74SJDJ with PID 34100 (started by 17532 in D:\JavaProject\romantic-suite\romantic-server)
-2026-03-24 11:49:36 INFO  [main] [] o.l.r.RomanticServerApplicationTests - No active profile set, falling back to 1 default profile: "default"
-2026-03-24 11:49:36 INFO  [background-preinit] [] o.h.validator.internal.util.Version - HV000001: Hibernate Validator 6.2.5.Final
-2026-03-24 11:49:37 INFO  [main] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2026-03-24 11:49:38 INFO  [main] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-2026-03-24 11:49:41 INFO  [main] [] o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint(s) beneath base path '/actuator'
-2026-03-24 11:49:42 INFO  [main] [] o.l.r.RomanticServerApplicationTests - Started RomanticServerApplicationTests in 5.852 seconds (JVM running for 6.64)
-2026-03-24 11:49:42 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2026-03-24 11:49:42 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
-2026-03-24 15:51:47 INFO  [main] [] o.l.r.RomanticServerApplicationTests - Starting RomanticServerApplicationTests using Java 11.0.0.2 on DESKTOP-R74SJDJ with PID 30196 (started by 17532 in D:\JavaProject\romantic-suite\romantic-server)
-2026-03-24 15:51:47 INFO  [main] [] o.l.r.RomanticServerApplicationTests - No active profile set, falling back to 1 default profile: "default"
-2026-03-24 15:51:47 INFO  [background-preinit] [] o.h.validator.internal.util.Version - HV000001: Hibernate Validator 6.2.5.Final
-2026-03-24 15:51:48 INFO  [main] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2026-03-24 15:51:48 INFO  [main] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-2026-03-24 15:51:51 INFO  [main] [] o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint(s) beneath base path '/actuator'
-2026-03-24 15:51:52 INFO  [main] [] o.l.r.RomanticServerApplicationTests - Started RomanticServerApplicationTests in 5.458 seconds (JVM running for 6.119)
-2026-03-24 15:51:52 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2026-03-24 15:51:52 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
-2026-03-24 16:14:47 INFO  [main] [] o.l.r.RomanticServerApplicationTests - Starting RomanticServerApplicationTests using Java 11.0.0.2 on DESKTOP-R74SJDJ with PID 23648 (started by 17532 in D:\JavaProject\romantic-suite\romantic-server)
-2026-03-24 16:14:47 INFO  [main] [] o.l.r.RomanticServerApplicationTests - No active profile set, falling back to 1 default profile: "default"
-2026-03-24 16:14:47 INFO  [background-preinit] [] o.h.validator.internal.util.Version - HV000001: Hibernate Validator 6.2.5.Final
-2026-03-24 16:14:49 INFO  [main] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2026-03-24 16:14:49 INFO  [main] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-2026-03-24 16:14:52 INFO  [main] [] o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint(s) beneath base path '/actuator'
-2026-03-24 16:14:53 INFO  [main] [] o.l.r.RomanticServerApplicationTests - Started RomanticServerApplicationTests in 5.994 seconds (JVM running for 6.768)
-2026-03-24 16:14:53 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2026-03-24 16:14:53 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
-2026-03-24 17:49:33 INFO  [main] [] o.l.r.RomanticServerApplicationTests - Starting RomanticServerApplicationTests using Java 11.0.0.2 on DESKTOP-R74SJDJ with PID 35616 (started by 17532 in D:\JavaProject\romantic-suite\romantic-server)
-2026-03-24 17:49:33 INFO  [main] [] o.l.r.RomanticServerApplicationTests - No active profile set, falling back to 1 default profile: "default"
-2026-03-24 17:49:33 INFO  [background-preinit] [] o.h.validator.internal.util.Version - HV000001: Hibernate Validator 6.2.5.Final
-2026-03-24 17:49:35 INFO  [main] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2026-03-24 17:49:35 INFO  [main] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-2026-03-24 17:49:38 INFO  [main] [] o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint(s) beneath base path '/actuator'
-2026-03-24 17:49:39 INFO  [main] [] o.l.r.RomanticServerApplicationTests - Started RomanticServerApplicationTests in 6.304 seconds (JVM running for 7.084)
-2026-03-24 17:49:40 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2026-03-24 17:49:40 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-04-14 10:37:19 INFO  [main] [] o.l.r.RomanticServerApplicationTests - Starting RomanticServerApplicationTests using Java 11.0.0.2 on DESKTOP-R74SJDJ with PID 25064 (started by 17532 in D:\JavaProject\romantic-suite\romantic-server)
+2026-04-14 10:37:19 INFO  [main] [] o.l.r.RomanticServerApplicationTests - No active profile set, falling back to 1 default profile: "default"
+2026-04-14 10:37:19 INFO  [background-preinit] [] o.h.validator.internal.util.Version - HV000001: Hibernate Validator 6.2.5.Final
+2026-04-14 10:37:20 INFO  [main] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-04-14 10:37:21 INFO  [main] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-04-14 10:37:21 INFO  [main] [] o.l.r.config.SchemaMigrationRunner - 检测到字段缺失，开始补齐字段：anniversary_event.is_pinned
+2026-04-14 10:37:21 INFO  [main] [] o.l.r.config.SchemaMigrationRunner - 检测到索引缺失，开始补齐索引：anniversary_event.idx_anniversary_event_pinned
+2026-04-14 10:37:24 INFO  [main] [] o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint(s) beneath base path '/actuator'
+2026-04-14 10:37:26 INFO  [main] [] o.l.r.RomanticServerApplicationTests - Started RomanticServerApplicationTests in 7.276 seconds (JVM running for 8.152)
+2026-04-14 10:37:26 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-04-14 10:37:26 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-04-14 10:51:07 INFO  [main] [] o.l.r.RomanticServerApplicationTests - Starting RomanticServerApplicationTests using Java 11.0.0.2 on DESKTOP-R74SJDJ with PID 28068 (started by 17532 in D:\JavaProject\romantic-suite\romantic-server)
+2026-04-14 10:51:07 INFO  [main] [] o.l.r.RomanticServerApplicationTests - No active profile set, falling back to 1 default profile: "default"
+2026-04-14 10:51:07 INFO  [background-preinit] [] o.h.validator.internal.util.Version - HV000001: Hibernate Validator 6.2.5.Final
+2026-04-14 10:51:09 INFO  [main] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-04-14 10:51:09 INFO  [main] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-04-14 10:51:13 INFO  [main] [] o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint(s) beneath base path '/actuator'
+2026-04-14 10:51:13 INFO  [main] [] o.l.r.RomanticServerApplicationTests - Started RomanticServerApplicationTests in 6.433 seconds (JVM running for 7.298)
+2026-04-14 10:51:14 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-04-14 10:51:14 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-04-14 17:18:34 INFO  [main] [] o.l.r.RomanticServerApplicationTests - Starting RomanticServerApplicationTests using Java 11.0.0.2 on DESKTOP-R74SJDJ with PID 31960 (started by 17532 in D:\JavaProject\romantic-suite\romantic-server)
+2026-04-14 17:18:34 INFO  [main] [] o.l.r.RomanticServerApplicationTests - No active profile set, falling back to 1 default profile: "default"
+2026-04-14 17:18:34 INFO  [background-preinit] [] o.h.validator.internal.util.Version - HV000001: Hibernate Validator 6.2.5.Final
+2026-04-14 17:18:35 INFO  [main] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-04-14 17:18:35 INFO  [main] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-04-14 17:18:39 INFO  [main] [] o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint(s) beneath base path '/actuator'
+2026-04-14 17:18:40 INFO  [main] [] o.l.r.RomanticServerApplicationTests - Started RomanticServerApplicationTests in 6.292 seconds (JVM running for 7.132)
+2026-04-14 17:18:40 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-04-14 17:18:40 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-04-14 18:20:19 INFO  [main] [] o.l.r.RomanticServerApplicationTests - Starting RomanticServerApplicationTests using Java 11.0.0.2 on DESKTOP-R74SJDJ with PID 10816 (started by 17532 in D:\JavaProject\romantic-suite\romantic-server)
+2026-04-14 18:20:19 INFO  [main] [] o.l.r.RomanticServerApplicationTests - No active profile set, falling back to 1 default profile: "default"
+2026-04-14 18:20:19 INFO  [background-preinit] [] o.h.validator.internal.util.Version - HV000001: Hibernate Validator 6.2.5.Final
+2026-04-14 18:20:20 INFO  [main] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-04-14 18:20:21 INFO  [main] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-04-14 18:20:25 INFO  [main] [] o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint(s) beneath base path '/actuator'
+2026-04-14 18:20:26 INFO  [main] [] o.l.r.RomanticServerApplicationTests - Started RomanticServerApplicationTests in 7.038 seconds (JVM running for 7.901)
+2026-04-14 18:20:26 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-04-14 18:20:26 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-04-14 18:33:11 INFO  [main] [] o.l.r.RomanticServerApplicationTests - Starting RomanticServerApplicationTests using Java 11.0.0.2 on DESKTOP-R74SJDJ with PID 4604 (started by 17532 in D:\JavaProject\romantic-suite\romantic-server)
+2026-04-14 18:33:11 INFO  [main] [] o.l.r.RomanticServerApplicationTests - No active profile set, falling back to 1 default profile: "default"
+2026-04-14 18:33:11 INFO  [background-preinit] [] o.h.validator.internal.util.Version - HV000001: Hibernate Validator 6.2.5.Final
+2026-04-14 18:33:12 INFO  [main] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-04-14 18:33:13 INFO  [main] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-04-14 18:33:16 INFO  [main] [] o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint(s) beneath base path '/actuator'
+2026-04-14 18:33:17 INFO  [main] [] o.l.r.RomanticServerApplicationTests - Started RomanticServerApplicationTests in 6.347 seconds (JVM running for 7.181)
+2026-04-14 18:33:17 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-04-14 18:33:17 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.

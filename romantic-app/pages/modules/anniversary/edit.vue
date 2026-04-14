@@ -42,6 +42,16 @@
             <view class="picker-value">{{ reminderOptions[reminderIndex]?.label || '请选择提醒方式' }}</view>
           </picker>
         </AccountField>
+
+        <AccountField label="首页展示">
+          <view class="pin-setting-row app-field">
+            <view class="pin-setting-copy">
+              <view class="pin-setting-title">置顶到首页摘要</view>
+              <view class="pin-setting-desc">只有置顶的纪念日，才会显示在首页纪念日板块。</view>
+            </view>
+            <switch :checked="form.pinned" color="#ff7ea6" @change="handlePinnedChange" />
+          </view>
+        </AccountField>
       </AccountPanel>
 
       <AccountPanel title="图片与视频">
@@ -120,7 +130,8 @@ const form = reactive({
   eventDate: '',
   location: '',
   description: '',
-  reminderType: 'none'
+  reminderType: 'none',
+  pinned: false
 })
 
 const typeOptions = [
@@ -176,6 +187,7 @@ async function loadDetail(id) {
     form.location = detail.location || ''
     form.description = detail.description || ''
     form.reminderType = detail.reminderType || 'none'
+    form.pinned = Boolean(detail.isPinned)
     typeIndex.value = Math.max(typeOptions.findIndex((item) => item.key === form.type), 0)
     reminderIndex.value = Math.max(reminderOptions.findIndex((item) => item.key === form.reminderType), 0)
     mediaList.value = (detail.mediaList || []).map((item) => ({
@@ -204,6 +216,10 @@ function handleReminderChange(event) {
 
 function handleDateChange(event) {
   form.eventDate = event.detail.value
+}
+
+function handlePinnedChange(event) {
+  form.pinned = Boolean(event.detail.value)
 }
 
 function openLocationPicker() {
@@ -395,6 +411,7 @@ async function handleSave() {
       location: form.location.trim(),
       description: form.description.trim(),
       reminderType: form.reminderType,
+      pinned: form.pinned,
       mediaList: uploadedMedia
     }
 
@@ -436,6 +453,10 @@ async function handleSave() {
     text-align: center;
   }
   .location-picker { justify-content: space-between; }
+  .pin-setting-row { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; }
+  .pin-setting-copy { flex: 1; min-width: 0; }
+  .pin-setting-title { font-size: 26rpx; font-weight: 700; color: var(--app-color-primary-strong); }
+  .pin-setting-desc { margin-top: 8rpx; font-size: 22rpx; line-height: 1.7; color: #9b7481; }
   .media-tips { margin-top: 16rpx; font-size: 23rpx; color: #9b7481; }
   .sort-list { margin-top: 18rpx; display: grid; gap: 12rpx; }
   .sort-item { display: flex; gap: 18rpx; padding: 16rpx; border-radius: 24rpx; background: #fff3f7; transition: transform 0.24s ease, box-shadow 0.24s ease, opacity 0.24s ease; }

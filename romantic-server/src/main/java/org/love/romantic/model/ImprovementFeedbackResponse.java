@@ -37,6 +37,18 @@ public class ImprovementFeedbackResponse {
     @ApiModelProperty("创建时间")
     private String createdAt;
 
+    @ApiModelProperty("点赞次数")
+    private long likeCount;
+
+    @ApiModelProperty("当前账号是否已点赞")
+    private boolean likedByCurrentUser;
+
     @ApiModelProperty("反馈媒体列表")
     private List<ImprovementMediaResponse> mediaList;
+
+    @ApiModelProperty("点赞人列表")
+    private List<InteractionLikeUserResponse> likeUsers;
+
+    @ApiModelProperty("评论列表")
+    private List<InteractionCommentResponse> commentList;
 }

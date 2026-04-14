@@ -1,5 +1,8 @@
 package org.love.romantic.service;
 
+import org.love.romantic.model.InteractionCommentRequest;
+import org.love.romantic.model.InteractionCommentResponse;
+import org.love.romantic.model.InteractionLikeToggleResponse;
 import org.love.romantic.model.ImprovementFeedbackRequest;
 import org.love.romantic.model.ImprovementNoteRequest;
 import org.love.romantic.model.ImprovementNoteResponse;
@@ -23,4 +26,10 @@ public interface ImprovementNoteService {
     ImprovementNoteResponse updateFeedback(Long id, Long feedbackId, ImprovementFeedbackRequest request);
 
     ImprovementNoteResponse deleteFeedback(Long id, Long feedbackId);
+
+    InteractionLikeToggleResponse toggleFeedbackLike(Long id, Long feedbackId);
+
+    InteractionCommentResponse addFeedbackComment(Long id, Long feedbackId, InteractionCommentRequest request);
+
+    void deleteFeedbackComment(Long id, Long feedbackId, Long commentId);
 }

@@ -40,6 +40,8 @@
           <view class="detail-manage-wrap" @click.stop>
             <view class="detail-manage-btn" @click.stop="toggleManageMenu">管理</view>
             <view v-if="showManageMenu" class="detail-manage-pop">
+              <view class="detail-manage-item primary" @click.stop="handleManagePinToggle">{{ pinActionText }}</view>
+              <view class="detail-manage-divider"></view>
               <view class="detail-manage-item" @click.stop="handleManageEdit">{{ TEXT.editButton }}</view>
               <view class="detail-manage-divider"></view>
               <view class="detail-manage-item danger" @click.stop="handleManageDelete">{{ TEXT.deleteButton }}</view>
@@ -47,6 +49,7 @@
           </view>
         </view>
         <view class="detail-meta">
+          <view v-if="detail.isPinned" class="detail-chip pin">{{ TEXT.pinnedChip }}</view>
           <view class="detail-chip">{{ detail.eventDate }}</view>
           <view class="detail-chip strong">{{ formatStatus(detail) }}</view>
           <view v-if="detail.mediaList?.length" class="detail-chip">{{ detail.mediaList.length }} {{ TEXT.mediaUnit }}</view>
@@ -177,6 +180,7 @@ import {
   deleteAnniversary,
   deleteAnniversaryComment,
   fetchAnniversaryDetail,
+  setAnniversaryPinned,
   toggleAnniversaryLike
 } from '@/services/anniversaries.js'
 import { getUser, requireAuth } from '@/utils/auth.js'
@@ -199,6 +203,12 @@ const TEXT = {
   emptyDesc: '这一天的细节，也值得慢慢补全。',
   editButton: '编辑纪念日',
   deleteButton: '删除纪念日',
+  pinButton: '置顶到首页',
+  unpinButton: '取消首页置顶',
+  pinSuccess: '已置顶到首页',
+  unpinSuccess: '已取消首页置顶',
+  pinFailed: '置顶设置失败',
+  pinnedChip: '首页置顶',
   deleteTitle: '删除纪念日',
   deleteContent: '删除后会一并移除相关图片和视频，确认继续吗？',
   deleted: '这条纪念日已删除',
@@ -270,6 +280,7 @@ const identityBadgeClass = computed(() => {
 })
 
 const likeActionText = computed(() => (detail.value?.likedByCurrentUser ? TEXT.unlikeAction : TEXT.likeAction))
+const pinActionText = computed(() => (detail.value?.isPinned ? TEXT.unpinButton : TEXT.pinButton))
 
 const commentLengthText = computed(() => `${String(commentForm.content || '').length}${TEXT.commentLengthSuffix}`)
 
@@ -473,6 +484,18 @@ async function handleLike() {
     uni.showToast({ title: error?.message || TEXT.likeFailed, icon: 'none' })
   } finally {
     liking.value = false
+  }
+}
+
+async function handleManagePinToggle() {
+  if (!detail.value?.id) return
+  const nextPinned = !detail.value.isPinned
+  closeManageMenu()
+  try {
+    detail.value = await setAnniversaryPinned(detail.value.id, nextPinned)
+    uni.showToast({ title: nextPinned ? TEXT.pinSuccess : TEXT.unpinSuccess, icon: 'success' })
+  } catch (error) {
+    uni.showToast({ title: error?.message || TEXT.pinFailed, icon: 'none' })
   }
 }
 
@@ -720,6 +743,10 @@ function handleDelete() {
   color: #7c5f68;
 }
 
+.detail-manage-item.primary {
+  color: #b67a1f;
+}
+
 .detail-manage-item.danger {
   color: #cf6d78;
 }
@@ -737,6 +764,11 @@ function handleDelete() {
   color: #bc7990;
   font-size: 22rpx;
   font-weight: 700;
+}
+
+.detail-chip.pin {
+  background: linear-gradient(135deg, #fff1c8, #ffe1a8);
+  color: #9f6c10;
 }
 
 .detail-chip.strong {

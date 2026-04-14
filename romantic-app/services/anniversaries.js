@@ -48,6 +48,7 @@ function normalizeAnniversary(item = {}) {
     description: String(item.description || '').trim(),
     location: String(item.location || '').trim(),
     coverUrl: String(item.coverUrl || '').trim(),
+    isPinned: Boolean(item.pinned ?? item.isPinned),
     likeCount: Number(item.likeCount || 0),
     likedByCurrentUser: Boolean(item.likedByCurrentUser),
     reminderType: String(item.reminderType || '').trim(),
@@ -117,6 +118,14 @@ export async function deleteAnniversary(id) {
     method: 'DELETE'
   })
   return ensureSuccess(response, '删除纪念日失败')
+}
+
+export async function setAnniversaryPinned(id, pinned = true) {
+  const response = await request({
+    url: `/api/anniversaries/${encodeURIComponent(id)}/pin?pinned=${pinned ? 'true' : 'false'}`,
+    method: 'PUT'
+  })
+  return normalizeAnniversary(ensureSuccess(response, '设置置顶失败'))
 }
 
 export async function toggleAnniversaryLike(id) {

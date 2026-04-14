@@ -22,6 +22,8 @@ public interface AnniversaryService {
 
     AnniversaryEventResponse updateEvent(Long id, AnniversaryEventRequest request);
 
+    AnniversaryEventResponse setPinned(Long id, boolean pinned);
+
     void deleteEvent(Long id);
 
     InteractionLikeToggleResponse toggleLike(Long id);

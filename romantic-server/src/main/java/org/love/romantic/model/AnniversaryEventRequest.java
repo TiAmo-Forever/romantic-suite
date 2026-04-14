@@ -35,6 +35,9 @@ public class AnniversaryEventRequest {
     @ApiModelProperty("提醒方式")
     private String reminderType;
 
+    @ApiModelProperty("是否置顶到首页")
+    private Boolean pinned;
+
     @ApiModelProperty("媒体列表")
     private List<AnniversaryMediaRequest> mediaList = new ArrayList<>();
 }

@@ -229,6 +229,7 @@ function resolveBizLabel(bizType) {
       return '反馈更新'
     case 'countdown':
       return '倒计时'
+    case 'auth':
     case 'login':
       return '登录提醒'
     case 'daily_summary':
@@ -253,13 +254,15 @@ function resolveNotificationRoute(item) {
 
   switch (item?.bizType) {
     case 'anniversary':
-      return bizId ? `/pages/modules/anniversary/detail?id=${bizId}` : ''
+      return bizId ? `/pages/modules/anniversary/detail?id=${bizId}` : '/pages/modules/anniversary/index'
     case 'album':
-      return bizId ? `/pages/modules/album/detail?id=${bizId}` : ''
+      return bizId ? `/pages/modules/album/detail?id=${bizId}` : '/pages/modules/album/index'
+    case 'auth':
+      return '/pages/account/security'
     case 'improvement_note':
-      return bizId ? `/pages/modules/improvement/detail?id=${bizId}` : ''
+      return bizId ? `/pages/modules/improvement/detail?id=${bizId}` : '/pages/modules/improvement/index'
     case 'improvement_feedback':
-      return payload.noteId ? `/pages/modules/improvement/detail?id=${payload.noteId}` : ''
+      return payload.noteId ? `/pages/modules/improvement/detail?id=${payload.noteId}` : '/pages/modules/improvement/index'
     case 'countdown':
       return '/pages/modules/countdown/index'
     case 'daily_summary':

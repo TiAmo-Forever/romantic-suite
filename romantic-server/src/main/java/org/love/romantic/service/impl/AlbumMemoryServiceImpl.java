@@ -198,7 +198,8 @@ public class AlbumMemoryServiceImpl implements AlbumMemoryService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteMemory(Long id) {
         String operator = AuthContext.getRequiredUsername();
-        requireMemory(id);
+        AlbumMemory memory = requireMemory(id);
+        String title = memory.getTitle();
         List<AlbumMedia> existingMedia = listMediaEntities(id);
 
         albumMediaMapper.delete(new LambdaQueryWrapper<AlbumMedia>().eq(AlbumMedia::getMemoryId, id));
@@ -214,6 +215,15 @@ public class AlbumMemoryServiceImpl implements AlbumMemoryService {
             localFileStorageService.deleteAlbumMediaQuietly(media.getFileUrl());
             localFileStorageService.deleteAlbumMediaQuietly(media.getThumbnailUrl());
         });
+        userNotificationService.notifyPartners(
+                operator,
+                NotificationTypeConstants.ALBUM_DELETED,
+                "一段相册回忆被轻轻收起了",
+                "《" + title + "》刚刚从甜蜜相册里移除了。",
+                NotificationBizTypeConstants.ALBUM,
+                0L,
+                Map.of("title", title, "deleted", true)
+        );
         log.info("甜蜜相册回忆删除成功，operator={}, memoryId={}", operator, id);
     }
 
@@ -275,7 +285,7 @@ public class AlbumMemoryServiceImpl implements AlbumMemoryService {
     @Transactional(rollbackFor = Exception.class)
     public InteractionCommentResponse addComment(Long id, InteractionCommentRequest request) {
         String operator = AuthContext.getRequiredUsername();
-        requireMemory(id);
+        AlbumMemory memory = requireMemory(id);
 
         String content = defaultIfBlank(request.getContent(), "");
         if (!StringUtils.hasText(content)) {
@@ -292,6 +302,15 @@ public class AlbumMemoryServiceImpl implements AlbumMemoryService {
                 .updatedAt(now)
                 .build();
         bizCommentRecordMapper.insert(comment);
+        userNotificationService.notifyPartners(
+                operator,
+                NotificationTypeConstants.ALBUM_COMMENTED,
+                "相册回忆下多了一句回应",
+                "《" + memory.getTitle() + "》下面刚刚多了一条新的评论。",
+                NotificationBizTypeConstants.ALBUM,
+                id,
+                Map.of("title", memory.getTitle(), "commentId", comment.getId())
+        );
         log.info("甜蜜相册评论创建成功，operator={}, memoryId={}, commentId={}", operator, id, comment.getId());
         return toCommentResponse(comment, buildNicknameMap());
     }
@@ -308,6 +327,15 @@ public class AlbumMemoryServiceImpl implements AlbumMemoryService {
             throw new BusinessException("当前没有权限删除这条评论");
         }
         bizCommentRecordMapper.deleteById(commentId);
+        userNotificationService.notifyPartners(
+                operator,
+                NotificationTypeConstants.ALBUM_COMMENT_DELETED,
+                "相册回忆里撤回了一句回应",
+                "《" + memory.getTitle() + "》下面有一条评论刚刚被删除了。",
+                NotificationBizTypeConstants.ALBUM,
+                id,
+                Map.of("title", memory.getTitle(), "commentId", commentId, "deleted", true)
+        );
         log.info("甜蜜相册评论删除成功，operator={}, memoryId={}, commentId={}", operator, id, commentId);
     }
 

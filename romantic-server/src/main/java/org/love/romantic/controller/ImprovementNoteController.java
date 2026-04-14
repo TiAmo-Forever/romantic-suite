@@ -7,6 +7,9 @@ import org.love.romantic.common.ApiResponse;
 import org.love.romantic.model.ImprovementFeedbackRequest;
 import org.love.romantic.model.ImprovementNoteRequest;
 import org.love.romantic.model.ImprovementNoteResponse;
+import org.love.romantic.model.InteractionCommentRequest;
+import org.love.romantic.model.InteractionCommentResponse;
+import org.love.romantic.model.InteractionLikeToggleResponse;
 import org.love.romantic.service.ImprovementNoteService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -89,5 +92,29 @@ public class ImprovementNoteController {
     public ApiResponse<ImprovementNoteResponse> deleteFeedback(@ApiParam("记录 ID") @PathVariable Long id,
                                                                @ApiParam("反馈 ID") @PathVariable Long feedbackId) {
         return ApiResponse.ok("删除成功", improvementNoteService.deleteFeedback(id, feedbackId));
+    }
+
+    @ApiOperation("改进反馈点赞")
+    @PostMapping("/{id}/feedback/{feedbackId}/likes")
+    public ApiResponse<InteractionLikeToggleResponse> toggleFeedbackLike(@ApiParam("记录 ID") @PathVariable Long id,
+                                                                         @ApiParam("反馈 ID") @PathVariable Long feedbackId) {
+        return ApiResponse.ok("操作成功", improvementNoteService.toggleFeedbackLike(id, feedbackId));
+    }
+
+    @ApiOperation("改进反馈评论")
+    @PostMapping("/{id}/feedback/{feedbackId}/comments")
+    public ApiResponse<InteractionCommentResponse> addFeedbackComment(@ApiParam("记录 ID") @PathVariable Long id,
+                                                                      @ApiParam("反馈 ID") @PathVariable Long feedbackId,
+                                                                      @Validated @RequestBody InteractionCommentRequest request) {
+        return ApiResponse.ok("评论成功", improvementNoteService.addFeedbackComment(id, feedbackId, request));
+    }
+
+    @ApiOperation("删除改进反馈评论")
+    @DeleteMapping("/{id}/feedback/{feedbackId}/comments/{commentId}")
+    public ApiResponse<Void> deleteFeedbackComment(@ApiParam("记录 ID") @PathVariable Long id,
+                                                   @ApiParam("反馈 ID") @PathVariable Long feedbackId,
+                                                   @ApiParam("评论 ID") @PathVariable Long commentId) {
+        improvementNoteService.deleteFeedbackComment(id, feedbackId, commentId);
+        return ApiResponse.ok("删除成功", null);
     }
 }

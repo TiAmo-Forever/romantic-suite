@@ -65,6 +65,14 @@ public class AnniversaryController {
         return ApiResponse.ok("保存成功", anniversaryService.updateEvent(id, request));
     }
 
+    @ApiOperation("设置纪念日置顶状态")
+    @PutMapping("/{id}/pin")
+    public ApiResponse<AnniversaryEventResponse> setPinned(@ApiParam("纪念日 ID") @PathVariable Long id,
+                                                           @ApiParam(value = "是否置顶到首页", example = "true")
+                                                           @RequestParam(defaultValue = "true") boolean pinned) {
+        return ApiResponse.ok("设置成功", anniversaryService.setPinned(id, pinned));
+    }
+
     @ApiOperation("删除纪念日")
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteEvent(@ApiParam("纪念日 ID") @PathVariable Long id) {

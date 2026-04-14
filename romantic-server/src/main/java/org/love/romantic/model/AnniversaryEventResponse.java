@@ -38,6 +38,9 @@ public class AnniversaryEventResponse {
     @ApiModelProperty("封面相对路径")
     private String coverUrl;
 
+    @ApiModelProperty("是否置顶到首页")
+    private boolean pinned;
+
     @ApiModelProperty("点赞次数")
     private long likeCount;
 

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.love.romantic.auth.AuthContext;
 import org.love.romantic.common.NotificationBizTypeConstants;
+import org.love.romantic.common.NotificationTypeConstants;
 import org.love.romantic.entity.BizCommentRecord;
 import org.love.romantic.entity.BizLikeRecord;
 import org.love.romantic.entity.CoupleProfile;
@@ -29,6 +30,7 @@ import org.love.romantic.model.InteractionLikeToggleResponse;
 import org.love.romantic.model.InteractionLikeUserResponse;
 import org.love.romantic.service.DailySummaryService;
 import org.love.romantic.service.LocalFileStorageService;
+import org.love.romantic.service.UserNotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -67,6 +69,7 @@ public class DailySummaryServiceImpl implements DailySummaryService {
     private final BizCommentRecordMapper bizCommentRecordMapper;
     private final CoupleProfileMapper coupleProfileMapper;
     private final LocalFileStorageService localFileStorageService;
+    private final UserNotificationService userNotificationService;
 
     public DailySummaryServiceImpl(DailySummaryMapper dailySummaryMapper,
                                    DailySummaryEntryMapper dailySummaryEntryMapper,
@@ -74,7 +77,8 @@ public class DailySummaryServiceImpl implements DailySummaryService {
                                    BizLikeRecordMapper bizLikeRecordMapper,
                                    BizCommentRecordMapper bizCommentRecordMapper,
                                    CoupleProfileMapper coupleProfileMapper,
-                                   LocalFileStorageService localFileStorageService) {
+                                   LocalFileStorageService localFileStorageService,
+                                   UserNotificationService userNotificationService) {
         this.dailySummaryMapper = dailySummaryMapper;
         this.dailySummaryEntryMapper = dailySummaryEntryMapper;
         this.dailySummaryMediaMapper = dailySummaryMediaMapper;
@@ -82,6 +86,7 @@ public class DailySummaryServiceImpl implements DailySummaryService {
         this.bizCommentRecordMapper = bizCommentRecordMapper;
         this.coupleProfileMapper = coupleProfileMapper;
         this.localFileStorageService = localFileStorageService;
+        this.userNotificationService = userNotificationService;
     }
 
     @Override
@@ -117,6 +122,15 @@ public class DailySummaryServiceImpl implements DailySummaryService {
         dailySummaryEntryMapper.insert(entry);
         replaceEntryMedia(entry.getId(), new ArrayList<>(), safeMediaList(request.getMediaList()));
         refreshSummaryPreview(summary.getId());
+        userNotificationService.notifyPartners(
+                operator,
+                NotificationTypeConstants.DAILY_SUMMARY_ENTRY_CREATED,
+                "今日小计多写下了一条心情",
+                formatSummaryDay(date) + "刚刚新增了一条今日小计。",
+                NotificationBizTypeConstants.DAILY_SUMMARY_ENTRY,
+                entry.getId(),
+                buildEntryNotificationPayload(summary.getId(), entry.getId(), date)
+        );
         log.info("今日小计条目创建成功，operator={}, summaryId={}, entryId={}", operator, summary.getId(), entry.getId());
         return buildSummaryResponse(date);
     }
@@ -133,6 +147,15 @@ public class DailySummaryServiceImpl implements DailySummaryService {
         dailySummaryEntryMapper.updateById(entry);
         replaceEntryMedia(entryId, existingMedia, safeMediaList(request.getMediaList()));
         refreshSummaryPreview(summaryId);
+        userNotificationService.notifyPartners(
+                operator,
+                NotificationTypeConstants.DAILY_SUMMARY_ENTRY_UPDATED,
+                "今日小计有了新的补充",
+                formatSummaryDay(summary.getSummaryDate()) + "的今日小计刚刚更新过。",
+                NotificationBizTypeConstants.DAILY_SUMMARY_ENTRY,
+                entryId,
+                buildEntryNotificationPayload(summaryId, entryId, summary.getSummaryDate())
+        );
         log.info("今日小计条目更新成功，operator={}, summaryId={}, entryId={}", operator, summaryId, entryId);
         return buildSummaryResponse(summary.getSummaryDate());
     }
@@ -141,7 +164,7 @@ public class DailySummaryServiceImpl implements DailySummaryService {
     @Transactional(rollbackFor = Exception.class)
     public InteractionLikeToggleResponse toggleEntryLike(Long summaryId, Long entryId) {
         String operator = AuthContext.getRequiredUsername();
-        requireSummary(summaryId);
+        DailySummary summary = requireSummary(summaryId);
         requireEntry(summaryId, entryId);
 
         List<BizLikeRecord> existingLikes = bizLikeRecordMapper.selectList(new LambdaQueryWrapper<BizLikeRecord>()
@@ -158,12 +181,30 @@ public class DailySummaryServiceImpl implements DailySummaryService {
                     .createdAt(LocalDateTime.now())
                     .build());
             liked = true;
+            userNotificationService.notifyPartners(
+                    operator,
+                    NotificationTypeConstants.DAILY_SUMMARY_ENTRY_LIKED,
+                    "今日小计收到了一颗爱心",
+                    formatSummaryDay(summary.getSummaryDate()) + "的这条小计刚刚被点亮了一次喜欢。",
+                    NotificationBizTypeConstants.DAILY_SUMMARY_ENTRY,
+                    entryId,
+                    buildEntryNotificationPayload(summaryId, entryId, summary.getSummaryDate(), Map.of("liked", true))
+            );
         } else {
             bizLikeRecordMapper.delete(new LambdaQueryWrapper<BizLikeRecord>()
                     .eq(BizLikeRecord::getBizType, NotificationBizTypeConstants.DAILY_SUMMARY_ENTRY)
                     .eq(BizLikeRecord::getBizId, entryId)
                     .eq(BizLikeRecord::getUsername, operator));
             liked = false;
+            userNotificationService.notifyPartners(
+                    operator,
+                    NotificationTypeConstants.DAILY_SUMMARY_ENTRY_UNLIKED,
+                    "今日小计少了一颗爱心",
+                    formatSummaryDay(summary.getSummaryDate()) + "的这条小计刚刚取消了一次点赞。",
+                    NotificationBizTypeConstants.DAILY_SUMMARY_ENTRY,
+                    entryId,
+                    buildEntryNotificationPayload(summaryId, entryId, summary.getSummaryDate(), Map.of("liked", false))
+            );
         }
 
         return InteractionLikeToggleResponse.builder()
@@ -176,7 +217,7 @@ public class DailySummaryServiceImpl implements DailySummaryService {
     @Transactional(rollbackFor = Exception.class)
     public InteractionCommentResponse addEntryComment(Long summaryId, Long entryId, InteractionCommentRequest request) {
         String operator = AuthContext.getRequiredUsername();
-        requireSummary(summaryId);
+        DailySummary summary = requireSummary(summaryId);
         requireEntry(summaryId, entryId);
 
         String content = defaultIfBlank(request.getContent(), "");
@@ -194,6 +235,15 @@ public class DailySummaryServiceImpl implements DailySummaryService {
                 .updatedAt(now)
                 .build();
         bizCommentRecordMapper.insert(comment);
+        userNotificationService.notifyPartners(
+                operator,
+                NotificationTypeConstants.DAILY_SUMMARY_ENTRY_COMMENTED,
+                "今日小计下面多了一句回应",
+                formatSummaryDay(summary.getSummaryDate()) + "的这条小计刚刚收到一条新评论。",
+                NotificationBizTypeConstants.DAILY_SUMMARY_ENTRY,
+                entryId,
+                buildEntryNotificationPayload(summaryId, entryId, summary.getSummaryDate(), Map.of("commentId", comment.getId()))
+        );
         return toCommentResponse(comment, buildNicknameMap());
     }
 
@@ -201,7 +251,7 @@ public class DailySummaryServiceImpl implements DailySummaryService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteEntryComment(Long summaryId, Long entryId, Long commentId) {
         String operator = AuthContext.getRequiredUsername();
-        requireSummary(summaryId);
+        DailySummary summary = requireSummary(summaryId);
         DailySummaryEntry entry = requireEntry(summaryId, entryId);
         BizCommentRecord comment = requireComment(NotificationBizTypeConstants.DAILY_SUMMARY_ENTRY, entryId, commentId);
         boolean canDelete = operator.equalsIgnoreCase(defaultIfBlank(comment.getUsername(), ""))
@@ -210,6 +260,15 @@ public class DailySummaryServiceImpl implements DailySummaryService {
             throw new BusinessException("当前没有权限删除这条评论");
         }
         bizCommentRecordMapper.deleteById(commentId);
+        userNotificationService.notifyPartners(
+                operator,
+                NotificationTypeConstants.DAILY_SUMMARY_ENTRY_COMMENT_DELETED,
+                "今日小计里撤回了一句回应",
+                formatSummaryDay(summary.getSummaryDate()) + "的这条小计有一条评论刚刚被删除了。",
+                NotificationBizTypeConstants.DAILY_SUMMARY_ENTRY,
+                entryId,
+                buildEntryNotificationPayload(summaryId, entryId, summary.getSummaryDate(), Map.of("commentId", commentId, "deleted", true))
+        );
     }
 
     private DailySummaryResponse buildSummaryResponse(LocalDate date) {
@@ -455,6 +514,8 @@ public class DailySummaryServiceImpl implements DailySummaryService {
 
     private List<DailySummaryHistoryItemResponse> buildHistoryResponses() {
         Map<Long, Integer> entryCountMap = buildEntryCountMap();
+        Map<Long, DailySummaryEntry> latestEntryMap = buildLatestEntryMap();
+        Map<String, String> nicknameMap = buildNicknameMap();
         return dailySummaryMapper.selectList(new LambdaQueryWrapper<DailySummary>()
                         .orderByDesc(DailySummary::getSummaryDate)
                         .orderByDesc(DailySummary::getUpdatedAt)
@@ -466,6 +527,12 @@ public class DailySummaryServiceImpl implements DailySummaryService {
                         .mood(normalizeMood(item.getMood()))
                         .content(defaultIfBlank(item.getContent(), ""))
                         .entryCount(entryCountMap.getOrDefault(item.getId(), 0))
+                        .creatorUsername(defaultIfBlank(item.getCreatorUsername(), ""))
+                        .creatorNickname(resolveNickname(item.getCreatorUsername(), nicknameMap))
+                        .updaterUsername(defaultIfBlank(item.getUpdatedBy(), ""))
+                        .updaterNickname(resolveNickname(item.getUpdatedBy(), nicknameMap))
+                        .authorUsername(resolveHistoryAuthorUsername(item, latestEntryMap.get(item.getId())))
+                        .authorNickname(resolveHistoryAuthorNickname(item, latestEntryMap.get(item.getId()), nicknameMap))
                         .updatedAt(formatDateTime(item.getUpdatedAt()))
                         .build())
                 .collect(Collectors.toList());
@@ -478,6 +545,19 @@ public class DailySummaryServiceImpl implements DailySummaryService {
                 continue;
             }
             result.merge(entry.getSummaryId(), 1, Integer::sum);
+        }
+        return result;
+    }
+
+    private Map<Long, DailySummaryEntry> buildLatestEntryMap() {
+        Map<Long, DailySummaryEntry> result = new LinkedHashMap<>();
+        for (DailySummaryEntry entry : dailySummaryEntryMapper.selectList(new LambdaQueryWrapper<DailySummaryEntry>()
+                .orderByDesc(DailySummaryEntry::getUpdatedAt)
+                .orderByDesc(DailySummaryEntry::getId))) {
+            if (entry.getSummaryId() == null || result.containsKey(entry.getSummaryId())) {
+                continue;
+            }
+            result.put(entry.getSummaryId(), entry);
         }
         return result;
     }
@@ -560,11 +640,59 @@ public class DailySummaryServiceImpl implements DailySummaryService {
         return nicknameMap;
     }
 
+    private String resolveHistoryAuthorUsername(DailySummary summary, DailySummaryEntry latestEntry) {
+        if (summary != null && StringUtils.hasText(summary.getUpdatedBy())) {
+            return defaultIfBlank(summary.getUpdatedBy(), "");
+        }
+        if (summary != null && StringUtils.hasText(summary.getCreatorUsername())) {
+            return defaultIfBlank(summary.getCreatorUsername(), "");
+        }
+        if (latestEntry != null && StringUtils.hasText(latestEntry.getCreatorUsername())) {
+            return defaultIfBlank(latestEntry.getCreatorUsername(), "");
+        }
+        return "";
+    }
+
+    private String resolveHistoryAuthorNickname(DailySummary summary, DailySummaryEntry latestEntry, Map<String, String> nicknameMap) {
+        String username = resolveHistoryAuthorUsername(summary, latestEntry);
+        if (StringUtils.hasText(username)) {
+            return resolveNickname(username, nicknameMap);
+        }
+        if (summary != null && StringUtils.hasText(summary.getUpdatedBy())) {
+            return resolveNickname(summary.getUpdatedBy(), nicknameMap);
+        }
+        if (summary != null && StringUtils.hasText(summary.getCreatorUsername())) {
+            return resolveNickname(summary.getCreatorUsername(), nicknameMap);
+        }
+        if (latestEntry != null && StringUtils.hasText(latestEntry.getCreatorUsername())) {
+            return resolveNickname(latestEntry.getCreatorUsername(), nicknameMap);
+        }
+        return "";
+    }
+
     private String resolveNickname(String username, Map<String, String> nicknameMap) {
         if (!StringUtils.hasText(username)) {
             return "";
         }
         return nicknameMap.getOrDefault(username, username);
+    }
+
+    private Map<String, Object> buildEntryNotificationPayload(Long summaryId, Long entryId, LocalDate summaryDate) {
+        return buildEntryNotificationPayload(summaryId, entryId, summaryDate, Map.of());
+    }
+
+    private Map<String, Object> buildEntryNotificationPayload(Long summaryId,
+                                                              Long entryId,
+                                                              LocalDate summaryDate,
+                                                              Map<String, Object> extraPayload) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("summaryId", summaryId == null ? 0L : summaryId);
+        payload.put("entryId", entryId == null ? 0L : entryId);
+        payload.put("summaryDate", formatDate(summaryDate));
+        if (extraPayload != null && !extraPayload.isEmpty()) {
+            payload.putAll(extraPayload);
+        }
+        return payload;
     }
 
     private LocalDate parseDate(String value) {
@@ -578,6 +706,10 @@ public class DailySummaryServiceImpl implements DailySummaryService {
     private String normalizeMood(String value) {
         String normalized = defaultIfBlank(value, DEFAULT_MOOD).toLowerCase(Locale.ROOT);
         return StringUtils.hasText(normalized) ? normalized : DEFAULT_MOOD;
+    }
+
+    private String formatSummaryDay(LocalDate summaryDate) {
+        return formatDate(summaryDate) + " 的今日小计";
     }
 
     private String formatDate(LocalDate value) {

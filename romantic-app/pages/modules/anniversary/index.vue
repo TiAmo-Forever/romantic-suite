@@ -53,7 +53,10 @@
 
           <view class="event-title-row">
             <view class="event-title">{{ item.title }}</view>
-            <view class="event-type">{{ typeLabels[item.type] || TEXT.defaultType }}</view>
+            <view class="event-title-tags">
+              <view v-if="item.isPinned" class="event-pin-tag">{{ TEXT.pinnedTag }}</view>
+              <view class="event-type">{{ typeLabels[item.type] || TEXT.defaultType }}</view>
+            </view>
           </view>
           <view class="event-date">{{ item.eventDate }}</view>
           <view class="event-status">{{ formatStatus(item) }}</view>
@@ -107,7 +110,7 @@ const TEXT = {
   cardFallback: '点开看看这一天被认真记下了什么。',
   locationFallback: '把这一刻留给你们的回忆。',
   emptyTitle: '还没有纪念日',
-  emptyDesc: '先添加一个重要的日子，列表会按时间倒序展示。',
+  emptyDesc: '先添加一个重要的日子；置顶后，它也会展示在首页摘要里。',
   loadError: '纪念日加载失败',
   creatorPrefix: '由 ',
   creatorSuffix: ' 创建',
@@ -117,7 +120,8 @@ const TEXT = {
   pastPrefix: '已过去 ',
   pastSuffix: ' 天',
   identityMine: '我',
-  identityOther: 'TA'
+  identityOther: 'TA',
+  pinnedTag: '首页置顶'
 }
 
 const filters = [
@@ -215,8 +219,10 @@ function formatStatus(item) {
 .identity-badge-dot { width: 10rpx; height: 10rpx; border-radius: 50%; background: currentColor; opacity: 0.85; }
 .identity-badge-mine { background: rgba(223, 246, 242, 0.96); color: #3e9b92; }
 .identity-badge-other { background: rgba(255, 238, 229, 0.96); color: #d18264; }
-.event-title-row { margin-top: 14rpx; display: flex; align-items: center; justify-content: space-between; gap: 16rpx; }
+.event-title-row { margin-top: 14rpx; display: flex; align-items: flex-start; justify-content: space-between; gap: 16rpx; }
 .event-title { font-size: 30rpx; font-weight: 700; color: var(--app-color-primary-strong); flex: 1; min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-all; }
+.event-title-tags { display: flex; align-items: center; justify-content: flex-end; gap: 10rpx; flex-wrap: wrap; flex-shrink: 0; }
+.event-pin-tag { padding: 8rpx 14rpx; border-radius: 999rpx; background: linear-gradient(135deg, #ffe9b8, #ffd48d); color: #9f6c10; font-size: 20rpx; font-weight: 700; }
 .event-type { padding: 8rpx 14rpx; border-radius: 999rpx; background: #fff0f5; color: #c5718b; font-size: 20rpx; font-weight: 700; }
 .event-date { margin-top: 14rpx; font-size: 24rpx; color: #8f6d78; }
 .event-status { margin-top: 10rpx; font-size: 26rpx; font-weight: 700; color: #ff6b97; }

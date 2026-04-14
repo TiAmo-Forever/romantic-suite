@@ -78,6 +78,12 @@ function normalizeHistoryItem(item = {}) {
     moodMeta: getDailySummaryMoodMeta(mood),
     content: String(item.content || '').trim(),
     entryCount: Number(item.entryCount || 0),
+    creatorUsername: String(item.creatorUsername || '').trim(),
+    creatorNickname: String(item.creatorNickname || '').trim(),
+    updaterUsername: String(item.updaterUsername || '').trim(),
+    updaterNickname: String(item.updaterNickname || '').trim(),
+    authorUsername: String(item.authorUsername || '').trim(),
+    authorNickname: String(item.authorNickname || '').trim(),
     updatedAt: String(item.updatedAt || '').trim()
   }
 }

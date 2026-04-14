@@ -40,7 +40,7 @@
         <view v-if="summary.entryList.length" class="daily-swiper-shell">
           <swiper class="daily-swiper" :current="activeEntryIndex" @change="handleEntryChange">
             <swiper-item v-for="entry in summary.entryList" :key="entry.id">
-              <view class="daily-entry-card">
+              <view class="daily-entry-card" :class="getEntryCardClass(entry.creatorUsername)">
                 <view class="daily-entry-topline">
                   <view class="daily-entry-left">
                     <view class="identity-badge" :class="getIdentityBadgeClass(entry.creatorUsername)">
@@ -153,17 +153,18 @@
         </view>
         <scroll-view class="history-drawer-scroll" scroll-y enhanced show-scrollbar="false">
           <view v-if="historyList.length" class="history-list">
-            <view
+              <view
               v-for="item in historyList"
               :key="item.id || item.summaryDate"
               class="history-item"
-              :class="{ active: item.summaryDate === activeDate }"
+              :class="[getHistoryItemClass(item), { active: item.summaryDate === activeDate }]"
               @click="handleHistorySelect(item.summaryDate)"
             >
               <view class="history-main">
                 <view class="history-date">{{ formatHistoryDate(item.summaryDate) }}</view>
                 <view class="history-count">{{ item.entryCount }} 条</view>
               </view>
+              <view class="history-author">{{ getHistoryMeta(item) }}</view>
               <view class="history-preview">{{ item.content || TEXT.emptyHistoryPreview }}</view>
             </view>
           </view>
@@ -299,7 +300,7 @@ const moodMeta = computed(() => getDailySummaryMoodMeta(summary.mood))
 const currentDateLabel = computed(() => formatPrettyDate(activeDate.value || summary.summaryDate))
 const updaterLabel = computed(() => {
   if (!summary.hasRecord || !summary.updaterUsername) return TEXT.emptyUpdated
-  return `${TEXT.updatedPrefix}${summary.updaterUsername === currentUsername.value ? '我' : 'TA'}`
+  return `${TEXT.updatedPrefix}${summary.updaterUsername === currentUsername.value ? '我写的' : 'TA写的'}`
 })
 const heroTitle = computed(() => {
   if (!summary.hasRecord) return '今天也值得认真留下一页'
@@ -507,17 +508,58 @@ function formatCommentTime(value) {
 }
 
 function getIdentityBadgeText(username) {
-  return String(username || '').trim() === currentUsername.value ? '我' : 'TA'
+  return String(username || '').trim() === currentUsername.value ? '我写的' : 'TA写的'
 }
 
 function getIdentityBadgeClass(username) {
-  return String(username || '').trim() === currentUsername.value ? 'identity-badge-mine' : 'identity-badge-other'
+  return getAuthorToneClass(username)
 }
 
 function getEntryMeta(entry) {
-  const nickname = entry.creatorNickname || entry.creatorUsername || '未命名'
+  const nickname = getAuthorDisplayName(entry.creatorNickname, entry.creatorUsername)
   const time = formatCommentTime(entry.updatedAt || entry.createdAt)
-  return `${nickname} · ${time}`
+  return time ? `${nickname} · ${time}` : nickname
+}
+
+function getEntryCardClass(username) {
+  return getAuthorToneClass(username)
+}
+
+function getHistoryAuthorKey(item) {
+  return String(item?.authorUsername || item?.updaterUsername || item?.creatorUsername || item?.authorNickname || item?.updaterNickname || item?.creatorNickname || '').trim()
+}
+
+function getHistoryAuthorName(item) {
+  return getAuthorDisplayName(
+    item?.authorNickname || item?.updaterNickname || item?.creatorNickname,
+    item?.authorUsername || item?.updaterUsername || item?.creatorUsername
+  )
+}
+
+function getHistoryMeta(item) {
+  const time = formatCommentTime(item?.updatedAt || '')
+  const name = getHistoryAuthorName(item)
+  return time ? `${name} · ${time}` : name
+}
+
+function getHistoryItemClass(item) {
+  return getAuthorToneClass(getHistoryAuthorKey(item))
+}
+
+function getAuthorDisplayName(nickname, username) {
+  const name = String(nickname || '').trim() || String(username || '').trim()
+  return name || '未命名'
+}
+
+function getAuthorToneClass(username) {
+  const key = String(username || '').trim()
+  if (!key) {
+    return 'author-tone-unknown'
+  }
+  if (key === currentUsername.value) {
+    return 'author-tone-mine'
+  }
+  return 'author-tone-partner'
 }
 
 function resolveMedia(path) {
@@ -726,6 +768,7 @@ function formatHistoryDate(value) {
 }
 
 .daily-entry-card {
+  position: relative;
   width: 100%;
   height: 100%;
   min-width: 0;
@@ -735,8 +778,21 @@ function formatHistoryDate(value) {
   flex-direction: column;
   padding: 28rpx;
   border-radius: 30rpx;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 253, 252, 0.95));
-  box-shadow: 0 18rpx 34rpx rgba(67, 122, 118, 0.08);
+  background: var(--author-surface, rgba(255, 255, 255, 0.98));
+  box-shadow:
+    inset 0 0 0 2rpx var(--author-outline, rgba(67, 122, 118, 0.08)),
+    0 18rpx 34rpx rgba(67, 122, 118, 0.08);
+}
+
+.daily-entry-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 24rpx;
+  bottom: 24rpx;
+  width: 10rpx;
+  border-radius: 0 999rpx 999rpx 0;
+  background: var(--author-accent, var(--app-color-primary-strong));
 }
 
 .daily-entry-left {
@@ -756,6 +812,8 @@ function formatHistoryDate(value) {
   border-radius: 999rpx;
   font-size: 22rpx;
   font-weight: 700;
+  background: var(--author-badge-bg, rgba(255, 255, 255, 0.95));
+  color: var(--author-accent, var(--app-color-primary-strong));
 }
 
 .identity-badge-dot {
@@ -765,14 +823,31 @@ function formatHistoryDate(value) {
   background: currentColor;
 }
 
-.identity-badge-mine {
-  background: rgba(237, 246, 251, 0.95);
-  color: #5a8dae;
+.author-tone-mine {
+  --author-surface: #e9f4ff;
+  --author-surface-active: #d9ecff;
+  --author-surface-soft: rgba(228, 242, 255, 0.9);
+  --author-badge-bg: #ffffff;
+  --author-accent: #2f7bdc;
+  --author-outline: rgba(47, 123, 220, 0.24);
 }
 
-.identity-badge-other {
-  background: rgba(255, 241, 245, 0.95);
-  color: #c66e89;
+.author-tone-partner {
+  --author-surface: #ffeaf1;
+  --author-surface-active: #ffdce7;
+  --author-surface-soft: rgba(255, 233, 241, 0.9);
+  --author-badge-bg: #ffffff;
+  --author-accent: #d85b87;
+  --author-outline: rgba(216, 91, 135, 0.24);
+}
+
+.author-tone-unknown {
+  --author-surface: #f3f5f7;
+  --author-surface-active: #ebeff3;
+  --author-surface-soft: rgba(243, 245, 247, 0.9);
+  --author-badge-bg: #ffffff;
+  --author-accent: #6b7280;
+  --author-outline: rgba(107, 114, 128, 0.18);
 }
 
 .daily-entry-meta {
@@ -916,7 +991,7 @@ function formatHistoryDate(value) {
 .daily-interaction-card {
   margin-top: 18rpx;
   border-radius: 24rpx;
-  background: rgba(255, 255, 255, 0.64);
+  background: var(--author-surface-soft, rgba(255, 255, 255, 0.64));
   overflow: hidden;
 }
 
@@ -1058,23 +1133,45 @@ function formatHistoryDate(value) {
 }
 
 .history-item {
+  position: relative;
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  padding: 20rpx 22rpx;
+  padding: 20rpx 22rpx 20rpx 30rpx;
   border-radius: 24rpx;
-  background: rgba(243, 250, 248, 0.96);
-  box-shadow: inset 0 0 0 2rpx rgba(255, 255, 255, 0.46);
+  background: var(--author-surface, rgba(243, 250, 248, 0.96));
+  box-shadow: inset 0 0 0 2rpx var(--author-outline, rgba(255, 255, 255, 0.46));
+}
+
+.history-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 18rpx;
+  bottom: 18rpx;
+  width: 10rpx;
+  border-radius: 0 999rpx 999rpx 0;
+  background: var(--author-accent, var(--app-color-primary-strong));
 }
 
 .history-item.active {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(234, 247, 243, 0.98));
+  background: var(--author-surface-active, rgba(243, 250, 248, 0.96));
+  box-shadow:
+    inset 0 0 0 2rpx var(--author-outline, rgba(255, 255, 255, 0.78)),
+    0 12rpx 24rpx rgba(83, 148, 138, 0.08);
 }
 
 .history-date {
   font-size: 28rpx;
   font-weight: 700;
   color: var(--app-color-primary-strong);
+}
+
+.history-author {
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: var(--author-accent, var(--app-color-text-muted));
 }
 
 .history-preview {
