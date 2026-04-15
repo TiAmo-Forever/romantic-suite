@@ -1,0 +1,45 @@
+<svg width="1200" height="420" viewBox="0 0 1200 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="titleFill" x1="260" y1="90" x2="930" y2="300" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2E8F88"/>
+      <stop offset="0.55" stop-color="#3E9F96"/>
+      <stop offset="1" stop-color="#4CA79B"/>
+    </linearGradient>
+    <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0.98 0 1 0 0 0.90 0 0 1 0 0.88 0 0 0 0.75 0"/>
+      <feBlend in="SourceGraphic"/>
+    </filter>
+  </defs>
+
+  <g opacity="0.75">
+    <path d="M165 190C222 121 309 111 381 144C463 181 514 169 585 129C667 83 778 81 868 122C939 154 1000 160 1064 125"
+      stroke="#F3BBB3" stroke-width="8" stroke-linecap="round"/>
+    <path d="M210 230C289 171 369 163 448 193C502 214 559 213 629 187C711 156 796 154 879 188"
+      stroke="#F7D8D2" stroke-width="5" stroke-linecap="round"/>
+  </g>
+
+  <g filter="url(#softGlow)">
+    <text x="235" y="250" fill="url(#titleFill)" font-size="170" font-weight="700"
+      font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif"
+      letter-spacing="8">浪漫计划</text>
+  </g>
+
+  <path d="M383 305C502 336 685 344 861 305" stroke="#2E8F88" stroke-width="11" stroke-linecap="round"/>
+  <path d="M366 303C489 364 706 364 883 298" stroke="#2E8F88" stroke-width="6" stroke-linecap="round" opacity="0.55"/>
+
+  <g opacity="0.9">
+    <path d="M238 157L251 183L278 196L252 209L240 235L227 210L199 196L226 183L238 157Z" fill="#F7A6A0"/>
+    <path d="M962 130L972 152L995 162L973 173L964 195L953 173L931 162L953 152L962 130Z" fill="#F8CEC6"/>
+    <path d="M1038 177L1044 190L1057 196L1044 202L1038 215L1032 202L1019 196L1032 190L1038 177Z" fill="#FFF4EF"/>
+    <path d="M921 98L928 113L944 121L928 128L921 144L913 128L898 121L913 113L921 98Z" fill="#FFF7F2"/>
+  </g>
+
+  <g opacity="0.95">
+    <path d="M337 118C337 104 348 94 362 94C375 94 386 104 386 118C386 138 362 154 362 154C362 154 337 138 337 118Z" fill="#F7999F"/>
+    <path d="M872 118C872 109 879 102 888 102C897 102 904 109 904 118C904 131 888 141 888 141C888 141 872 131 872 118Z" fill="#F7B9C3"/>
+  </g>
+
+  <path d="M945 237C977 208 1012 201 1043 212C1015 216 998 233 988 255" stroke="#F198A5" stroke-width="4" stroke-linecap="round"/>
+  <path d="M945 237C959 239 970 248 977 264" stroke="#F198A5" stroke-width="4" stroke-linecap="round"/>
+</svg>

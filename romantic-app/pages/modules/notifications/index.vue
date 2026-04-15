@@ -10,7 +10,7 @@
         <AccountIntroCard
           eyebrow="提醒流"
           title="把今天的共享动态慢慢收在这里"
-          description="登录、纪念日、相册、倒计时和改进簿的更新都会汇成一条柔和的消息流，方便你们随时回看今天发生了什么。"
+          description="登录、纪念日、相册、倒计时、今日小计、改进簿和浪漫计划的更新，都会汇成一条柔和的消息流，方便你们随时回看今天发生了什么。"
           :tags="introTags"
         >
           <template #meta>
@@ -18,7 +18,7 @@
           </template>
         </AccountIntroCard>
 
-        <AccountPanel title="提醒列表" description="点开一条提醒会自动标记为已读，并尽量跳到对应的业务页面。">
+        <AccountPanel title="提醒列表" description="点开一条提醒后会自动标记为已读，并尽量跳转到对应的业务页面。">
           <view class="toolbar">
             <view class="filter-row">
               <view
@@ -141,7 +141,7 @@ const emptyState = computed(() => {
   }
   return {
     title: '还没有新的提醒',
-    desc: '登录、纪念日、相册、倒计时和改进簿的共享动态，都会在这里慢慢收集起来。'
+    desc: '登录、纪念日、相册、倒计时、今日小计、改进簿和浪漫计划的共享动态，都会在这里慢慢收集起来。'
   }
 })
 
@@ -235,6 +235,8 @@ function resolveBizLabel(bizType) {
     case 'daily_summary':
     case 'daily_summary_entry':
       return '今日小计'
+    case 'romantic_plan':
+      return '浪漫计划'
     default:
       return '共享动态'
   }
@@ -270,6 +272,10 @@ function resolveNotificationRoute(item) {
       return payload.summaryDate
         ? `/pages/modules/daily-summary/detail?date=${encodeURIComponent(payload.summaryDate)}`
         : '/pages/modules/daily-summary/detail'
+    case 'romantic_plan':
+      return payload.planId
+        ? `/pages/modules/romantic-plan/detail?id=${encodeURIComponent(payload.planId)}`
+        : (bizId ? `/pages/modules/romantic-plan/detail?id=${encodeURIComponent(bizId)}` : '/pages/modules/romantic-plan/index')
     default:
       return ''
   }
@@ -329,7 +335,6 @@ onUnload(() => {
   }
 })
 </script>
-
 <style scoped>
 .intro-time-chip {
   background: rgba(255, 244, 247, 0.96);

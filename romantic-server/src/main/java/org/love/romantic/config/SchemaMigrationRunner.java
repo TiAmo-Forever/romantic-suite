@@ -32,6 +32,7 @@ public class SchemaMigrationRunner {
         ensureImprovementTables();
         ensureNotificationTable();
         ensureAlbumTables();
+        ensureRomanticPlanTables();
         ensureColumns();
         ensureAvatarImageColumnType();
         refreshMysqlComments();
@@ -226,6 +227,59 @@ public class SchemaMigrationRunner {
         migrateAlbumInteractionTables();
     }
 
+    private void ensureRomanticPlanTables() {
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS romantic_plan ("
+                + "id BIGINT PRIMARY KEY AUTO_INCREMENT,"
+                + "title VARCHAR(120) NOT NULL,"
+                + "description TEXT NOT NULL,"
+                + "plan_type VARCHAR(16) NOT NULL DEFAULT 'daily',"
+                + "status VARCHAR(16) NOT NULL DEFAULT 'active',"
+                + "start_at DATETIME NOT NULL,"
+                + "end_at DATETIME NULL,"
+                + "interval_days INT NOT NULL DEFAULT 0,"
+                + "location VARCHAR(120) NOT NULL DEFAULT '',"
+                + "cover_url VARCHAR(255) NOT NULL DEFAULT '',"
+                + "creator_username VARCHAR(64) NOT NULL,"
+                + "updated_by VARCHAR(64) NOT NULL,"
+                + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+                + "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+                + "KEY idx_romantic_plan_status (status),"
+                + "KEY idx_romantic_plan_updated_at (updated_at)"
+                + ")");
+
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS romantic_plan_item ("
+                + "id BIGINT PRIMARY KEY AUTO_INCREMENT,"
+                + "plan_id BIGINT NOT NULL,"
+                + "title VARCHAR(120) NOT NULL,"
+                + "content VARCHAR(300) NOT NULL DEFAULT '',"
+                + "scheduled_at DATETIME NULL,"
+                + "end_at DATETIME NULL,"
+                + "location VARCHAR(120) NOT NULL DEFAULT '',"
+                + "sort_order INT NOT NULL DEFAULT 0,"
+                + "completed TINYINT(1) NOT NULL DEFAULT 0,"
+                + "completed_at DATETIME NULL,"
+                + "creator_username VARCHAR(64) NOT NULL,"
+                + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+                + "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+                + "KEY idx_romantic_plan_item_plan_id (plan_id),"
+                + "KEY idx_romantic_plan_item_scheduled_at (scheduled_at)"
+                + ")");
+
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS romantic_plan_feedback ("
+                + "id BIGINT PRIMARY KEY AUTO_INCREMENT,"
+                + "plan_id BIGINT NOT NULL,"
+                + "plan_item_id BIGINT NOT NULL DEFAULT 0,"
+                + "feedback_date DATE NOT NULL,"
+                + "status VARCHAR(16) NOT NULL DEFAULT 'done',"
+                + "content VARCHAR(300) NOT NULL,"
+                + "creator_username VARCHAR(64) NOT NULL,"
+                + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+                + "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+                + "KEY idx_romantic_plan_feedback_plan_id (plan_id),"
+                + "KEY idx_romantic_plan_feedback_date (feedback_date)"
+                + ")");
+    }
+
     private void migrateAlbumInteractionTables() {
         if (tableExists("album_memory_like")) {
             jdbcTemplate.execute("INSERT INTO biz_like_record (biz_type, biz_id, username, created_at) "
@@ -386,6 +440,9 @@ public class SchemaMigrationRunner {
         executeCommentSql("ALTER TABLE daily_summary_entry COMMENT = '今日小计条目表'");
         executeCommentSql("ALTER TABLE daily_summary_media COMMENT = '今日小计媒体资源表'");
         executeCommentSql("ALTER TABLE user_notification COMMENT = '用户站内通知表'");
+        executeCommentSql("ALTER TABLE romantic_plan COMMENT = '浪漫计划主表'");
+        executeCommentSql("ALTER TABLE romantic_plan_item COMMENT = '浪漫计划条目表'");
+        executeCommentSql("ALTER TABLE romantic_plan_feedback COMMENT = '浪漫计划反馈表'");
 
         executeCommentSql("ALTER TABLE album_memory MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
         executeCommentSql("ALTER TABLE album_memory MODIFY COLUMN username VARCHAR(64) NOT NULL COMMENT '创建账号'");
@@ -401,6 +458,45 @@ public class SchemaMigrationRunner {
 
         executeCommentSql("ALTER TABLE anniversary_event MODIFY COLUMN is_pinned TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否置顶到首页'");
         executeCommentSql("ALTER TABLE anniversary_event MODIFY COLUMN like_count BIGINT NOT NULL DEFAULT 0 COMMENT '点赞次数'");
+
+        executeCommentSql("ALTER TABLE romantic_plan MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
+        executeCommentSql("ALTER TABLE romantic_plan MODIFY COLUMN title VARCHAR(120) NOT NULL COMMENT '计划标题'");
+        executeCommentSql("ALTER TABLE romantic_plan MODIFY COLUMN description TEXT NOT NULL COMMENT '计划说明'");
+        executeCommentSql("ALTER TABLE romantic_plan MODIFY COLUMN plan_type VARCHAR(16) NOT NULL DEFAULT 'daily' COMMENT '计划类型'");
+        executeCommentSql("ALTER TABLE romantic_plan MODIFY COLUMN status VARCHAR(16) NOT NULL DEFAULT 'active' COMMENT '计划状态'");
+        executeCommentSql("ALTER TABLE romantic_plan MODIFY COLUMN start_at DATETIME NOT NULL COMMENT '开始时间'");
+        executeCommentSql("ALTER TABLE romantic_plan MODIFY COLUMN end_at DATETIME NULL COMMENT '结束时间'");
+        executeCommentSql("ALTER TABLE romantic_plan MODIFY COLUMN interval_days INT NOT NULL DEFAULT 0 COMMENT '间隔天数'");
+        executeCommentSql("ALTER TABLE romantic_plan MODIFY COLUMN location VARCHAR(120) NOT NULL DEFAULT '' COMMENT '地点说明'");
+        executeCommentSql("ALTER TABLE romantic_plan MODIFY COLUMN cover_url VARCHAR(255) NOT NULL DEFAULT '' COMMENT '封面资源路径'");
+        executeCommentSql("ALTER TABLE romantic_plan MODIFY COLUMN creator_username VARCHAR(64) NOT NULL COMMENT '创建账号'");
+        executeCommentSql("ALTER TABLE romantic_plan MODIFY COLUMN updated_by VARCHAR(64) NOT NULL COMMENT '最近更新账号'");
+        executeCommentSql("ALTER TABLE romantic_plan MODIFY COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'");
+        executeCommentSql("ALTER TABLE romantic_plan MODIFY COLUMN updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'");
+
+        executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
+        executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN plan_id BIGINT NOT NULL COMMENT '所属计划 ID'");
+        executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN title VARCHAR(120) NOT NULL COMMENT '条目标题'");
+        executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN content VARCHAR(300) NOT NULL DEFAULT '' COMMENT '条目内容'");
+        executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN scheduled_at DATETIME NULL COMMENT '安排时间'");
+        executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN end_at DATETIME NULL COMMENT '结束时间'");
+        executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN location VARCHAR(120) NOT NULL DEFAULT '' COMMENT '地点说明'");
+        executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN sort_order INT NOT NULL DEFAULT 0 COMMENT '排序值'");
+        executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN completed TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否完成'");
+        executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN completed_at DATETIME NULL COMMENT '完成时间'");
+        executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN creator_username VARCHAR(64) NOT NULL COMMENT '创建账号'");
+        executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'");
+        executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'");
+
+        executeCommentSql("ALTER TABLE romantic_plan_feedback MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
+        executeCommentSql("ALTER TABLE romantic_plan_feedback MODIFY COLUMN plan_id BIGINT NOT NULL COMMENT '所属计划 ID'");
+        executeCommentSql("ALTER TABLE romantic_plan_feedback MODIFY COLUMN plan_item_id BIGINT NOT NULL DEFAULT 0 COMMENT '关联条目 ID'");
+        executeCommentSql("ALTER TABLE romantic_plan_feedback MODIFY COLUMN feedback_date DATE NOT NULL COMMENT '反馈日期'");
+        executeCommentSql("ALTER TABLE romantic_plan_feedback MODIFY COLUMN status VARCHAR(16) NOT NULL DEFAULT 'done' COMMENT '反馈状态'");
+        executeCommentSql("ALTER TABLE romantic_plan_feedback MODIFY COLUMN content VARCHAR(300) NOT NULL COMMENT '反馈内容'");
+        executeCommentSql("ALTER TABLE romantic_plan_feedback MODIFY COLUMN creator_username VARCHAR(64) NOT NULL COMMENT '创建账号'");
+        executeCommentSql("ALTER TABLE romantic_plan_feedback MODIFY COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'");
+        executeCommentSql("ALTER TABLE romantic_plan_feedback MODIFY COLUMN updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'");
 
         executeCommentSql("ALTER TABLE album_memory_like MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
         executeCommentSql("ALTER TABLE album_memory_like MODIFY COLUMN memory_id BIGINT NOT NULL COMMENT '所属回忆 ID'");
@@ -461,7 +557,6 @@ public class SchemaMigrationRunner {
             log.warn("执行注释迁移失败，sql={}, message={}", sql, exception.getMessage());
         }
     }
-
     private boolean isMySqlDatabase() {
         Connection connection = DataSourceUtils.getConnection(dataSource);
         try {

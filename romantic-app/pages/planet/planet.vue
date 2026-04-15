@@ -106,9 +106,9 @@
         <view class="planet-card-desc">{{ TEXT.dailySummaryDesc }}</view>
       </view>
 
-      <view class="planet-card planet-card-subtle app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goComingSoon(TEXT.planTitle)">
+      <view class="planet-card app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goRomanticPlan">
         <view class="planet-card-head">
-          <view class="status-badge status-badge-reserve">{{ TEXT.reserve }}</view>
+          <view class="status-badge status-badge-open">{{ TEXT.opened }}</view>
         </view>
         <view class="planet-icon planet-icon-frame">
           <view class="icon-grid">
@@ -193,6 +193,10 @@ function goImprovement() {
 
 function goDailySummary() {
   goPage('/pages/modules/daily-summary/detail')
+}
+
+function goRomanticPlan() {
+  goPage('/pages/modules/romantic-plan/index')
 }
 
 function goComingSoon(title) {

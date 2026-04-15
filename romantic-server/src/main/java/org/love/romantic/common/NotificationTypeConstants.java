@@ -40,6 +40,15 @@ public final class NotificationTypeConstants {
     public static final String DAILY_SUMMARY_ENTRY_UNLIKED = "daily_summary_entry_unliked";
     public static final String DAILY_SUMMARY_ENTRY_COMMENTED = "daily_summary_entry_commented";
     public static final String DAILY_SUMMARY_ENTRY_COMMENT_DELETED = "daily_summary_entry_comment_deleted";
+    public static final String ROMANTIC_PLAN_CREATED = "romantic_plan_created";
+    public static final String ROMANTIC_PLAN_UPDATED = "romantic_plan_updated";
+    public static final String ROMANTIC_PLAN_DELETED = "romantic_plan_deleted";
+    public static final String ROMANTIC_PLAN_FEEDBACK_CREATED = "romantic_plan_feedback_created";
+    public static final String ROMANTIC_PLAN_LIKED = "romantic_plan_liked";
+    public static final String ROMANTIC_PLAN_UNLIKED = "romantic_plan_unliked";
+    public static final String ROMANTIC_PLAN_COMMENTED = "romantic_plan_commented";
+    public static final String ROMANTIC_PLAN_COMMENT_DELETED = "romantic_plan_comment_deleted";
+    public static final String ROMANTIC_PLAN_ITEM_COMPLETED = "romantic_plan_item_completed";
 
     private NotificationTypeConstants() {
     }

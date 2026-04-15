@@ -1,0 +1,171 @@
+<svg width="1080" height="1920" viewBox="0 0 1080 1920" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pageBg" x1="540" y1="0" x2="540" y2="1920" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FAE9E1"/>
+      <stop offset="0.38" stop-color="#F6DDD7"/>
+      <stop offset="0.7" stop-color="#F0DDEA"/>
+      <stop offset="1" stop-color="#F7E3DA"/>
+    </linearGradient>
+    <linearGradient id="cardStroke" x1="80" y1="0" x2="1000" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F5C7BE"/>
+      <stop offset="1" stop-color="#F2D7CF"/>
+    </linearGradient>
+    <linearGradient id="buttonFillLarge" x1="542" y1="700" x2="850" y2="826" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF8F9E"/>
+      <stop offset="1" stop-color="#F06C82"/>
+    </linearGradient>
+    <linearGradient id="ribbonPinkLarge" x1="0" y1="0" x2="243" y2="70" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F6A6B5"/>
+      <stop offset="1" stop-color="#E37F95"/>
+    </linearGradient>
+    <linearGradient id="ribbonGreenLarge" x1="0" y1="0" x2="243" y2="70" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#93B67B"/>
+      <stop offset="1" stop-color="#6B9561"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#pageBg)"/>
+
+  <g opacity="0.85">
+    <ellipse cx="181" cy="200" rx="224" ry="126" fill="#FFF8F4"/>
+    <ellipse cx="356" cy="173" rx="170" ry="93" fill="#FFF6F1"/>
+    <ellipse cx="902" cy="239" rx="232" ry="112" fill="#FFF7F3"/>
+    <ellipse cx="856" cy="320" rx="180" ry="98" fill="#FFF4EE"/>
+    <ellipse cx="144" cy="1530" rx="236" ry="120" fill="#FFF7F2"/>
+    <ellipse cx="890" cy="1660" rx="278" ry="138" fill="#FFF4EE"/>
+  </g>
+
+  <g opacity="0.55">
+    <circle cx="156" cy="126" r="6" fill="#FFF9F7"/>
+    <circle cx="742" cy="160" r="7" fill="#FFE9E4"/>
+    <circle cx="982" cy="267" r="6" fill="#FFF9F7"/>
+    <circle cx="185" cy="1110" r="7" fill="#FFE2DF"/>
+    <circle cx="962" cy="1437" r="8" fill="#FFF9F7"/>
+  </g>
+
+  <rect x="32" y="52" width="208" height="96" rx="48" fill="#FFF9F7" stroke="#F1DAD2" stroke-width="4"/>
+  <text x="84" y="112" fill="#C78D8D" font-size="46" font-weight="600"
+    font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">‹ 返回</text>
+
+  <text x="444" y="90" fill="#D79A95" font-size="28" font-weight="600"
+    font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">计划中心</text>
+  <path d="M359 78H425" stroke="#E6B7B0" stroke-width="2" stroke-linecap="round"/>
+  <path d="M655 78H721" stroke="#E6B7B0" stroke-width="2" stroke-linecap="round"/>
+
+  <text x="276" y="256" fill="#2E8F88" font-size="112" font-weight="700"
+    font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif" letter-spacing="6">浪漫计划</text>
+  <path d="M326 291C451 328 648 335 810 294" stroke="#2E8F88" stroke-width="9" stroke-linecap="round"/>
+  <path d="M314 286L327 312L355 325L329 338L316 365L303 338L276 325L303 312L314 286Z" fill="#F7A6A0"/>
+  <path d="M841 219L849 235L866 242L850 250L841 267L833 250L816 242L833 235L841 219Z" fill="#FFF5F2"/>
+
+  <rect x="38" y="404" width="1004" height="520" rx="52" fill="#FFF8F5" stroke="url(#cardStroke)" stroke-width="4"/>
+  <g>
+    <path d="M34 438H244C264 438 280 444 293 456C306 468 317 469 332 464L320 528C306 535 292 538 273 538H74C53 538 39 529 34 515L26 480C22 464 24 449 34 438Z" fill="url(#ribbonPinkLarge)"/>
+    <text x="80" y="503" fill="#FFF8F9" font-size="52" font-weight="700"
+      font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">共同安排</text>
+  </g>
+
+  <text x="80" y="634" fill="#2F8F84" font-size="68" font-weight="700"
+    font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">把想认真完成的事情，拆成你们一起执行的</text>
+  <text x="80" y="718" fill="#2F8F84" font-size="68" font-weight="700"
+    font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">小计划</text>
+  <text x="488" y="717" fill="#F39AA1" font-size="34" font-weight="700"
+    font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">♥</text>
+
+  <text x="84" y="792" fill="#7E5F60" font-size="38"
+    font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">支持按日程、按周期、按阶段来安排，也能随手记录每天的</text>
+  <text x="84" y="846" fill="#7E5F60" font-size="38"
+    font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">实际反馈。</text>
+
+  <rect x="70" y="868" width="190" height="74" rx="37" fill="#FFF1EE" stroke="#F6D9D3" stroke-width="3"/>
+  <rect x="284" y="868" width="190" height="74" rx="37" fill="#FFF1EE" stroke="#F6D9D3" stroke-width="3"/>
+  <text x="100" y="915" fill="#B17972" font-size="30" font-weight="600"
+    font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">📅 0 个进行中</text>
+  <text x="320" y="915" fill="#B17972" font-size="30" font-weight="600"
+    font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">💬 0 条反馈</text>
+
+  <rect x="558" y="844" width="318" height="126" rx="63" fill="url(#buttonFillLarge)"/>
+  <rect x="572" y="858" width="290" height="98" rx="49" stroke="#FFD0D6" stroke-width="4" opacity="0.75"/>
+  <path d="M631 871V929" stroke="#FFF9FB" stroke-width="12" stroke-linecap="round"/>
+  <path d="M602 900H660" stroke="#FFF9FB" stroke-width="12" stroke-linecap="round"/>
+  <text x="687" y="915" fill="#FFF9FB" font-size="54" font-weight="700"
+    font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">新建计划</text>
+
+  <rect x="38" y="996" width="1004" height="748" rx="52" fill="#FFF8F5" stroke="url(#cardStroke)" stroke-width="4"/>
+  <g>
+    <path d="M34 1030H244C264 1030 280 1036 293 1048C306 1060 317 1061 332 1056L320 1120C306 1127 292 1130 273 1130H74C53 1130 39 1121 34 1107L26 1072C22 1056 24 1041 34 1030Z" fill="url(#ribbonGreenLarge)"/>
+    <text x="80" y="1095" fill="#F8FBF6" font-size="52" font-weight="700"
+      font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">计划列表</text>
+  </g>
+
+  <text x="80" y="1210" fill="#755C5B" font-size="38"
+    font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">先从最重要的一件事开始，把它慢慢变成你们的共同节奏。</text>
+
+  <g>
+    <rect x="72" y="1267" width="140" height="72" rx="36" fill="#F8F0E9" stroke="#E9D3CA" stroke-width="3"/>
+    <rect x="230" y="1267" width="170" height="72" rx="36" fill="#FFF7F3" stroke="#E9D3CA" stroke-width="3"/>
+    <rect x="418" y="1267" width="170" height="72" rx="36" fill="#FFF7F3" stroke="#E9D3CA" stroke-width="3"/>
+    <rect x="606" y="1267" width="140" height="72" rx="36" fill="#FFF7F3" stroke="#E9D3CA" stroke-width="3"/>
+    <text x="110" y="1314" fill="#2E8F88" font-size="34" font-weight="700"
+      font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">全部</text>
+    <text x="260" y="1314" fill="#B57572" font-size="34" font-weight="700"
+      font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">进行中</text>
+    <text x="448" y="1314" fill="#B57572" font-size="34" font-weight="700"
+      font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">已完成</text>
+    <text x="647" y="1314" fill="#B57572" font-size="34" font-weight="700"
+      font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">草稿</text>
+  </g>
+
+  <path d="M82 1378H1000" stroke="#E7C8C1" stroke-width="3" stroke-linecap="round"/>
+  <path d="M856 1378H1000" stroke="#EDD7D1" stroke-width="7" stroke-linecap="round" opacity="0.35"/>
+
+  <text x="382" y="1490" fill="#2E8F88" font-size="78" font-weight="700"
+    font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">还没有计划</text>
+  <path d="M286 1462H360" stroke="#AFD3C8" stroke-width="4" stroke-linecap="round"/>
+  <path d="M746 1462H820" stroke="#AFD3C8" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="373" cy="1462" r="8" fill="#AFD3C8"/>
+  <circle cx="732" cy="1462" r="8" fill="#AFD3C8"/>
+
+  <g transform="translate(92 1504)">
+    <rect x="0" y="44" width="182" height="148" rx="14" fill="#F9F0E8" stroke="#DDBAA7" stroke-width="4"/>
+    <rect x="18" y="28" width="170" height="150" rx="14" fill="#FFF7F0" stroke="#DDBAA7" stroke-width="4"/>
+    <circle cx="49" cy="29" r="10" fill="#C79072"/>
+    <circle cx="153" cy="29" r="10" fill="#C79072"/>
+    <path d="M48 28V2" stroke="#A87355" stroke-width="4" stroke-linecap="round"/>
+    <path d="M153 28V2" stroke="#A87355" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="58" cy="75" r="6" fill="#F39AA1"/>
+    <circle cx="58" cy="104" r="6" fill="#F39AA1"/>
+    <circle cx="58" cy="133" r="6" fill="#F39AA1"/>
+    <circle cx="58" cy="162" r="6" fill="#F39AA1"/>
+    <path d="M81 74H145" stroke="#E9C3B9" stroke-width="5" stroke-linecap="round"/>
+    <path d="M81 103H145" stroke="#E9C3B9" stroke-width="5" stroke-linecap="round"/>
+    <path d="M81 132H145" stroke="#E9C3B9" stroke-width="5" stroke-linecap="round"/>
+    <path d="M81 161H125" stroke="#E9C3B9" stroke-width="5" stroke-linecap="round"/>
+    <rect x="151" y="120" width="24" height="108" rx="12" transform="rotate(28 151 120)" fill="#F0B171"/>
+    <path d="M213 253L226 218L187 197L174 232L213 253Z" fill="#E9CCBA"/>
+    <path d="M178 241L167 268L194 256L178 241Z" fill="#A16B53"/>
+  </g>
+
+  <g transform="translate(695 1540)">
+    <ellipse cx="78" cy="105" rx="60" ry="67" fill="#F3D1A8"/>
+    <ellipse cx="157" cy="108" rx="67" ry="74" fill="#C78867"/>
+    <ellipse cx="78" cy="106" rx="44" ry="48" fill="#FFF6EE"/>
+    <ellipse cx="157" cy="110" rx="49" ry="53" fill="#FFF2E9"/>
+    <path d="M131 127C146 112 167 112 182 126" stroke="#F19AA6" stroke-width="6" stroke-linecap="round"/>
+    <path d="M65 49C54 33 60 20 76 18C92 17 101 29 96 45" stroke="#FFF5F0" stroke-width="6" stroke-linecap="round"/>
+    <path d="M145 31C136 17 143 4 159 3C176 2 185 15 180 31" stroke="#FFF0EA" stroke-width="6" stroke-linecap="round"/>
+    <path d="M120 24C120 10 132 0 146 0C160 0 171 11 171 25C171 45 146 58 146 58C146 58 120 43 120 24Z" fill="#F7A0A5"/>
+  </g>
+
+  <text x="363" y="1612" fill="#7B605C" font-size="32"
+    font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">从减脂安排、洗头提醒、订婚筹备这些</text>
+  <text x="338" y="1664" fill="#7B605C" font-size="32"
+    font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">小目标开始，慢慢把未来</text>
+  <text x="409" y="1716" fill="#7B605C" font-size="32"
+    font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">排进日常里。</text>
+
+  <g transform="translate(128 1780) rotate(-14)">
+    <path d="M0 44L92 0L77 58L144 90L0 44Z" fill="#FFF7F1" stroke="#E6CDC4" stroke-width="3"/>
+    <path d="M88 4L77 58L111 53" stroke="#E6CDC4" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>

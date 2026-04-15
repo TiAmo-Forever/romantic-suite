@@ -86,6 +86,24 @@
       }
     },
     {
+      "path": "pages/modules/romantic-plan/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/modules/romantic-plan/detail",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/modules/romantic-plan/edit",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/modules/daily-summary/detail",
       "style": {
         "navigationStyle": "custom"

@@ -43,6 +43,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/anniversaries/**",
                         "/api/notifications/**",
                         "/api/improvement-notes/**",
+                        "/api/romantic-plans/**",
                         "/api/auth/logout"
                 )
                 .excludePathPatterns("/api/health/**");

@@ -1,0 +1,20 @@
+<svg width="420" height="140" viewBox="0 0 420 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ribbonPink" x1="0" y1="36" x2="390" y2="96" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F6A6B5"/>
+      <stop offset="1" stop-color="#E37F95"/>
+    </linearGradient>
+  </defs>
+
+  <path d="M28 30H296C322 30 341 40 357 56C372 70 384 71 399 68L382 103C369 108 357 108 343 108H54C36 108 22 99 17 84L11 67C7 53 13 39 28 30Z" fill="url(#ribbonPink)"/>
+  <path d="M22 26H294C323 26 345 37 362 54C347 54 336 59 327 69C315 82 298 89 274 89H20L10 62C7 49 11 34 22 26Z" fill="#F9C5CF" opacity="0.35"/>
+  <path d="M361 54L397 68L380 103L344 86C352 81 360 71 361 54Z" fill="#D46982"/>
+  <path d="M58 49H255" stroke="#FFF5F6" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+  <path d="M56 90H272" stroke="#D96D85" stroke-width="4" stroke-linecap="round" opacity="0.18"/>
+
+  <circle cx="44" cy="67" r="7" fill="#FFF8FA"/>
+  <path d="M44 52L47 59H55L49 63L51 71L44 67L37 71L39 63L33 59H41L44 52Z" fill="#FFF1F4"/>
+
+  <text x="83" y="82" fill="#FFF8F9" font-size="50" font-weight="700"
+    font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">共同安排</text>
+</svg>

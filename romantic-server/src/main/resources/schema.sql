@@ -242,3 +242,54 @@ CREATE TABLE IF NOT EXISTS daily_summary_media (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     KEY idx_daily_summary_media_entry_id (entry_id)
 ) COMMENT='今日小计媒体资源表';
+
+CREATE TABLE IF NOT EXISTS romantic_plan (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键 ID',
+    title VARCHAR(120) NOT NULL COMMENT '计划标题',
+    description TEXT NOT NULL COMMENT '计划说明',
+    plan_type VARCHAR(16) NOT NULL DEFAULT 'daily' COMMENT '计划类型',
+    status VARCHAR(16) NOT NULL DEFAULT 'active' COMMENT '计划状态',
+    start_at DATETIME NOT NULL COMMENT '开始时间',
+    end_at DATETIME NULL COMMENT '结束时间',
+    interval_days INT NOT NULL DEFAULT 0 COMMENT '间隔天数',
+    location VARCHAR(120) NOT NULL DEFAULT '' COMMENT '地点说明',
+    cover_url VARCHAR(255) NOT NULL DEFAULT '' COMMENT '封面资源路径',
+    creator_username VARCHAR(64) NOT NULL COMMENT '创建账号',
+    updated_by VARCHAR(64) NOT NULL COMMENT '最近更新账号',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    KEY idx_romantic_plan_status (status),
+    KEY idx_romantic_plan_updated_at (updated_at)
+) COMMENT='浪漫计划主表';
+
+CREATE TABLE IF NOT EXISTS romantic_plan_item (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键 ID',
+    plan_id BIGINT NOT NULL COMMENT '所属计划 ID',
+    title VARCHAR(120) NOT NULL COMMENT '条目标题',
+    content VARCHAR(300) NOT NULL DEFAULT '' COMMENT '条目内容',
+    scheduled_at DATETIME NULL COMMENT '安排时间',
+    end_at DATETIME NULL COMMENT '结束时间',
+    location VARCHAR(120) NOT NULL DEFAULT '' COMMENT '地点说明',
+    sort_order INT NOT NULL DEFAULT 0 COMMENT '排序值',
+    completed TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否完成',
+    completed_at DATETIME NULL COMMENT '完成时间',
+    creator_username VARCHAR(64) NOT NULL COMMENT '创建账号',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    KEY idx_romantic_plan_item_plan_id (plan_id),
+    KEY idx_romantic_plan_item_scheduled_at (scheduled_at)
+) COMMENT='浪漫计划条目表';
+
+CREATE TABLE IF NOT EXISTS romantic_plan_feedback (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键 ID',
+    plan_id BIGINT NOT NULL COMMENT '所属计划 ID',
+    plan_item_id BIGINT NOT NULL DEFAULT 0 COMMENT '关联条目 ID',
+    feedback_date DATE NOT NULL COMMENT '反馈日期',
+    status VARCHAR(16) NOT NULL DEFAULT 'done' COMMENT '反馈状态',
+    content VARCHAR(300) NOT NULL COMMENT '反馈内容',
+    creator_username VARCHAR(64) NOT NULL COMMENT '创建账号',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    KEY idx_romantic_plan_feedback_plan_id (plan_id),
+    KEY idx_romantic_plan_feedback_date (feedback_date)
+) COMMENT='浪漫计划反馈表';
