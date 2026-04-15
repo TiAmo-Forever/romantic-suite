@@ -162,12 +162,14 @@
 ## 后续记录规范
 
 - 每次开发完成后，按日期追加更新记录。
+- 同一天如果有多轮改动，统一收口到同一个“单日记录”里持续补充，不再为同一天重复新增多个二级标题。
 - 每次记录至少包含：
   - 目标
   - 处理顺序
   - 关键问题
   - 关键结果
 - 如果调整了共享规则、数据库结构、接口规范、部署配置等长期约束，必须同步写入“开发约定”或“共享与私有边界”部分。
+- 整理 `WORKSPACE_NOTES.md` 时，默认只追加或收口当天记录，不改动更早日期已经稳定的正文；如果发现编码损坏或历史文本错误，需要单独标明“文档修复”再处理。
 ## 2026-03-22 更新记录
 
 ### 目标
@@ -2502,451 +2504,63 @@
   - ���ҵ�ҳ����ͷ������ҳ�ڲ�ͬ�����µ�ʵ�ʲ㼶����
   - ���� SVG ͼ����С����˵���ʾ��ϸ��
 
-## 2026-04-14 纪念日首页置顶展示记录
+## 2026-04-14 更新记录
 
-### 本轮目标
+### 目标
 
-- 解决首页纪念日摘要默认取列表第一条的问题，避免每次新增新纪念日后首页自动切换展示对象。
-- 为恋爱纪念日补齐正式的“置顶到首页”能力，并让首页只展示被置顶的纪念日。
+- 为纪念日补齐首页置顶能力，避免首页摘要被新建纪念日自动顶替。
+- 补齐近期共享功能遗漏的通知链路，让消息中心能覆盖新增、编辑、评论、删除、置顶等关键动作。
+- 为恋爱改进簿反馈补齐点赞、评论、删评能力，并把反馈互动样式收口到和纪念日 / 相册一致的交互口径。
+- 提升今日小计的作者辨识度，解决历史记录里“谁写的”不清晰、颜色区分不明显、文案重复的问题。
+- 修复首页在回退临时样式过程中引入的编译残留，恢复 `home.vue` 正常编译。
 
 ### 处理顺序
 
-1. 先梳理首页纪念日摘要的数据来源，确认当前是直接读取纪念日列表第一条。
-2. 在后端为 `anniversary_event` 增加置顶字段，并同步维护 `schema.sql`、迁移逻辑和字段注释。
-3. 在后端补齐纪念日置顶接口，并收口为“同一时间只允许一个纪念日置顶”。
-4. 在前端纪念日服务、列表页、详情页和编辑页接入置顶状态与置顶操作。
-5. 调整首页纪念日摘要逻辑，只认已置顶的纪念日，不再默认展示最新创建项。
+1. 先完成纪念日置顶能力的前后端联动，包括表字段、迁移逻辑、接口注解、前端服务和首页摘要口径调整。
+2. 补齐消息中心缺失通知，覆盖纪念日、相册、改进簿、今日小计等共享模块，并为删除类消息增加页面兜底跳转。
+3. 在改进簿反馈链路上新增互动接口、响应字段、前端互动区和通知逻辑，再把互动入口样式收口到统一菜单样式。
+4. 重做今日小计作者区分方案，先补历史作者字段与兜底来源，再连续收口前端文案、作者色板与卡片层级。
+5. 清理首页 `home.vue` 在样式回退中残留的语法问题，确保当前保留逻辑可以稳定编译。
 
 ### 关键问题
 
-- 首页原先直接取纪念日列表第一条作为摘要来源，新增纪念日后会把首页展示对象一起切走，不符合“首页只承载最重要那一天”的预期。
-- 如果只在前端本地做“首页选中项”而不落到后端共享数据中，两个账号之间会出现首页展示口径不一致的问题。
-- 纪念日属于共享数据，如果允许多个纪念日同时置顶，首页摘要又会重新出现选择歧义，因此需要明确唯一置顶规则。
+- 首页纪念日原先直接读取列表第一条，新增纪念日后会误把首页展示对象切走，不符合“首页只承载最重要纪念日”的产品预期。
+- 后续新增的共享动作很多已经落地，但通知链路没有同步跟进，导致消息中心和真实业务状态脱节。
+- 改进簿反馈此前只能作为内容阅读，缺少单独点赞和评论能力，也缺少与其他模块一致的互动入口。
+- 今日小计历史记录原先只看摘要行，旧数据里作者字段缺失时会出现“未命名”，而且前端存在作者文案重复、色差太弱的问题。
+- 前端设计系统曾做过一轮试点，但最终已回退；当前只保留功能性改动和必要的编译修复，不把这轮视觉试点视为最终方案。
 
 ### 关键结果
 
-- 后端纪念日主表已新增置顶字段：
-  - `romantic-server/src/main/resources/schema.sql`
-  - `anniversary_event` 新增 `is_pinned` 字段，已补齐字段注释与置顶索引。
-- 后端迁移逻辑已同步维护：
-  - `romantic-server/src/main/java/org/love/romantic/config/SchemaMigrationRunner.java`
-  - 已补齐 `is_pinned` 字段补齐逻辑、置顶索引补齐逻辑，以及 MySQL 注释刷新逻辑。
-- 后端纪念日模型与接口已补齐置顶能力：
-  - `romantic-server/src/main/java/org/love/romantic/entity/AnniversaryEvent.java`
-  - `romantic-server/src/main/java/org/love/romantic/model/AnniversaryEventRequest.java`
-  - `romantic-server/src/main/java/org/love/romantic/model/AnniversaryEventResponse.java`
-  - `romantic-server/src/main/java/org/love/romantic/service/AnniversaryService.java`
-  - `romantic-server/src/main/java/org/love/romantic/service/impl/AnniversaryServiceImpl.java`
-  - `romantic-server/src/main/java/org/love/romantic/controller/AnniversaryController.java`
-  - 新增接口：`PUT /api/anniversaries/{id}/pin?pinned=true|false`
-  - 创建/编辑纪念日时也支持同步保存置顶状态。
-- 纪念日置顶规则当前已明确为：
-  - 同一时间只允许一个纪念日处于置顶状态。
-  - 当某条纪念日被置顶后，其他已置顶纪念日会自动取消置顶。
-  - 旧版调用方如果更新纪念日时未传 `pinned` 字段，后端会保留原有置顶状态，避免兼容期误取消。
-- 前端纪念日相关页面已接入置顶能力：
-  - `romantic-app/services/anniversaries.js`
-  - `romantic-app/pages/modules/anniversary/index.vue`
-  - `romantic-app/pages/modules/anniversary/detail.vue`
-  - `romantic-app/pages/modules/anniversary/edit.vue`
-  - 列表页当前会显示“首页置顶”标记。
-  - 详情页管理菜单当前支持“置顶到首页 / 取消首页置顶”。
-  - 编辑页当前支持直接设置“置顶到首页”。
-- 首页纪念日摘要逻辑已收口：
-  - `romantic-app/pages/home/home.vue`
-  - 当前只会查找并展示已置顶的纪念日。
-  - 如果没有任何纪念日被置顶，首页会显示“还没有置顶纪念日”的引导文案，而不是默认展示列表第一条。
-
-### 当前产品口径
-
-- 首页纪念日板块当前只展示“被置顶的纪念日”，不再默认展示新建纪念日或列表第一条。
-- 纪念日置顶状态属于共享数据，两个账号看到的是同一条首页纪念日摘要。
-- 纪念日列表仍然保留全部纪念日，但排序当前会优先展示已置顶项，再按日期倒序排列。
+- 纪念日已支持唯一置顶到首页：
+  - 后端补齐 `anniversary_event.is_pinned` 字段、索引、迁移逻辑、模型字段和 `PUT /api/anniversaries/{id}/pin` 接口。
+  - 前端纪念日列表、详情、编辑页均已接入置顶能力。
+  - 首页纪念日板块当前只展示已置顶纪念日；没有置顶项时显示正式引导文案。
+- 消息中心通知链路已补齐：
+  - 覆盖纪念日置顶/删除/评论、相册删除/评论、改进簿删除、今日小计新增/编辑/点赞/评论等动作。
+  - 前端消息中心已补齐 `auth` 识别和删除类通知的列表页兜底跳转。
+- 恋爱改进簿反馈已支持互动：
+  - 后端新增反馈点赞、评论、删评接口，并补齐 Swagger / Knife4j 注解。
+  - `ImprovementFeedbackResponse` 已补齐互动字段。
+  - 前端改进簿详情页已支持反馈点赞、评论、删评，并将互动入口改成和纪念日 / 相册一致的三点菜单风格。
+- 今日小计作者区分已完成两轮收口：
+  - 后端历史记录新增作者展示字段，并在摘要作者缺失时回退到当天最后一条 `daily_summary_entry` 的作者。
+  - 前端详情页和历史抽屉已按“我 / TA / 未知”三档做作者色板区分，强化卡片底色、描边和侧边色条。
+  - 作者信息展示已去掉重复文案，当前保留“顶部身份徽标 + 下方作者名和时间”的口径。
+- 首页编译残留已修复：
+  - 已清理 `home.vue` 中多余的 `}))` 和缺失的 `catch`。
+  - 当前保留的是修复后的首页纪念日置顶展示逻辑，不恢复已经撤掉的设计试点样式。
 
 ### 验证情况
 
-- 已执行前端页面源码巡检：
-  - `powershell -ExecutionPolicy Bypass -File D:\JavaProject\romantic-suite\romantic-app\tools\check-pages-source.ps1`
-- 巡检结果：
-  - `OK: no suspicious page-source findings under D:\JavaProject\romantic-suite\romantic-app\pages`
-- 已执行 `git diff --check`
-- 检查结果：
-  - 无语法级差异问题，仅存在 LF/CRLF 提示。
-- 已执行后端测试：
-  - `$env:JAVA_HOME='D:\Service_File\jdk-11.0.0.2'; $env:Path='D:\Service_File\jdk-11.0.0.2\bin;' + $env:Path; mvn test`
-- 测试结果：
-  - `BUILD SUCCESS`
+- 已执行前端页面源码巡检：`powershell -ExecutionPolicy Bypass -File D:\JavaProject\romantic-suite\romantic-app\tools\check-pages-source.ps1`
+- 已多次执行后端测试：`$env:JAVA_HOME='D:\Service_File\jdk-11.0.0.2'; $env:Path='D:\Service_File\jdk-11.0.0.2\bin;' + $env:Path; mvn test`
+- 当前验证结果：
+  - 前端页面源码巡检通过
+  - 后端测试结果为 `BUILD SUCCESS`
+  - `git diff --check` 仅剩 LF / CRLF 提示，没有新的语法级问题
 
 ### 剩余风险
 
-- 本轮尚未额外执行 uni-app / 微信小程序真机编译验证，后续应重点确认：
-  - 纪念日详情页“置顶到首页 / 取消首页置顶”菜单项在小程序端的点击手感
-  - 纪念日编辑页新增置顶开关在小屏设备上的排版
-  - 首页在“无置顶纪念日 / 切换置顶对象”两种场景下的实际摘要观感
-
-## 2026-04-14 通知机制补齐记录
-
-### 本轮目标
-
-- 补齐后续新增共享功能里遗漏的站内通知，避免共享动作发生后消息中心没有对应提醒。
-- 让新增的删除类通知、评论类通知和今日小计通知都能在消息中心被正确识别并尽量跳到真实页面。
-
-### 本轮覆盖范围
-
-- 恋爱纪念日：置顶、删除、评论新增、评论删除
-- 甜蜜相册：删除、评论新增、评论删除
-- 恋爱改进簿：主记录删除、反馈删除
-- 今日小计：条目新增、条目编辑、点赞、取消点赞、评论新增、评论删除
-- 消息中心：补齐 `auth` 业务类型识别，并为删除后的共享内容提供列表页跳转兜底
-
-### 关键实现
-
-- 后端通知类型常量已补齐：
-  - `romantic-server/src/main/java/org/love/romantic/common/NotificationTypeConstants.java`
-  - 新增纪念日置顶/取消置顶、纪念日评论新增/删除、纪念日删除、相册评论新增/删除、相册删除、改进记录删除、改进反馈删除、今日小计条目新增/编辑/点赞/取消点赞/评论新增/评论删除等通知类型。
-- 后端共享模块通知落点已补齐：
-  - `romantic-server/src/main/java/org/love/romantic/service/impl/AnniversaryServiceImpl.java`
-  - `romantic-server/src/main/java/org/love/romantic/service/impl/AlbumMemoryServiceImpl.java`
-  - `romantic-server/src/main/java/org/love/romantic/service/impl/ImprovementNoteServiceImpl.java`
-  - `romantic-server/src/main/java/org/love/romantic/service/impl/DailySummaryServiceImpl.java`
-- 今日小计通知当前统一使用共享业务类型 `daily_summary_entry`，并在 payload 中补齐：
-  - `summaryId`
-  - `entryId`
-  - `summaryDate`
-  - 点赞/评论类动作额外补充 `liked`、`commentId`、`deleted` 等标识
-- 删除类通知当前处理口径：
-  - 如果主内容已被删除，通知仍然保留，但 `bizId` 允许为 `0`，由前端消息中心走列表页兜底跳转。
-  - 如果只是删除评论，仍然保留父内容 `bizId`，消息点击后继续回到对应详情页。
-- 前端消息中心兼容逻辑已补齐：
-  - `romantic-app/pages/modules/notifications/index.vue`
-  - 已识别 `auth` 业务类型为“登录提醒”。
-  - 纪念日、相册、改进簿的删除类通知在目标内容不存在时，会回到各自列表页而不是提示无法跳转。
-  - 改进反馈通知在缺少 `noteId` 时，会回到改进簿列表页。
-  - 登录提醒当前跳转到账号安全页，避免落到不存在的页面。
-
-### 当前通知口径
-
-- 共享数据的创建、编辑、置顶、点赞、取消点赞、评论、删除等关键动作，原则上都应该进入消息中心。
-- 私有数据如密码、头像、主题、个人资料等当前仍按私有边界处理，不默认给伴侣发送共享通知。
-- 删除类通知允许存在“消息可见但目标详情已不存在”的情况，前端应优先保证消息可读和可回到对应模块，而不是强行跳详情页。
-
-### 验证情况
-
-- 已执行前端页面源码巡检：
-  - `powershell -ExecutionPolicy Bypass -File D:\JavaProject\romantic-suite\romantic-app\tools\check-pages-source.ps1`
-- 巡检结果：
-  - `OK: no suspicious page-source findings under D:\JavaProject\romantic-suite\romantic-app\pages`
-- 已执行 `git diff --check`
-- 检查结果：
-  - 无语法级差异问题，仅存在 LF/CRLF 提示。
-- 已执行后端测试：
-  - `$env:JAVA_HOME='D:\Service_File\jdk-11.0.0.2'; $env:Path='D:\Service_File\jdk-11.0.0.2\bin;' + $env:Path; mvn test`
-- 测试结果：
-  - `BUILD SUCCESS`
-
-### 剩余风险
-
-- 当前已补齐后端通知落点，但还没有做 uni-app / 微信小程序真机逐条点击验证，后续应重点确认：
-  - 删除类通知点击后的列表页兜底跳转体验
-  - 今日小计通知跳转到指定日期详情页后的滚动与视觉反馈
-  - 登录提醒跳到账号安全页是否符合你们最终产品预期；如果后续新增独立登录记录页，可再把跳转目标切过去
-
-## 2026-04-14 前端设计规范文档补充记录
-
-### 目标
-
-- 把新的前端设计约束整理为适配当前项目的长期规范文档。
-- 明确这套规范需要结合 `uni-app + Vue 3`、现有 `--app-*` 变量、主题体系和历史页面做渐进迁移，不能直接整仓硬替换。
-
-### 关键结果
-
-- 工作区根目录已新增：
-  - `AGENTS.md`
-- 当前 `AGENTS.md` 已按项目现状重写，不是直接照搬外部设计文档，已明确：
-  - 新设计令牌与现有 `--app-*` 变量之间应采用兼容映射思路
-  - 老页面应分模块迁移，不能一次性全局替换
-  - 优先治理 `common.scss`、`uni.scss`、`theme.js`、共享组件和高频页面
-  - 前端设计类改动后仍需说明改动范围、影响、验证与剩余风险
-- 本轮没有继续推进页面重构，仅完成长期规范文档落地，避免误把通用设计约束直接硬套到现有页面。
-
-### 当前执行口径
-
-- 后续前端设计优化必须先基于 `AGENTS.md` 做“项目化改造方案”，再开始动具体页面。
-- 如果只是新增规范文档而未开始页面迁移，不能把这一步误算成页面已经完成设计重构。
-
-## 2026-04-14 前端设计系统第一阶段最小改动记录
-
-### 目标
-
-- 按新的项目化前端设计约束，先完成第一阶段“仅限改动”收口。
-- 只调整设计基建、共享组件和消息中心试点页，不扩散到首页、星球页、我的页和主题预设结构。
-
-### 本轮限定范围
-
-- 文档：`AGENTS.md`
-- 全局样式：`romantic-app/styles/common.scss`
-- scss 变量：`romantic-app/uni.scss`
-- 共享组件：
-  - `romantic-app/pages/account/components/AccountHeader.vue`
-  - `romantic-app/pages/account/components/AccountPanel.vue`
-  - `romantic-app/pages/account/components/AccountIntroCard.vue`
-- 试点页面：
-  - `romantic-app/pages/modules/notifications/index.vue`
-
-### 关键结果
-
-- 已在根目录新增并保留项目化前端设计约束文档：
-  - `AGENTS.md`
-- `common.scss` 已完成第一阶段兼容式收口：
-  - 新增 `--color-*`、`--text-*`、`--space-*` 等项目级设计令牌
-  - 保留历史 `--app-*` 变量，避免当前主题系统和旧页面直接失效
-  - 将共享卡片、按钮、输入框、账号页容器的默认风格收口到浅底、边框、低阴影方案
-  - 样式中已补充中文注释，区分设计令牌层、组件层、页面适配层
-- `uni.scss` 已同步收口：
-  - 调整基础主色、文字色、边框色、圆角和基础间距变量
-  - 统一到更接近项目新规范的浅色设计基线
-- 共享组件已先行适配：
-  - `AccountPanel` 改为浅底边框卡片
-  - `AccountIntroCard` 改为复用浅底边框卡片基线
-  - `AccountHeader` 默认 eyebrow 文案改为中文“账号中心”
-- 消息中心已作为试点页完成样式收口：
-  - 去掉通知卡片、筛选项、状态标签上的渐变背景
-  - 收口为浅底、边框、有限强调色方案
-  - 标题、正文、时间、空状态文案已统一到新的文字层级和色板体系
-
-### 明确未改内容
-
-- 本轮没有改：
-  - `home.vue`
-  - `mine.vue`
-  - `planet.vue`
-  - `theme.js` 主题预设结构
-  - 任何接口、服务调用、数据结构、联调逻辑
-- 本轮不是整仓设计重构，只是第一阶段最小改动包。
-
-### 验证情况
-
-- 已执行前端页面源码巡检：
-  - `powershell -ExecutionPolicy Bypass -File D:\JavaProject\romantic-suite\romantic-app\tools\check-pages-source.ps1`
-- 巡检结果：
-  - `OK: no suspicious page-source findings under D:\JavaProject\romantic-suite\romantic-app\pages`
-- 已执行 `git diff --check`
-- 检查结果：
-  - 无语法级差异问题，仅存在 LF/CRLF 提示。
-
-### 剩余风险
-
-- 由于当前主题预设仍沿用历史 `--app-*` 变量和渐变逻辑，第一阶段会出现“新规范基线”和“旧主题系统”并存的过渡状态。
-- 共享组件风格已经收口，但首页、星球页、我的页等高耦合页面暂未迁移，短期内整体视觉不会完全统一。
-- 消息中心是第一张试点页，如果后续你对风格方向满意，再适合继续推进第二阶段页面迁移。
-
-## 2026-04-14 前端设计系统第一阶段回退记录
-
-### 目标
-
-- 回退本轮“前端设计系统第一阶段最小改动包”，恢复改动前的页面视觉表现。
-- 只撤销本轮设计优化，不影响此前已经完成的纪念日置顶和通知机制补齐等功能性改动。
-
-### 回退范围
-
-- 已撤销：
-  - `AGENTS.md`
-  - `romantic-app/styles/common.scss`
-  - `romantic-app/uni.scss`
-  - `romantic-app/pages/account/components/AccountHeader.vue`
-  - `romantic-app/pages/account/components/AccountPanel.vue`
-  - `romantic-app/pages/account/components/AccountIntroCard.vue`
-- `romantic-app/pages/modules/notifications/index.vue` 当前仅保留此前的通知业务逻辑补丁：
-  - `auth` 业务类型识别
-  - 删除类通知列表页兜底跳转
-- 已撤销本轮在消息中心上新增的视觉样式收口，不再保留这次设计试点页风格调整。
-
-### 当前结果
-
-- 本轮设计系统试点样式已回退，不继续沿用这次视觉方向。
-- 共享组件和全局样式已恢复到本轮改动前状态。
-- 功能逻辑层保持不变，避免误伤前面已完成的通知链路改造。
-
-### 说明
-
-- 文档中此前关于“前端设计规范文档补充记录”和“前端设计系统第一阶段最小改动记录”仍保留，作为历史过程记录。
-- 当前应以本条“回退记录”为准，表示该轮设计优化已经撤销，不视为现网或当前工作区最终采用方案。
-
-## 2026-04-14 恋爱改进簿反馈互动补充记录
-
-### 目标
-
-- 为恋爱改进簿中的“反馈”补齐点赞和评论能力。
-- 保持最小改动范围，只改改进簿反馈链路，不扩散到其他模块。
-
-### 本轮改动范围
-
-- 后端接口与服务：
-  - `romantic-server/src/main/java/org/love/romantic/service/ImprovementNoteService.java`
-  - `romantic-server/src/main/java/org/love/romantic/controller/ImprovementNoteController.java`
-  - `romantic-server/src/main/java/org/love/romantic/service/impl/ImprovementNoteServiceImpl.java`
-- 后端响应模型与通知类型：
-  - `romantic-server/src/main/java/org/love/romantic/model/ImprovementFeedbackResponse.java`
-  - `romantic-server/src/main/java/org/love/romantic/common/NotificationTypeConstants.java`
-- 前端服务与页面：
-  - `romantic-app/services/improvement-notes.js`
-  - `romantic-app/pages/modules/improvement/detail.vue`
-
-### 关键结果
-
-- 恋爱改进簿反馈已新增互动接口：
-  - `POST /api/improvement-notes/{id}/feedback/{feedbackId}/likes`
-  - `POST /api/improvement-notes/{id}/feedback/{feedbackId}/comments`
-  - `DELETE /api/improvement-notes/{id}/feedback/{feedbackId}/comments/{commentId}`
-- 本轮接口已同步补齐 Swagger / Knife4j 注解。
-- `ImprovementFeedbackResponse` 已补充互动字段：
-  - `likeCount`
-  - `likedByCurrentUser`
-  - `likeUsers`
-  - `commentList`
-- 后端当前复用现有通用互动表，不新增数据表：
-  - 反馈点赞和反馈评论都落在现有 `biz_like_record` / `biz_comment_record` 体系中
-  - 业务类型使用现有 `improvement_feedback`
-- 后端删除收口已同步补齐：
-  - 删除单条反馈时，会一并删除该反馈下的点赞和评论记录
-  - 删除整条改进记录时，也会一并清理所有反馈互动记录，避免残留脏数据
-- 前端改进簿详情页当前已支持：
-  - 对单条反馈点赞 / 取消点赞
-  - 展开评论输入框并发送评论
-  - 查看反馈评论列表
-  - 删除自己的评论，或删除自己这条反馈下的评论
-- 通知机制已同步补齐：
-  - 反馈点赞
-  - 反馈取消点赞
-  - 反馈评论新增
-  - 反馈评论删除
-  - 消息中心仍复用既有 `improvement_feedback` 跳转到改进簿详情页
-
-### 当前产品口径
-
-- 恋爱改进簿的“主记录”和“反馈”现在是分层互动：
-  - 主记录仍以记录本身为主
-  - 反馈现在也可以被单独点赞、评论
-- 反馈互动属于共享数据，两个账号都会看到同一条反馈下的点赞与评论。
-- 当前前端采用轻量交互形式，不额外增加新的评论弹层或独立评论页。
-
-### 验证情况
-
-- 已执行前端页面源码巡检：
-  - `powershell -ExecutionPolicy Bypass -File D:\JavaProject\romantic-suite\romantic-app\tools\check-pages-source.ps1`
-- 巡检结果：
-  - `OK: no suspicious page-source findings under D:\JavaProject\romantic-suite\romantic-app\pages`
-- 已执行后端测试：
-  - `$env:JAVA_HOME='D:\Service_File\jdk-11.0.0.2'; $env:Path='D:\Service_File\jdk-11.0.0.2\bin;' + $env:Path; mvn test`
-- 测试结果：
-  - `BUILD SUCCESS`
-- 已执行 `git diff --check`
-- 检查结果：
-  - 无语法级差异问题，仅存在 LF/CRLF 提示。
-
-### 剩余风险
-
-- 当前只做了改进簿详情页的互动入口，列表页暂未增加反馈互动摘要展示。
-- 反馈评论当前采用轻量内联输入区，后续如果你们觉得交互还不够顺手，可以再决定是否升级为更完整的评论输入体验。
-- 本轮未额外执行 uni-app / 微信小程序真机点击验证，后续建议重点确认：
-  - 连续切换不同反馈的评论输入区时的交互手感
-  - 评论很多时，反馈卡片内评论区的滚动观感
-
-## 2026-04-14 恋爱改进簿反馈互动样式收口记录
-
-### 目标
-- 将恋爱改进簿反馈里的点赞、评论入口收口到与纪念日、甜蜜相册一致的互动样式。
-- 保持本轮只改前端详情页表现，不扩散到别的模块，也不改后端接口。
-
-### 关键结果
-- 已调整 `romantic-app/pages/modules/improvement/detail.vue`：
-  - 反馈卡片底部由原来的粉色按钮切换为“三点按钮 + 深色操作浮层”交互。
-  - 点赞入口、评论入口的结构与相册/纪念日详情页保持同一套视觉口径。
-  - 点赞摘要、评论列表、评论输入区同步收口到统一互动面板样式。
-- 本轮没有改动反馈点赞/评论的数据结构、接口链路和通知逻辑，只做前端样式与交互呈现收口。
-
-### 验证情况
-- 已执行前端页面源码巡检。
-- 已执行 `git diff --check` 做最小语法级检查。
-
-### 剩余风险
-- 目前只完成源码层样式收口，尚未做 uni-app / 微信小程序端的真机点击验证。
-- 反馈评论较多时的阅读密度和弹出菜单在不同机型上的手感，还需要后续实际联调确认。
-## 2026-04-14 今日小计作者区分与卡片收口记录
-
-### 目标
-- 解决今日小计在详情页里只看内容不容易区分“我写的 / TA写的”的问题。
-- 解决历史记录只显示最后一条内容、但不清楚具体是谁写的的问题。
-- 尽量通过文字标识和卡片底色一起完成区分，而不是只靠单个标签。
-
-### 关键结果
-- 已调整 `romantic-app/pages/modules/daily-summary/detail.vue`：
-  - 当前条目卡片根据作者身份使用不同浅色底色。
-  - 条目身份文案从简写的 `我 / TA` 改成更明确的 `我写的 / TA写的`。
-  - 历史抽屉每一项新增“最后写的人”说明，并按作者身份切换不同底色。
-- 已同步后端与前端数据字段：
-  - `romantic-server/src/main/java/org/love/romantic/model/DailySummaryHistoryItemResponse.java`
-  - `romantic-server/src/main/java/org/love/romantic/service/impl/DailySummaryServiceImpl.java`
-  - `romantic-app/services/daily-summaries.js`
-  - 历史记录现在会带上创建账号、创建显示名、最近更新账号和最近更新显示名，方便前端做更明确的区分。
-
-### 验证情况
-- 已执行前端页面源码巡检。
-- 已执行 `git diff --check` 做最小语法级检查。
-
-### 剩余风险
-- 当前还没做 uni-app / 微信小程序真机验证，尤其要确认历史抽屉里作者文案和卡片底色在小屏上的阅读感受。
-- 如果你后面希望首页“今日小计”卡也同步做同样的作者区分，我可以继续把首页一起收口。
-
-## 2026-04-14 今日小计回退编译修复记录
-
-### 说明
-- 在回退首页临时样式时，`romantic-app/pages/home/home.vue` 残留了一个多余的 `}))`，导致 vite 编译报 `Unexpected token`。
-- 已删除该残留括号，恢复首页页面可编译状态。
-- 本次只修复语法残片，不恢复之前已经撤掉的首页颜色改动。
-
-### 验证
-- 已重新检查 `home.vue` 相关括号结构。
-- 后续仍建议再做一次 uni-app / 微信小程序真机走查，确认首页和今日小计在真实设备上的显示一致。
-## 2026-04-14 今日小计首页编译修复记录
-
-### 说明
-- 在回退首页临时样式时，`romantic-app/pages/home/home.vue` 的 `loadHomeSummary()` 少了 `catch`，导致 vite 报 `Missing catch or finally clause`。
-- 已恢复 `try / catch` 结构，并保留离线兜底文案。
-- 这次只修复编译残缺，不恢复首页之前撤掉的视觉调整。
-
-### 验证
-- 已重新检查 `home.vue` 的函数闭合位置。
-- 后续如需再做首页视觉收口，建议单独走一轮小范围改动。
-## 2026-04-14 今日小计作者兜底与色板修复
-
-### 说明
-- 今日小计历史页原先只依赖 `daily_summary` 的 `creatorUsername` / `updatedBy`，旧数据里这些字段为空时会显示成“未命名”。
-- 已补充历史作者兜底逻辑：优先使用摘要表作者，其次回退到当天最后一条 `daily_summary_entry` 的创建人，避免历史记录只剩内容看不出是谁写的。
-- 前端历史卡片和条目卡片已改为按作者账号生成稳定色板，不再只用“我 / TA”二色，减少不同作者撞色。
-
-### 验证
-- 已检查 `daily-summary/detail.vue` 的作者色板与历史文案逻辑。
-- 后续仍建议在 uni-app / 微信小程序端实际看一次历史列表，确认浅色卡片在真机上的区分度。
-## 2026-04-14 今日小计作者展示收口
-
-### 说明
-- 今日小计详情页去掉了作者信息的重复展示，顶部徽标保留“我写的 / TA写的”，下方元信息只保留作者名和时间。
-- 作者颜色从分散的浅色方案收口为更明确的“我 / TA / 未知”三档，并补了明显的描边与侧边色条，提升当前记录册和历史记录的区分度。
-- 本次只调整 `romantic-app/pages/modules/daily-summary/detail.vue` 的展示层，不改接口结构。
-## 2026-04-14 当日汇总
-
-### 今日完成
-- 恋爱纪念日新增“置顶到首页”能力，首页纪念日板块改为只展示置顶纪念日；后端同步补齐 `is_pinned` 字段、迁移逻辑、接口与 Swagger / Knife4j 注解，前端补齐列表标记、详情管理入口与编辑开关。
-- 消息中心补齐了近期缺失的共享通知链路，覆盖今日小计、纪念日置顶、纪念日评论、相册评论、相册删除、纪念日删除、改进簿删除等动作，并保留删除后的页面兜底跳转。
-- 恋爱改进簿的反馈新增点赞、评论、删评能力，前后端接口、详情页互动区和通知链路均已接通；随后又把反馈互动入口样式收口到和纪念日 / 相册一致的三点菜单风格。
-- 今日小计详情页补强作者识别：历史记录新增作者兜底字段，旧数据优先用摘要作者、缺失时回退到当天最后一条条目作者；前端同时补了作者名、时间和卡片颜色区分，并在最后一轮收口中去掉了重复文案、强化了“我 / TA / 未知”三档作者色板。
-- 首页 `home.vue` 在回退过程中产生的两个编译残留已修复，分别处理了多余 `}))` 和缺失 `catch` 导致的 vite 报错，当前保留的是修复后的首页纪念日置顶展示逻辑。
-
-### 今日验证
-- 已执行前端页面源码巡检：`check-pages-source.ps1`
-- 已多次执行后端测试：`mvn test`，结果均为 `BUILD SUCCESS`
-- 已执行 `git diff --check` 做最小语法检查，当前仅剩仓库内的 LF / CRLF 提示
-
-### 当前保留风险
-- 今日小计作者区分、改进簿反馈互动和纪念日置顶等变更还缺少 uni-app / 微信小程序端的真机联调验证，尤其需要继续确认弹层点击手感、历史卡片颜色区分度与删除类通知的跳转体验。
+- 纪念日置顶、改进簿反馈互动、今日小计作者区分和通知兜底跳转仍缺少 uni-app / 微信小程序端的真机联调验证。
+- 今日小计历史卡片虽然已经改成更明确的作者色板，但仍建议继续在真机确认小屏上的颜色对比、抽屉阅读感和点击手感。
