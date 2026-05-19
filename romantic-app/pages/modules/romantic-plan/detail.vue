@@ -13,7 +13,7 @@
     <view class="detail-shell">
       <view class="topbar-row">
         <view class="back-chip" @click="goBack">
-          <text class="back-chip-arrow">‹</text>
+          <view class="back-chip-arrow"></view>
           <text>返回</text>
         </view>
         <view class="edit-chip" @click="goEdit">编辑</view>
@@ -27,45 +27,76 @@
         </view>
       </view>
 
-      <view class="section-card hero-card">
-        <view class="ribbon ribbon-pink">{{ resolveTypeLabel(planDetail?.planType) }}</view>
+      <view v-if="planDetail" class="section-card hero-card">
+        <view class="ribbon ribbon-pink">{{ resolveTypeLabel(planDetail.planType) }}</view>
         <view class="section-card-inner hero-card-inner">
-          <view class="hero-cover">
-            <image v-if="planDetail?.coverUrl" class="hero-cover-image" :src="planDetail.coverUrl" mode="aspectFill" />
+          <view class="hero-cover" :class="`hero-cover-${planDetail.planType || 'daily'}`">
+            <image v-if="planDetail.coverUrl" class="hero-cover-image" :src="planDetail.coverUrl" mode="aspectFill" />
             <view v-else class="hero-cover-placeholder">
-              <view class="hero-cover-title">封面待补充</view>
-              <view class="hero-cover-copy">这里预留给后续确认后的计划切图或主题封面</view>
+              <view class="hero-cover-title">{{ resolveTypeLabel(planDetail.planType) }}</view>
+              <view class="hero-cover-copy">{{ planDetail.location || '这份计划还没有补地点。' }}</view>
             </view>
-            <view class="hero-cover-status" :class="`status-${planDetail?.status || 'active'}`">{{ resolveStatusLabel(planDetail?.status) }}</view>
+
+            <view class="hero-cover-overlay"></view>
+            <view class="hero-cover-top">
+              <view class="hero-cover-status" :class="`status-${planDetail.status || 'active'}`">{{ resolveStatusLabel(planDetail.status) }}</view>
+              <view class="hero-progress-pill">{{ progressPercent(planDetail) }}%</view>
+            </view>
+            <view class="hero-cover-bottom">
+              <view class="hero-cover-tag">{{ resolveCountdownText(planDetail) }}</view>
+              <view class="hero-cover-progress">
+                <view class="hero-cover-progress-bar" :style="{ width: `${progressPercent(planDetail)}%` }"></view>
+              </view>
+            </view>
           </view>
 
           <view class="hero-main">
-            <view class="hero-main-title">{{ planDetail?.title || '浪漫计划' }}</view>
-            <view class="hero-main-desc">{{ planDetail?.description || '把这份安排一步一步过成你们想要的样子。' }}</view>
+            <view class="hero-main-title">{{ planDetail.title || '未命名计划' }}</view>
+            <view class="hero-main-desc">{{ planDetail.description || '先把目标定下来，再慢慢推进。' }}</view>
+
+            <view class="hero-overview-row">
+              <view class="hero-overview-card">
+                <view class="hero-overview-label">完成进度</view>
+                <view class="hero-overview-value">{{ resolveProgressText(planDetail) }}</view>
+              </view>
+              <view class="hero-overview-card">
+                <view class="hero-overview-label">时间提醒</view>
+                <view class="hero-overview-value">{{ resolveCountdownText(planDetail) }}</view>
+              </view>
+              <view class="hero-overview-card">
+                <view class="hero-overview-label">最近动作</view>
+                <view class="hero-overview-value">{{ planDetail.nextExecuteLabel || '等你们安排' }}</view>
+              </view>
+            </view>
 
             <view class="hero-meta-grid">
               <view class="hero-meta-card">
                 <view class="hero-meta-label">周期</view>
-                <view class="hero-meta-value">{{ planDetail?.scheduleSummary || '待补充' }}</view>
-              </view>
-              <view class="hero-meta-card">
-                <view class="hero-meta-label">下一步</view>
-                <view class="hero-meta-value">{{ planDetail?.nextExecuteLabel || '待安排下一步' }}</view>
+                <view class="hero-meta-value">{{ planDetail.scheduleSummary || '待补充' }}</view>
               </view>
               <view class="hero-meta-card">
                 <view class="hero-meta-label">地点</view>
-                <view class="hero-meta-value">{{ planDetail?.location || '未指定' }}</view>
+                <view class="hero-meta-value">{{ planDetail.location || '未指定' }}</view>
+              </view>
+              <view class="hero-meta-card">
+                <view class="hero-meta-label">发起人</view>
+                <view class="hero-meta-value">{{ resolveUserName(planDetail.creatorNickname, planDetail.creatorUsername, '共同创建') }}</view>
               </view>
               <view class="hero-meta-card">
                 <view class="hero-meta-label">最近更新</view>
-                <view class="hero-meta-value">{{ resolveUserName(planDetail?.updaterNickname, planDetail?.updaterUsername, '共同维护') }}</view>
+                <view class="hero-meta-value">{{ resolveUserName(planDetail.updaterNickname, planDetail.updaterUsername, '共同维护') }}</view>
               </view>
+            </view>
+
+            <view v-if="latestFeedbackText" class="hero-latest-feedback">
+              <view class="hero-latest-feedback-label">最近反馈</view>
+              <view class="hero-latest-feedback-text">{{ latestFeedbackText }}</view>
             </view>
           </view>
         </view>
       </view>
 
-      <view class="section-card tab-card">
+      <view v-if="planDetail" class="section-card tab-card">
         <view class="ribbon ribbon-green">计划分区</view>
         <view class="section-card-inner">
           <scroll-view class="tab-scroll" scroll-x enable-flex show-scrollbar="false">
@@ -84,16 +115,23 @@
 
           <view v-if="activeTab === 'items'" class="content-block">
             <view class="block-title">执行安排</view>
-            <view class="block-desc">把计划拆成清楚的小步骤，适合按时间、地点和完成状态逐步推进。</view>
+            <view class="block-desc">把计划拆成几步，照着推进就好。</view>
 
-            <view v-if="planDetail?.itemList?.length" class="roadmap-list">
+            <view class="mini-progress-strip">
+              <view class="mini-progress-track">
+                <view class="mini-progress-bar" :style="{ width: `${progressPercent(planDetail)}%` }"></view>
+              </view>
+              <view class="mini-progress-text">{{ resolveProgressText(planDetail) }}</view>
+            </view>
+
+            <view v-if="planDetail.itemList?.length" class="roadmap-list">
               <view v-for="item in planDetail.itemList" :key="item.id" class="roadmap-card">
                 <view class="roadmap-line">
                   <view class="roadmap-dot"></view>
                 </view>
                 <view class="roadmap-main">
                   <view class="roadmap-head">
-                    <view class="roadmap-title">{{ item.title }}</view>
+                    <view class="roadmap-title">{{ item.title || '未命名条目' }}</view>
                     <view class="roadmap-state" :class="{ done: item.completed }">{{ item.completed ? '已完成' : '待执行' }}</view>
                   </view>
                   <view v-if="item.content" class="roadmap-content">{{ item.content }}</view>
@@ -107,14 +145,14 @@
                 </view>
               </view>
             </view>
-            <view v-else class="sub-empty">这份计划还没有拆出条目，可以先去编辑页补上。</view>
+            <view v-else class="sub-empty">这份计划还没拆出步骤，可以先去编辑页补上。</view>
           </view>
 
           <view v-if="activeTab === 'feedback'" class="content-block">
             <view class="block-head">
               <view>
                 <view class="block-title">反馈记录</view>
-                <view class="block-desc">执行以后就记一笔，让计划不只是排出来，还能回看真实效果。</view>
+                <view class="block-desc">执行完记一笔，回头看会更清楚。</view>
               </view>
               <view class="block-action" @click="toggleFeedbackComposer">{{ showFeedbackComposer ? '收起' : '记反馈' }}</view>
             </view>
@@ -142,58 +180,66 @@
                 v-model="feedbackContent"
                 class="feedback-textarea"
                 maxlength="300"
-                placeholder="写写今天执行后的变化、偏差或者临时调整。"
-              />
+                placeholder="写写今天推进得怎么样，或者下次准备怎么继续。"
+                placeholder-class="textarea-placeholder"
+              ></textarea>
               <view class="feedback-submit" @click="submitFeedback">保存反馈</view>
             </view>
 
-            <view v-if="planDetail?.feedbackList?.length" class="feedback-list">
+            <view v-if="planDetail.feedbackList?.length" class="feedback-list">
               <view v-for="item in planDetail.feedbackList" :key="item.id" class="feedback-card">
                 <view class="feedback-head">
                   <view class="feedback-author">{{ resolveUserName(item.creatorNickname, item.creatorUsername, '共同记录') }}</view>
                   <view class="feedback-date">{{ item.feedbackDate || item.createdAt }}</view>
                 </view>
                 <view class="feedback-status">{{ resolveFeedbackStatus(item.status) }}</view>
-                <view class="feedback-content">{{ item.content }}</view>
+                <view class="feedback-content">{{ item.content || '这条反馈还没有补内容。' }}</view>
               </view>
             </view>
-            <view v-else class="sub-empty">还没有反馈记录，第一次执行完就可以来这里补上。</view>
+            <view v-else class="sub-empty">还没有反馈，第一次执行完就可以来这里记一笔。</view>
           </view>
 
           <view v-if="activeTab === 'social'" class="content-block">
             <view class="block-title">互动留言</view>
-            <view class="block-desc">计划支持点赞和评论，方便彼此鼓励、补充和回看。</view>
+            <view class="block-desc">点个赞，或者留一句小回应。</view>
 
-            <view class="social-like-card" :class="{ active: planDetail?.likedByCurrentUser }" @click="handleToggleLike">
+            <view class="social-like-card" :class="{ active: planDetail.likedByCurrentUser }" @click="handleToggleLike">
               <view>
-                <view class="social-like-title">{{ planDetail?.likedByCurrentUser ? '已点赞这份计划' : '给这份计划点个赞' }}</view>
+                <view class="social-like-title">{{ planDetail.likedByCurrentUser ? '你已经给这份计划点过赞啦' : '给这份计划点个赞' }}</view>
                 <view class="social-like-users">{{ likeSummaryText }}</view>
               </view>
-              <view class="social-like-count">{{ planDetail?.likeCount || 0 }}</view>
+              <view class="social-like-count">{{ planDetail.likeCount || 0 }}</view>
             </view>
 
             <view class="comment-composer">
               <textarea
                 v-model="commentContent"
                 class="comment-textarea"
-                maxlength="200"
-                placeholder="留一句鼓励、提醒或者补充安排。"
-              />
+                maxlength="500"
+                placeholder="留一句鼓励、提醒，或者补充下一步安排。"
+                placeholder-class="textarea-placeholder"
+              ></textarea>
               <view class="comment-submit" @click="submitComment">发送评论</view>
             </view>
 
-            <view v-if="planDetail?.commentList?.length" class="comment-list">
+            <view v-if="planDetail.commentList?.length" class="comment-list">
               <view v-for="item in planDetail.commentList" :key="item.id" class="comment-card">
                 <view class="comment-head">
                   <view class="comment-author">{{ resolveUserName(item.commenterNickname, item.commenterUsername, '共同留言') }}</view>
-                  <view class="comment-time">{{ item.createdAt }}</view>
+                  <view class="comment-time">{{ item.createdAt || item.updatedAt }}</view>
                 </view>
-                <view class="comment-content">{{ item.content }}</view>
+                <view class="comment-content">{{ item.content || '这条评论没有内容。' }}</view>
                 <view v-if="canDeleteComment(item)" class="comment-delete" @click="handleDeleteComment(item.id)">删除评论</view>
               </view>
             </view>
             <view v-else class="sub-empty">还没有评论，给这份计划留一句话吧。</view>
           </view>
+        </view>
+      </view>
+
+      <view v-else class="section-card loading-card">
+        <view class="section-card-inner">
+          <view class="sub-empty">正在加载这份计划的详情...</view>
         </view>
       </view>
     </view>
@@ -222,9 +268,9 @@ const detailTabs = [
 ]
 
 const feedbackStatusOptions = [
-  { value: 'done', label: '完成得不错' },
-  { value: 'partial', label: '部分完成' },
-  { value: 'missed', label: '今天没做到' }
+  { value: 'done', label: '完成不错' },
+  { value: 'partial', label: '完成一半' },
+  { value: 'missed', label: '今天没做' }
 ]
 
 const { themeStyle } = useThemePage()
@@ -241,7 +287,13 @@ const currentUsername = computed(() => String(getUser()?.username || '').trim())
 const likeSummaryText = computed(() => {
   const likeUsers = planDetail.value?.likeUsers || []
   if (!likeUsers.length) return '还没有点赞记录'
-  return likeUsers.map((item) => item.nickname || item.username).join('、')
+  return likeUsers.map((item) => item.nickname || item.username || '未命名').join('、')
+})
+const latestFeedbackText = computed(() => {
+  const list = Array.isArray(planDetail.value?.feedbackList) ? [...planDetail.value.feedbackList] : []
+  if (!list.length) return ''
+  list.sort((a, b) => toDate(b?.createdAt || b?.feedbackDate) - toDate(a?.createdAt || a?.feedbackDate))
+  return String(list[0]?.content || '').trim()
 })
 
 onLoad((options) => {
@@ -276,13 +328,13 @@ function resolveStatusLabel(status) {
 }
 
 function resolveFeedbackStatus(status) {
-  if (status === 'partial') return '部分完成'
-  if (status === 'missed') return '今天没做到'
-  return '完成得不错'
+  if (status === 'partial') return '完成一半'
+  if (status === 'missed') return '今天没做'
+  return '完成不错'
 }
 
 function resolveUserName(nickname, username, fallback) {
-  return nickname || username || fallback
+  return String(nickname || '').trim() || String(username || '').trim() || fallback
 }
 
 function resolveItemMeta(item) {
@@ -291,6 +343,53 @@ function resolveItemMeta(item) {
   if (item.endAt) parts.push(`结束于 ${item.endAt}`)
   if (item.location) parts.push(item.location)
   return parts.join(' · ') || '待补充时间和地点'
+}
+
+function progressPercent(item) {
+  const total = Number(item?.totalItemCount || 0)
+  const completed = Number(item?.completedItemCount || 0)
+  if (total <= 0) return item?.status === 'completed' ? 100 : 0
+  return Math.max(0, Math.min(100, Math.round((completed / total) * 100)))
+}
+
+function resolveProgressText(item) {
+  const total = Number(item?.totalItemCount || 0)
+  const completed = Number(item?.completedItemCount || 0)
+  if (total <= 0) return item?.status === 'completed' ? '已收尾' : '待拆步骤'
+  return `${completed}/${total} 步`
+}
+
+function resolveCountdownText(item) {
+  if (item?.status === 'completed') return '已经完成'
+  if (item?.status === 'archived') return '暂时收起'
+  if (item?.status === 'draft') return '还在草稿中'
+  if (item?.nextExecuteAt) {
+    return formatDistance(toDate(item.nextExecuteAt) - Date.now(), '下次安排')
+  }
+  if (item?.startAt) {
+    const startTime = toDate(item.startAt)
+    if (startTime > Date.now()) return formatDistance(startTime - Date.now(), '距离开始')
+  }
+  if (item?.endAt) {
+    const endTime = toDate(item.endAt)
+    if (endTime > Date.now()) return formatDistance(endTime - Date.now(), '距离截止')
+  }
+  return item?.nextExecuteLabel || '等你们安排'
+}
+
+function toDate(value) {
+  if (!value) return 0
+  const normalized = String(value).trim().replace(/-/g, '/')
+  const timestamp = new Date(normalized).getTime()
+  return Number.isFinite(timestamp) ? timestamp : 0
+}
+
+function formatDistance(diff, prefix) {
+  const day = 24 * 60 * 60 * 1000
+  if (!Number.isFinite(diff) || diff <= 0) return `${prefix} 今天`
+  const days = Math.ceil(diff / day)
+  if (days <= 1) return `${prefix} 明天`
+  return `${prefix} ${days} 天`
 }
 
 function toggleFeedbackComposer() {
@@ -303,10 +402,7 @@ function handleFeedbackDateChange(event) {
 
 async function handleToggleLike() {
   try {
-    const result = await toggleRomanticPlanLike(planId.value)
-    if (!planDetail.value) return
-    planDetail.value.likedByCurrentUser = Boolean(result?.liked)
-    planDetail.value.likeCount = Number(result?.likeCount || 0)
+    await toggleRomanticPlanLike(planId.value)
     await loadDetail()
   } catch (error) {
     uni.showToast({ title: error?.message || '点赞失败', icon: 'none' })
@@ -317,7 +413,7 @@ async function handleToggleItem(item) {
   try {
     planDetail.value = await toggleRomanticPlanItemCompletion(planId.value, item.id, !item.completed)
   } catch (error) {
-    uni.showToast({ title: error?.message || '更新状态失败', icon: 'none' })
+    uni.showToast({ title: error?.message || '更新条目状态失败', icon: 'none' })
   }
 }
 
@@ -348,9 +444,7 @@ async function submitComment() {
     return
   }
   try {
-    const comment = await createRomanticPlanComment(planId.value, { content: commentContent.value })
-    if (!planDetail.value) return
-    planDetail.value.commentList = [comment].concat(planDetail.value.commentList || [])
+    await createRomanticPlanComment(planId.value, { content: commentContent.value })
     commentContent.value = ''
     await loadDetail()
     uni.showToast({ title: '评论已发送', icon: 'success' })
@@ -473,6 +567,7 @@ function goBack() {
 .topbar-row,
 .hero-card-inner,
 .hero-meta-grid,
+.hero-overview-row,
 .roadmap-head,
 .roadmap-foot,
 .feedback-head,
@@ -513,8 +608,11 @@ function goBack() {
 }
 
 .back-chip-arrow {
-  font-size: 38rpx;
-  line-height: 1;
+  width: 18rpx;
+  height: 18rpx;
+  border-left: 4rpx solid currentColor;
+  border-bottom: 4rpx solid currentColor;
+  transform: rotate(45deg);
 }
 
 .edit-chip,
@@ -600,7 +698,7 @@ function goBack() {
 }
 
 .section-card-inner {
-  padding: 40rpx 24rpx 24rpx;
+  padding: 68rpx 24rpx 24rpx;
 }
 
 .ribbon {
@@ -651,11 +749,23 @@ function goBack() {
 .hero-cover {
   position: relative;
   width: 220rpx;
-  min-height: 260rpx;
+  min-height: 320rpx;
   border-radius: 28rpx;
   overflow: hidden;
   background: #f4e4df;
   flex: 0 0 auto;
+}
+
+.hero-cover-daily {
+  background: linear-gradient(180deg, #f8ede7 0%, #ecd7cd 100%);
+}
+
+.hero-cover-interval {
+  background: linear-gradient(180deg, #ecf5fb 0%, #dbe7f5 100%);
+}
+
+.hero-cover-stage {
+  background: linear-gradient(180deg, #eef5eb 0%, #ddebd8 100%);
 }
 
 .hero-cover-image {
@@ -671,7 +781,20 @@ function goBack() {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  background: linear-gradient(180deg, #f8ede7 0%, #ebd2ca 100%);
+}
+
+.hero-cover-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(73, 54, 58, 0.26));
+}
+
+.hero-cover-title,
+.hero-cover-copy,
+.hero-cover-top,
+.hero-cover-bottom {
+  position: relative;
+  z-index: 1;
 }
 
 .hero-cover-title {
@@ -687,14 +810,61 @@ function goBack() {
   color: #886d72;
 }
 
-.hero-cover-status {
+.hero-cover-top,
+.hero-cover-bottom {
   position: absolute;
-  top: 14rpx;
+  left: 14rpx;
   right: 14rpx;
+  display: flex;
+  gap: 10rpx;
+}
+
+.hero-cover-top {
+  top: 14rpx;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hero-cover-bottom {
+  bottom: 14rpx;
+  flex-direction: column;
+}
+
+.hero-cover-status,
+.hero-progress-pill,
+.hero-cover-tag {
+  width: fit-content;
   padding: 8rpx 14rpx;
   border-radius: 999rpx;
   font-size: 20rpx;
   font-weight: 700;
+  backdrop-filter: blur(8rpx);
+}
+
+.hero-progress-pill,
+.hero-cover-tag {
+  color: #ffffff;
+}
+
+.hero-progress-pill {
+  background: rgba(36, 149, 144, 0.18);
+}
+
+.hero-cover-tag {
+  background: rgba(53, 43, 47, 0.26);
+}
+
+.hero-cover-progress {
+  height: 12rpx;
+  border-radius: 999rpx;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.hero-cover-progress-bar {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #fff7d5, #ffd38c);
 }
 
 .status-active {
@@ -736,34 +906,44 @@ function goBack() {
 .feedback-content,
 .comment-content,
 .sub-empty,
-.social-like-users {
+.social-like-users,
+.hero-latest-feedback-text {
   margin-top: 16rpx;
   font-size: 24rpx;
   line-height: 1.72;
   color: #6d5f68;
 }
 
+.hero-overview-row,
 .hero-meta-grid {
   margin-top: 22rpx;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.hero-meta-card {
+.hero-overview-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.hero-overview-card,
+.hero-meta-card,
+.hero-latest-feedback {
   padding: 16rpx;
   border-radius: 20rpx;
   background: #fff6f1;
 }
 
+.hero-overview-label,
 .hero-meta-label,
 .roadmap-meta,
 .roadmap-owner,
 .feedback-date,
-.comment-time {
+.comment-time,
+.hero-latest-feedback-label {
   font-size: 20rpx;
   color: #9b8a90;
 }
 
+.hero-overview-value,
 .hero-meta-value,
 .roadmap-title,
 .feedback-author,
@@ -812,6 +992,33 @@ function goBack() {
 .block-head {
   align-items: center;
   justify-content: space-between;
+}
+
+.mini-progress-strip {
+  margin-top: 18rpx;
+  padding: 18rpx 20rpx;
+  border-radius: 22rpx;
+  background: #fff6f1;
+}
+
+.mini-progress-track {
+  height: 12rpx;
+  border-radius: 999rpx;
+  overflow: hidden;
+  background: rgba(239, 127, 145, 0.16);
+}
+
+.mini-progress-bar {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff9ca8, #ef5f73);
+}
+
+.mini-progress-text {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  font-weight: 700;
+  color: #70575d;
 }
 
 .roadmap-list,
@@ -974,9 +1181,14 @@ function goBack() {
   margin-top: 18rpx;
 }
 
+.textarea-placeholder {
+  color: #b6a3aa;
+}
+
 @media screen and (max-width: 720rpx) {
   .hero-card-inner,
-  .hero-meta-grid {
+  .hero-meta-grid,
+  .hero-overview-row {
     display: grid;
     grid-template-columns: 1fr;
   }

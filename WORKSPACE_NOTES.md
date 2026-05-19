@@ -2628,3 +2628,144 @@
 - 当前“浪漫计划”仍属于第一版最小闭环，正式 PNG 切图、提醒体验和更丰富的展示形态还没有展开。
 - 当前还没有做 uni-app / 微信小程序真机联调，后续重点要验证计划详情、计划编辑、通知跳转在端侧的真实点击体验。
 - 如果数据库里已经存在被本次错误迁移写坏的注释，本轮修复后的应用启动或测试执行会自动把对应表注释和字段注释刷回正常中文。
+
+## 2026-05-18 更新记录
+
+### 目标
+
+- 修复“每日小计”详情页在内容过长时无法继续上下滑动、进而影响点赞和评论操作的问题。
+- 将通用评论长度限制从 200 字放宽到 500 字。
+- 将“每日小计”评论输入从单行长输入框改成多行输入框，保证长评论时仍能清楚看到正在输入的内容。
+
+### 处理顺序
+
+1. 先阅读最新 `WORKSPACE_NOTES.md`，确认“今日小计 / 每日小计”模块现状与既有规则。
+2. 排查前端 `daily-summary/detail.vue` 的布局结构，确认问题不是接口链路，而是详情卡片固定高度下缺少可靠的纵向滚动承载。
+3. 重构“每日小计”详情页卡片内部结构，将长内容、媒体区和互动区放入卡片内部滚动层，同时保留顶部操作区可直接触达。
+4. 将评论输入从单行 `input` 改为多行 `textarea`，同步把前端 `maxlength` 与字数提示改为 500。
+5. 修改后端通用评论请求模型，把校验上限从 200 提升到 500。
+6. 同步更新 `schema.sql` 与 `SchemaMigrationRunner.java`，将 `album_memory_comment` 和 `biz_comment_record` 的评论内容字段扩容到 `VARCHAR(500)`，保证新库和旧库一致。
+7. 执行前端页面源码巡检与后端编译验证，确认本轮修改没有引入新的语法或编译问题。
+
+### 关键问题
+
+- “每日小计”详情页原本使用固定高度的 `swiper` 卡片，长内容、媒体区和评论区都堆在同一块里，导致内容一旦变长，就会把后面的互动区压到可视区之外。
+- 详情页原有评论输入使用单行输入框，长评论时无法同时看到完整输入内容，移动端输入体验明显不好。
+- 评论长度限制并不只在前端，而是后端通用评论请求模型和数据库字段也限制在 200，所以必须前后端一起改，不能只放开页面 `maxlength`。
+- 这次改动触及数据库字段长度，必须同步维护 `schema.sql` 和迁移逻辑，避免后续新库、旧库行为不一致。
+
+### 关键结果
+
+- 已重构 `romantic-app/pages/modules/daily-summary/detail.vue`：
+  - 条目卡片内部新增独立纵向滚动层 `daily-entry-scroll`。
+  - 长文本、媒体区、评论区都放入滚动层中，长内容时可继续上下滑动浏览。
+  - 顶部编辑与更多操作区仍保持在卡片上层，避免长内容时连点赞 / 评论入口都被挤到不可操作位置。
+  - 评论列表不再使用嵌套纵向滚动容器，减少小程序端滚动冲突。
+- 已将“每日小计”评论输入改为多行 `textarea`：
+  - 前端评论输入上限改为 500。
+  - 字数提示从 `/200` 改为 `/500`。
+  - 输入框样式改为更适合长文本输入的多行形态。
+- 已重写 `romantic-server/src/main/java/org/love/romantic/model/InteractionCommentRequest.java` 为干净 UTF-8 版本，并将通用评论校验改为：
+  - `@Size(max = 500, message = "评论内容最多 500 个字")`
+- 已更新 `romantic-server/src/main/resources/schema.sql`：
+  - `album_memory_comment.content` 改为 `VARCHAR(500)`
+  - `biz_comment_record.content` 改为 `VARCHAR(500)`
+  - 本轮顺手将该文件恢复为干净、可维护的结构化 UTF-8 版本，避免后续再被历史乱码干扰。
+- 已更新 `romantic-server/src/main/java/org/love/romantic/config/SchemaMigrationRunner.java`：
+  - 建表 SQL 中的评论内容字段长度改为 500。
+  - MySQL 注释刷新逻辑中的评论字段长度同步改为 500，保证旧库启动后也会自动扩容。
+
+### 验证情况
+
+- 已执行前端页面源码巡检：
+  - `powershell -ExecutionPolicy Bypass -File D:\JavaProject\romantic-suite\romantic-app\tools\check-pages-source.ps1`
+  - 结果：`OK: no suspicious page-source findings under D:\JavaProject\romantic-suite\romantic-app\pages`
+- 已执行后端编译验证：
+  - `mvn -gs D:\Service_File\work_maven\setting.xml -s D:\Service_File\work_maven\setting.xml -DskipTests compile`
+  - 结果：`BUILD SUCCESS`
+
+### 当前说明
+
+- 本轮重点修复的是“每日小计”详情页的长内容滚动与评论输入体验；其他模块中仍然存在 `/200` 评论提示的页面，当前未一并调整，避免超出本次 bug 修复范围。
+- 真机 / 小程序端的最终交互手感仍建议继续重点确认：
+  - 长内容条目上下滑动是否顺畅
+  - 多张媒体与长评论同时存在时，卡片内部滚动是否自然
+  - 键盘弹起时评论输入区是否仍保持可见
+
+### 2026-05-18 补充：浪漫计划页面修复
+
+#### 目标
+
+- 修复“浪漫计划”列表页、详情页、编辑页存在的真实乱码、缺失文案、占位残留和格式错误。
+- 将服务层一起恢复成干净 UTF-8 版本，避免页面继续被脏数据和脏文案拖累。
+
+#### 处理顺序
+
+1. 先重新阅读 `WORKSPACE_NOTES.md` 中关于“浪漫计划”第一版的目标与现状说明。
+2. 检查 `romantic-app/pages/modules/romantic-plan/index.vue`、`detail.vue`、`edit.vue` 与 `services/romantic-plans.js`。
+3. 确认问题不是单纯显示异常，而是源码里存在真实乱码和若干占位残留。
+4. 直接重写列表页、详情页、编辑页和服务层，统一恢复成干净 UTF-8 版本，并补齐缺失字段与文案。
+5. 执行页面源码巡检，确认没有新增页面结构问题。
+
+#### 关键问题
+
+- `romantic-plan` 三个页面都残留了明显乱码，已经属于真实源码质量问题，不是终端显示误差。
+- 列表页里存在“封面待补”“占位式说明”等草稿感文案，不符合当前正式版本要求。
+- 详情页与编辑页里有多处字段标题、状态文案、输入占位、按钮文字损坏，阅读和操作体验都受影响。
+- 服务层 `romantic-plans.js` 里的错误提示也存在乱码，会直接污染页面反馈。
+
+#### 关键结果
+
+- 已重写 `romantic-app/services/romantic-plans.js`：
+  - 恢复为干净 UTF-8 版本。
+  - 补齐 `normalizePlan / normalizeItem / normalizeFeedback / normalizeComment / normalizeLikeUser`。
+  - 所有接口失败提示恢复成正常中文。
+- 已重写 `romantic-app/pages/modules/romantic-plan/index.vue`：
+  - 修复顶部返回、标题区、筛选区、计划卡片区全部乱码问题。
+  - 去掉草稿感过重的错误占位文案。
+  - 保留原有视觉方向，但恢复为正式可读状态。
+- 已重写 `romantic-app/pages/modules/romantic-plan/detail.vue`：
+  - 修复详情页顶部、分区标签、反馈区、互动区的乱码与格式错误。
+  - 评论输入上限同步改为 500。
+  - 保留条目完成、反馈新增、点赞、评论、删评等原有能力。
+- 已重写 `romantic-app/pages/modules/romantic-plan/edit.vue`：
+  - 修复编辑页步骤区、基础信息、时间地点、计划条目区域的乱码与表单错误。
+  - 补上 `coverUrl` 字段输入，避免后端已有字段前端长期缺位。
+  - 状态选项补齐到 `active / draft / completed / archived`。
+
+#### 验证情况
+
+- 已执行前端页面源码巡检：
+  - `powershell -ExecutionPolicy Bypass -File D:\JavaProject\romantic-suite\romantic-app\tools\check-pages-source.ps1`
+  - 结果：`OK: no suspicious page-source findings under D:\JavaProject\romantic-suite\romantic-app\pages`
+
+#### 当前说明
+
+- 当前这轮重点是把“浪漫计划”页面从源码层面的乱码和缺失状态拉回到可维护、可继续迭代的正式版本。
+- 这轮没有改后端接口结构，主要是前端页面和前端服务层修复。
+- 后续如果继续深化“浪漫计划”，最值得补的是：封面正式上传链路、反馈与条目更丰富的视觉层级、以及真机手感验证。
+
+#### 2026-05-18 补充：浪漫计划页留白与文案减法
+
+- 已继续调整 `romantic-plan/index.vue`、`romantic-plan/edit.vue`、`romantic-plan/detail.vue` 的卡片顶部留白：
+  - 将丝带标题下方正文起始内边距统一拉开，修复“基础草稿 / 编辑步骤 / 共同安排 / 计划列表”等丝带标签与正文内容贴得过近的问题。
+- 已对浪漫计划相关说明文案做减法：
+  - 列表页引导文案改短。
+  - 编辑页各步骤说明改短。
+  - 详情页执行安排、反馈记录、互动留言说明改短。
+- 当前方向统一为：保留必要说明，但不再让页面像长段产品介绍页。
+- 已再次执行页面源码巡检：
+  - `powershell -ExecutionPolicy Bypass -File D:\JavaProject\romantic-suite\romantic-app\tools\check-pages-source.ps1`
+  - 结果：`OK: no suspicious page-source findings under D:\JavaProject\romantic-suite\romantic-app\pages`
+
+### 2026-05-18 浪漫计划视觉层级补强
+- 重新整理 `pages/modules/romantic-plan/index.vue` 列表卡信息层级，补齐封面氛围、完成进度、时间提醒、最近反馈摘要，减少“纯表单卡片”观感。
+- 重新整理 `pages/modules/romantic-plan/detail.vue` 总览区，新增进度总览、时间提醒、最近反馈摘要，并同步压缩说明文案。
+- 顺手修复 `services/romantic-plans.js` 历史残留的坏引号与乱码提示，统一恢复成正式中文错误文案。
+- 页面巡检通过：`check-pages-source.ps1` 返回 `OK: no suspicious page-source findings under .../pages`。
+
+### 2026-05-18 浪漫计划封面改为图片上传
+- `pages/modules/romantic-plan/edit.vue` 不再使用手填 `coverUrl` 输入框，改为封面预览卡 + 选择封面 / 更换封面 / 移除封面交互。
+- 前端新增 `uploadRomanticPlanMedia`，保存浪漫计划时若选择了新封面，会先上传图片，再把返回路径写入 `coverUrl`。
+- 后端补充 `/api/files/romantic-plan-media` 上传接口，并新增 `romantic.storage.romanticPlanDirectory` 目录配置，避免与甜蜜相册资源混放。
+- 页面巡检通过；后端编译已执行确认。

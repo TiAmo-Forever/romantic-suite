@@ -118,6 +118,16 @@ public class FileController {
         ));
     }
 
+    @ApiOperation("上传浪漫计划封面")
+    @PostMapping(value = "/romantic-plan-media", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<AvatarUploadResponse> uploadRomanticPlanMedia(
+            @ApiParam("浪漫计划封面图片文件")
+            @RequestPart("file") MultipartFile file) {
+        return ApiResponse.ok("上传成功", new AvatarUploadResponse(
+                storeMediaFile(file, storageProperties.getRomanticPlanStorageDirectory(), "romantic-plan")
+        ));
+    }
+
     private String storeMediaFile(MultipartFile file, Path mediaDirectory, String category) {
         if (file == null || file.isEmpty()) {
             throw new BusinessException("请选择要上传的图片或视频");
@@ -152,6 +162,8 @@ public class FileController {
             relativePath = storageProperties.buildAlbumRelativePath(fileName);
         } else if ("daily-summary".equals(category)) {
             relativePath = storageProperties.buildDailySummaryRelativePath(fileName);
+        } else if ("romantic-plan".equals(category)) {
+            relativePath = storageProperties.buildRomanticPlanRelativePath(fileName);
         } else {
             relativePath = storageProperties.buildAnniversaryRelativePath(fileName);
         }

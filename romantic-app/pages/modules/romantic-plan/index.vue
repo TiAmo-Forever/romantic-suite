@@ -14,7 +14,7 @@
     <view class="plan-shell">
       <view class="topbar-row">
         <view class="back-chip" @click="goBack">
-          <text class="back-chip-arrow">‹</text>
+          <view class="back-chip-arrow"></view>
           <text>返回</text>
         </view>
       </view>
@@ -30,8 +30,8 @@
       <view class="section-card intro-card">
         <view class="ribbon ribbon-pink">共同安排</view>
         <view class="section-card-inner">
-          <view class="intro-title">把想认真完成的事情，拆成你们一起执行的小计划</view>
-          <view class="intro-desc">支持按日程、按周期、按阶段来安排，也能随手记录每天的实际反馈。</view>
+          <view class="intro-title">把想完成的事，慢慢排进你们的日常。</view>
+          <view class="intro-desc">先定计划，再跟着节奏推进，反馈也能随手补上。</view>
 
           <view class="intro-bottom">
             <view class="stat-row">
@@ -56,7 +56,7 @@
       <view class="section-card list-card">
         <view class="ribbon ribbon-green">计划列表</view>
         <view class="section-card-inner">
-          <view class="list-intro">先从最重要的一件事开始，把它慢慢变成你们的共同节奏。</view>
+          <view class="list-intro">先把最想一起完成的一件事排进去。</view>
 
           <scroll-view class="filter-scroll" scroll-x enable-flex show-scrollbar="false">
             <view class="filter-row">
@@ -81,45 +81,60 @@
               hover-stay-time="70"
               @click="openDetail(item.id)"
             >
-              <view class="plan-item-cover">
+              <view class="plan-item-cover" :class="`plan-item-cover-${item.planType || 'daily'}`">
                 <image v-if="item.coverUrl" class="plan-item-image" :src="item.coverUrl" mode="aspectFill" />
                 <view v-else class="plan-item-cover-placeholder">
-                  <view class="plan-item-cover-type">{{ resolveTypeLabel(item.planType) }}</view>
-                  <view class="plan-item-cover-copy">封面待补充</view>
+                  <view class="plan-item-cover-badge">{{ resolveTypeLabel(item.planType) }}</view>
+                  <view class="plan-item-cover-copy">{{ resolveCoverText(item) }}</view>
+                </view>
+
+                <view class="plan-item-cover-overlay"></view>
+
+                <view class="plan-item-cover-top">
+                  <view class="plan-status-pill" :class="`plan-status-${item.status}`">{{ resolveStatusLabel(item.status) }}</view>
+                  <view class="plan-item-progress-pill">{{ progressPercent(item) }}%</view>
+                </view>
+
+                <view class="plan-item-cover-bottom">
+                  <view class="plan-item-cover-label">{{ resolveCountdownText(item) }}</view>
+                  <view class="plan-item-cover-progress">
+                    <view class="plan-item-cover-progress-bar" :style="{ width: `${progressPercent(item)}%` }"></view>
+                  </view>
                 </view>
               </view>
 
               <view class="plan-item-main">
                 <view class="plan-item-top">
                   <view class="plan-type-pill" :class="`plan-type-${item.planType}`">{{ resolveTypeLabel(item.planType) }}</view>
-                  <view class="plan-status-pill" :class="`plan-status-${item.status}`">{{ resolveStatusLabel(item.status) }}</view>
+                  <view class="plan-item-link">查看详情</view>
                 </view>
 
-                <view class="plan-item-title">{{ item.title }}</view>
-                <view class="plan-item-desc">{{ item.description || '先把目标定下来，再慢慢补齐执行节奏。' }}</view>
+                <view class="plan-item-title">{{ item.title || '未命名计划' }}</view>
+                <view class="plan-item-desc">{{ item.description || '先把目标写下来，后面再慢慢补细节。' }}</view>
 
-                <view class="plan-meta-board">
-                  <view class="plan-meta-cell">
-                    <view class="plan-meta-label">周期</view>
-                    <view class="plan-meta-value">{{ item.scheduleSummary || '待补充' }}</view>
+                <view class="plan-highlight-row">
+                  <view class="plan-highlight-card">
+                    <view class="plan-highlight-label">完成进度</view>
+                    <view class="plan-highlight-value">{{ resolveProgressText(item) }}</view>
                   </view>
-                  <view class="plan-meta-cell">
-                    <view class="plan-meta-label">下一步</view>
-                    <view class="plan-meta-value">{{ item.nextExecuteLabel || '待安排' }}</view>
+                  <view class="plan-highlight-card">
+                    <view class="plan-highlight-label">时间提醒</view>
+                    <view class="plan-highlight-value">{{ resolveCountdownText(item) }}</view>
                   </view>
-                  <view class="plan-meta-cell">
-                    <view class="plan-meta-label">条目</view>
-                    <view class="plan-meta-value">{{ item.completedItemCount || 0 }}/{{ item.totalItemCount || 0 }}</view>
+                  <view class="plan-highlight-card">
+                    <view class="plan-highlight-label">下一步</view>
+                    <view class="plan-highlight-value">{{ item.nextExecuteLabel || '等你们安排' }}</view>
                   </view>
-                  <view class="plan-meta-cell">
-                    <view class="plan-meta-label">互动</view>
-                    <view class="plan-meta-value">{{ item.likeCount || 0 }} 赞 · {{ item.commentList?.length || 0 }} 评</view>
-                  </view>
+                </view>
+
+                <view v-if="resolveLatestFeedback(item)" class="plan-feedback-preview">
+                  <view class="plan-feedback-preview-label">最近反馈</view>
+                  <view class="plan-feedback-preview-text">{{ resolveLatestFeedback(item) }}</view>
                 </view>
 
                 <view class="plan-item-footer">
                   <view class="plan-owner">{{ resolveOwnerText(item) }}</view>
-                  <view class="plan-link">查看详情</view>
+                  <view class="plan-meta-brief">{{ item.likeCount || 0 }} 赞 · {{ item.feedbackCount || 0 }} 条反馈</view>
                 </view>
               </view>
             </view>
@@ -145,9 +160,7 @@
               </view>
             </view>
 
-            <view class="empty-copy">
-              从减脂安排、洗头提醒、订婚筹备这些小目标开始，慢慢把未来排进日常里。
-            </view>
+            <view class="empty-copy">从小目标开始，把未来慢慢排进日常里。</view>
           </view>
         </view>
       </view>
@@ -167,7 +180,8 @@ const filters = [
   { key: 'all', label: '全部' },
   { key: 'active', label: '进行中' },
   { key: 'completed', label: '已完成' },
-  { key: 'draft', label: '草稿' }
+  { key: 'draft', label: '草稿' },
+  { key: 'archived', label: '已归档' }
 ]
 
 const { themeStyle } = useThemePage()
@@ -182,7 +196,6 @@ onShow(async () => {
   await loadList()
 })
 
-// 中文注释：这里继续走服务端筛选，页面只负责展示当前筛选结果，不重复在前端再套一层过滤。
 async function loadList() {
   try {
     planList.value = await fetchRomanticPlanList(activeFilter.value)
@@ -210,10 +223,76 @@ function resolveStatusLabel(status) {
   return '进行中'
 }
 
+function resolveCoverText(item) {
+  if (item.location) return item.location
+  if (item.scheduleSummary) return item.scheduleSummary
+  return '这份计划还没有补地点'
+}
+
 function resolveOwnerText(item) {
   const creator = item?.creatorNickname || item?.creatorUsername || '共同创建'
   const updater = item?.updaterNickname || item?.updaterUsername || creator
   return `${creator} 发起，最近由 ${updater} 更新`
+}
+
+function progressPercent(item) {
+  const total = Number(item?.totalItemCount || 0)
+  const completed = Number(item?.completedItemCount || 0)
+  if (total <= 0) return item?.status === 'completed' ? 100 : 0
+  return Math.max(0, Math.min(100, Math.round((completed / total) * 100)))
+}
+
+function resolveProgressText(item) {
+  const total = Number(item?.totalItemCount || 0)
+  const completed = Number(item?.completedItemCount || 0)
+  if (total <= 0) {
+    return item?.status === 'completed' ? '已收尾' : '待拆步骤'
+  }
+  return `${completed}/${total} 步`
+}
+
+function resolveLatestFeedback(item) {
+  const list = Array.isArray(item?.feedbackList) ? [...item.feedbackList] : []
+  if (!list.length) return ''
+  list.sort((a, b) => toDate(b?.createdAt || b?.feedbackDate) - toDate(a?.createdAt || a?.feedbackDate))
+  return String(list[0]?.content || '').trim()
+}
+
+function resolveCountdownText(item) {
+  if (item?.status === 'completed') return '已经完成'
+  if (item?.status === 'archived') return '暂时收起'
+  if (item?.status === 'draft') return '还在草稿中'
+  if (item?.nextExecuteAt) {
+    return formatDistance(toDate(item.nextExecuteAt) - Date.now(), '下次安排')
+  }
+  if (item?.startAt) {
+    const startTime = toDate(item.startAt)
+    if (startTime > Date.now()) {
+      return formatDistance(startTime - Date.now(), '距离开始')
+    }
+  }
+  if (item?.endAt) {
+    const endTime = toDate(item.endAt)
+    if (endTime > Date.now()) {
+      return formatDistance(endTime - Date.now(), '距离截止')
+    }
+  }
+  return item?.nextExecuteLabel || '等你们安排'
+}
+
+function toDate(value) {
+  if (!value) return 0
+  const normalized = String(value).trim().replace(/-/g, '/')
+  const timestamp = new Date(normalized).getTime()
+  return Number.isFinite(timestamp) ? timestamp : 0
+}
+
+function formatDistance(diff, prefix) {
+  const day = 24 * 60 * 60 * 1000
+  if (!Number.isFinite(diff) || diff <= 0) return `${prefix} 今天`
+  const days = Math.ceil(diff / day)
+  if (days <= 1) return `${prefix} 明天`
+  return `${prefix} ${days} 天`
 }
 
 function goCreate() {
@@ -327,15 +406,18 @@ function goBack() {
   box-shadow: 0 10rpx 22rpx rgba(196, 161, 156, 0.18);
   display: inline-flex;
   align-items: center;
-  gap: 8rpx;
+  gap: 12rpx;
   color: #c67f82;
   font-size: 24rpx;
   font-weight: 700;
 }
 
 .back-chip-arrow {
-  font-size: 38rpx;
-  line-height: 1;
+  width: 18rpx;
+  height: 18rpx;
+  border-left: 4rpx solid currentColor;
+  border-bottom: 4rpx solid currentColor;
+  transform: rotate(45deg);
 }
 
 .hero-banner {
@@ -406,7 +488,7 @@ function goBack() {
 }
 
 .section-card-inner {
-  padding: 40rpx 24rpx 24rpx;
+  padding: 68rpx 24rpx 24rpx;
 }
 
 .ribbon {
@@ -460,7 +542,8 @@ function goBack() {
 .intro-desc,
 .list-intro,
 .plan-item-desc,
-.empty-copy {
+.empty-copy,
+.plan-feedback-preview-text {
   margin-top: 18rpx;
   font-size: 24rpx;
   line-height: 1.72;
@@ -603,11 +686,12 @@ function goBack() {
 
 .plan-item-card {
   padding: 18rpx;
-  border-radius: 28rpx;
+  border-radius: 30rpx;
   background: rgba(255, 255, 255, 0.92);
   display: grid;
-  grid-template-columns: 180rpx minmax(0, 1fr);
+  grid-template-columns: 200rpx minmax(0, 1fr);
   gap: 18rpx;
+  box-shadow: 0 12rpx 24rpx rgba(214, 176, 166, 0.14);
 }
 
 .plan-item-card-active {
@@ -615,10 +699,23 @@ function goBack() {
 }
 
 .plan-item-cover {
+  position: relative;
   overflow: hidden;
   border-radius: 24rpx;
+  min-height: 224rpx;
   background: #f4e4df;
-  min-height: 180rpx;
+}
+
+.plan-item-cover-daily {
+  background: linear-gradient(180deg, #f8ede7 0%, #ecd7cd 100%);
+}
+
+.plan-item-cover-interval {
+  background: linear-gradient(180deg, #ecf5fb 0%, #dbe7f5 100%);
+}
+
+.plan-item-cover-stage {
+  background: linear-gradient(180deg, #eef5eb 0%, #ddebd8 100%);
 }
 
 .plan-item-image {
@@ -629,26 +726,89 @@ function goBack() {
 .plan-item-cover-placeholder {
   width: 100%;
   height: 100%;
-  min-height: 180rpx;
-  padding: 22rpx 18rpx;
+  min-height: 224rpx;
+  padding: 20rpx 18rpx;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  background: linear-gradient(180deg, #f8ede7 0%, #ebd2ca 100%);
+  justify-content: space-between;
 }
 
-.plan-item-cover-type {
-  font-size: 24rpx;
+.plan-item-cover-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(73, 54, 58, 0.26));
+}
+
+.plan-item-cover-top,
+.plan-item-cover-bottom {
+  position: absolute;
+  left: 14rpx;
+  right: 14rpx;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10rpx;
+}
+
+.plan-item-cover-top {
+  top: 14rpx;
+}
+
+.plan-item-cover-bottom {
+  bottom: 14rpx;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.plan-item-cover-badge,
+.plan-item-progress-pill,
+.plan-item-cover-label {
+  width: fit-content;
+  padding: 8rpx 14rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
   font-weight: 700;
+  backdrop-filter: blur(8rpx);
+}
+
+.plan-item-cover-badge {
+  background: rgba(255, 255, 255, 0.78);
   color: #715258;
 }
 
+.plan-item-progress-pill {
+  background: rgba(36, 149, 144, 0.18);
+  color: #ffffff;
+  margin-left: auto;
+}
+
 .plan-item-cover-copy {
-  margin-top: 8rpx;
-  font-size: 20rpx;
+  position: relative;
+  z-index: 1;
+  font-size: 24rpx;
   line-height: 1.6;
-  color: #886d72;
+  color: #6a5359;
+  font-weight: 700;
+}
+
+.plan-item-cover-label {
+  color: #ffffff;
+  background: rgba(53, 43, 47, 0.26);
+}
+
+.plan-item-cover-progress {
+  height: 12rpx;
+  border-radius: 999rpx;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.plan-item-cover-progress-bar {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #fff7d5, #ffd38c);
 }
 
 .plan-item-main {
@@ -710,6 +870,20 @@ function goBack() {
   color: #776b9c;
 }
 
+.plan-item-link,
+.plan-owner,
+.plan-meta-brief,
+.plan-highlight-label,
+.plan-feedback-preview-label {
+  font-size: 20rpx;
+  color: #9b8a90;
+}
+
+.plan-item-link {
+  color: #d36e73;
+  font-weight: 700;
+}
+
 .plan-item-title,
 .empty-divider-title {
   font-size: 34rpx;
@@ -718,36 +892,33 @@ function goBack() {
   color: #1f948f;
 }
 
-.plan-meta-board {
+.plan-highlight-row {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12rpx;
 }
 
-.plan-meta-cell {
+.plan-highlight-card,
+.plan-feedback-preview {
   padding: 16rpx;
   border-radius: 20rpx;
   background: #fff6f1;
 }
 
-.plan-meta-label,
-.plan-owner,
-.plan-link {
-  font-size: 20rpx;
-  color: #9b8a90;
-}
-
-.plan-meta-value {
-  margin-top: 6rpx;
+.plan-highlight-value {
+  margin-top: 8rpx;
   font-size: 22rpx;
-  line-height: 1.6;
+  line-height: 1.5;
   color: #4e454e;
   font-weight: 700;
 }
 
-.plan-link {
-  color: #d36e73;
-  font-weight: 700;
+.plan-feedback-preview-text {
+  margin-top: 8rpx;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .empty-board {
@@ -859,16 +1030,15 @@ function goBack() {
   }
 
   .intro-bottom,
-  .plan-item-card,
-  .empty-illustration,
-  .plan-meta-board {
-    grid-template-columns: 1fr;
+  .empty-illustration {
     flex-direction: column;
     align-items: stretch;
+    display: flex;
   }
 
-  .plan-item-card {
-    display: grid;
+  .plan-item-card,
+  .plan-highlight-row {
+    grid-template-columns: 1fr;
   }
 
   .create-button {

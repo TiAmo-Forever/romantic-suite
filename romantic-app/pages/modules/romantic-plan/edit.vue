@@ -13,7 +13,7 @@
     <view class="edit-shell">
       <view class="topbar-row">
         <view class="back-chip" @click="goBack">
-          <text class="back-chip-arrow">‹</text>
+          <view class="back-chip-arrow"></view>
           <text>返回</text>
         </view>
         <view class="save-chip" @click="submitForm">{{ loading ? '保存中' : '保存' }}</view>
@@ -31,14 +31,26 @@
         <view class="ribbon ribbon-pink">基础草稿</view>
         <view class="section-card-inner hero-card-inner">
           <view class="hero-copy">
-            <view class="hero-copy-title">先确定这份计划的节奏，再补内容与素材</view>
-            <view class="hero-copy-desc">
-              这版先把类型、时间、地点和条目结构搭起来。封面区单独预留，等你确认视觉方向后再补图。
-            </view>
+            <view class="hero-copy-title">先把计划框架搭起来。</view>
+            <view class="hero-copy-desc">标题、时间、地点和步骤先定下来，后面再慢慢补细节。</view>
           </view>
-          <view class="hero-cover">
-            <view class="hero-cover-title">封面待补充</view>
-            <view class="hero-cover-desc">这里预留给后续切图，不先硬写装饰图形</view>
+
+          <view class="hero-cover-card">
+            <view v-if="coverPreviewUrl" class="hero-cover-preview" @click="previewCover">
+              <image class="hero-cover-image" :src="coverPreviewUrl" mode="aspectFill" />
+              <view class="hero-cover-overlay"></view>
+              <view class="hero-cover-badge">当前封面</view>
+            </view>
+            <view v-else class="hero-cover-empty" @click="chooseCover">
+              <view class="hero-cover-empty-icon"></view>
+              <view class="hero-cover-empty-title">添加封面</view>
+              <view class="hero-cover-empty-desc">选一张图片，让这份计划更有氛围。</view>
+            </view>
+
+            <view class="hero-cover-actions">
+              <view class="hero-cover-action" @click="chooseCover">{{ coverPreviewUrl ? '更换封面' : '选择封面' }}</view>
+              <view v-if="coverPreviewUrl" class="hero-cover-action hero-cover-action-light" @click="clearCover">移除封面</view>
+            </view>
           </view>
         </view>
       </view>
@@ -62,12 +74,12 @@
 
           <view v-if="activeStep === 'basic'" class="content-block">
             <view class="block-title">基础信息</view>
-            <view class="block-desc">先把这份计划是什么、用哪种形式推进、打算持续多久说明白。</view>
+            <view class="block-desc">先写清楚这份计划是什么。</view>
 
             <view class="form-card">
               <view class="field-group">
                 <view class="field-label">计划标题</view>
-                <input v-model="form.title" class="field-input" maxlength="120" placeholder="例如：减脂饮食计划" />
+                <input v-model="form.title" class="field-input" maxlength="120" placeholder="例如：六月见面准备计划" />
               </view>
 
               <view class="field-group">
@@ -76,8 +88,9 @@
                   v-model="form.description"
                   class="field-textarea"
                   maxlength="300"
-                  placeholder="写下这份计划为什么做、希望达到什么效果。"
-                />
+                  placeholder="写下这份计划为什么做，或者想达到什么效果。"
+                  placeholder-class="textarea-placeholder"
+                ></textarea>
               </view>
 
               <view class="field-group">
@@ -118,7 +131,7 @@
 
           <view v-if="activeStep === 'schedule'" class="content-block">
             <view class="block-title">时间与地点</view>
-            <view class="block-desc">可以精确到日期和时分，也可以给周期计划留出固定间隔和常用地点。</view>
+            <view class="block-desc">把时间和地点先定下来。</view>
 
             <view class="form-card">
               <view class="datetime-grid">
@@ -150,7 +163,7 @@
 
               <view v-if="form.planType === 'interval'" class="field-group">
                 <view class="field-label">间隔天数</view>
-                <input v-model="form.intervalDays" class="field-input" type="number" placeholder="例如：3" />
+                <input v-model="form.intervalDays" class="field-input" type="number" placeholder="例如：7" />
               </view>
 
               <view class="field-group">
@@ -168,7 +181,7 @@
                     </view>
                   </view>
                 </scroll-view>
-                <input v-model="form.location" class="field-input field-input-inline" maxlength="120" placeholder="也可以自定义地点" />
+                <input v-model="form.location" class="field-input field-input-inline" maxlength="120" placeholder="也可以自己补一个地点" />
               </view>
             </view>
           </view>
@@ -177,7 +190,7 @@
             <view class="block-head">
               <view>
                 <view class="block-title">计划条目</view>
-                <view class="block-desc">把每日安排、周期节点或阶段任务拆成更容易执行的小块。</view>
+                <view class="block-desc">把要做的事拆成几步。</view>
               </view>
               <view class="block-action" @click="addItem">新增条目</view>
             </view>
@@ -189,13 +202,15 @@
                   <view class="item-remove" @click="removeItem(index)">删除</view>
                 </view>
 
-                <input v-model="item.title" class="field-input" maxlength="120" placeholder="条目标题，例如：早餐安排" />
+                <input v-model="item.title" class="field-input" maxlength="120" placeholder="例如：订酒店、买礼物" />
+
                 <textarea
                   v-model="item.content"
                   class="field-textarea"
                   maxlength="300"
-                  placeholder="条目内容，例如：鸡蛋、牛奶和全麦面包。"
-                />
+                  placeholder="补充这一步要做什么，或者需要注意什么。"
+                  placeholder-class="textarea-placeholder"
+                ></textarea>
 
                 <view class="datetime-grid">
                   <view class="field-group">
@@ -212,7 +227,7 @@
                   </view>
                 </view>
 
-                <input v-model="item.location" class="field-input" maxlength="120" placeholder="这一项发生在哪里" />
+                <input v-model="item.location" class="field-input" maxlength="120" placeholder="这一步发生在哪里" />
               </view>
             </view>
           </view>
@@ -230,6 +245,7 @@ import { onLoad } from '@dcloudio/uni-app'
 import { createRomanticPlan, fetchRomanticPlanDetail, updateRomanticPlan } from '@/services/romantic-plans.js'
 import { requireAuth } from '@/utils/auth.js'
 import { backPage } from '@/utils/nav.js'
+import { prepareImageFile, resolveMediaUrl, uploadRomanticPlanMedia } from '@/utils/media-upload.js'
 import { useThemePage } from '@/utils/useThemePage.js'
 
 const stepOptions = [
@@ -247,15 +263,17 @@ const planTypeOptions = [
 const statusOptions = [
   { value: 'active', label: '进行中' },
   { value: 'draft', label: '草稿' },
-  { value: 'completed', label: '已完成' }
+  { value: 'completed', label: '已完成' },
+  { value: 'archived', label: '已归档' }
 ]
 
-const locationOptions = ['家里', '公司', '外面', '路上']
+const locationOptions = ['家里', '公司', '外面', '路上', '见面地点']
 
 const { themeStyle } = useThemePage()
 const planId = ref('')
 const loading = ref(false)
 const activeStep = ref('basic')
+const coverLocalPath = ref('')
 
 function createEmptyItem() {
   return {
@@ -278,10 +296,15 @@ const form = reactive({
   endTime: '21:00',
   intervalDays: '1',
   location: '',
+  coverUrl: '',
   itemList: [createEmptyItem()]
 })
 
 const pageTitle = computed(() => (planId.value ? '编辑浪漫计划' : '新建浪漫计划'))
+const coverPreviewUrl = computed(() => {
+  if (coverLocalPath.value) return coverLocalPath.value
+  return resolveMediaUrl(form.coverUrl)
+})
 
 onLoad(async (options) => {
   planId.value = String(options?.id || '').trim()
@@ -306,6 +329,8 @@ async function loadDetail() {
     form.endTime = endParts.time || '21:00'
     form.intervalDays = String(detail?.intervalDays || 1)
     form.location = detail?.location || ''
+    form.coverUrl = detail?.coverUrl || ''
+    coverLocalPath.value = ''
     form.itemList = (detail?.itemList?.length ? detail.itemList : [createEmptyItem()]).map((item) => {
       const value = splitDateTime(item?.scheduledAt)
       return {
@@ -321,12 +346,9 @@ async function loadDetail() {
   }
 }
 
-// 中文注释：编辑页内部统一按“日期 + 时间”拆分，提交时再还原成后端需要的完整时间字符串。
 function splitDateTime(value) {
   const text = String(value || '').trim()
-  if (!text) {
-    return { date: '', time: '' }
-  }
+  if (!text) return { date: '', time: '' }
   const normalized = text.replace('T', ' ')
   const parts = normalized.split(' ')
   return {
@@ -340,6 +362,40 @@ function joinDateTime(dateValue, timeValue) {
   return `${dateValue} ${timeValue || '00:00'}:00`
 }
 
+async function chooseCover() {
+  try {
+    const result = await new Promise((resolve, reject) => {
+      uni.chooseImage({
+        count: 1,
+        sizeType: ['compressed', 'original'],
+        sourceType: ['album', 'camera'],
+        success: resolve,
+        fail: reject
+      })
+    })
+    const pickedPath = result?.tempFilePaths?.[0]
+    if (!pickedPath) return
+    coverLocalPath.value = await prepareImageFile(pickedPath)
+  } catch (error) {
+    if (error?.message) {
+      uni.showToast({ title: error.message, icon: 'none' })
+    }
+  }
+}
+
+function clearCover() {
+  coverLocalPath.value = ''
+  form.coverUrl = ''
+}
+
+function previewCover() {
+  if (!coverPreviewUrl.value) return
+  uni.previewImage({
+    urls: [coverPreviewUrl.value],
+    current: coverPreviewUrl.value
+  })
+}
+
 function addItem() {
   form.itemList.push(createEmptyItem())
   activeStep.value = 'items'
@@ -347,7 +403,7 @@ function addItem() {
 
 function removeItem(index) {
   if (form.itemList.length <= 1) {
-    form.itemList = [createEmptyItem()]
+    form.itemList.splice(0, form.itemList.length, createEmptyItem())
     return
   }
   form.itemList.splice(index, 1)
@@ -366,33 +422,42 @@ async function submitForm() {
     return
   }
 
-  const payload = {
-    title: form.title,
-    description: form.description,
-    planType: form.planType,
-    status: form.status,
-    startAt: joinDateTime(form.startDate, form.startTime),
-    endAt: form.endDate ? joinDateTime(form.endDate, form.endTime) : '',
-    intervalDays: Number(form.intervalDays || 1),
-    location: form.location,
-    itemList: form.itemList
-      .filter((item) => String(item.title || '').trim())
-      .map((item, index) => ({
-        title: item.title,
-        content: item.content,
-        scheduledAt: item.date ? joinDateTime(item.date, item.time) : '',
-        location: item.location,
-        sortOrder: index
-      }))
-  }
-
   loading.value = true
   try {
+    let coverUrl = String(form.coverUrl || '').trim()
+    if (coverLocalPath.value) {
+      coverUrl = await uploadRomanticPlanMedia(coverLocalPath.value)
+    }
+
+    const payload = {
+      title: String(form.title || '').trim(),
+      description: String(form.description || '').trim(),
+      planType: form.planType,
+      status: form.status,
+      startAt: joinDateTime(form.startDate, form.startTime),
+      endAt: form.endDate ? joinDateTime(form.endDate, form.endTime) : '',
+      intervalDays: Number(form.intervalDays || 1),
+      location: String(form.location || '').trim(),
+      coverUrl,
+      itemList: form.itemList
+        .filter((item) => String(item.title || '').trim())
+        .map((item, index) => ({
+          title: String(item.title || '').trim(),
+          content: String(item.content || '').trim(),
+          scheduledAt: item.date ? joinDateTime(item.date, item.time) : '',
+          location: String(item.location || '').trim(),
+          sortOrder: index
+        }))
+    }
+
     if (planId.value) {
       await updateRomanticPlan(planId.value, payload)
     } else {
       await createRomanticPlan(payload)
     }
+
+    form.coverUrl = coverUrl
+    coverLocalPath.value = ''
     uni.showToast({ title: '计划已保存', icon: 'success' })
     setTimeout(() => {
       backPage()
@@ -505,7 +570,8 @@ function goBack() {
 .back-chip,
 .save-chip,
 .block-action,
-.bottom-submit {
+.bottom-submit,
+.hero-cover-action {
   min-width: 136rpx;
   height: 72rpx;
   padding: 0 24rpx;
@@ -525,16 +591,26 @@ function goBack() {
 }
 
 .back-chip-arrow {
-  font-size: 38rpx;
-  line-height: 1;
+  width: 18rpx;
+  height: 18rpx;
+  border-left: 4rpx solid currentColor;
+  border-bottom: 4rpx solid currentColor;
+  transform: rotate(45deg);
 }
 
 .save-chip,
 .block-action,
-.bottom-submit {
+.bottom-submit,
+.hero-cover-action {
   background: linear-gradient(135deg, #ff7f91, #ef5f73);
   color: #fff;
   box-shadow: 0 10rpx 18rpx rgba(205, 109, 121, 0.22);
+}
+
+.hero-cover-action-light {
+  background: rgba(255, 255, 255, 0.88);
+  color: #c67f82;
+  box-shadow: 0 10rpx 18rpx rgba(205, 109, 121, 0.12);
 }
 
 .hero-banner {
@@ -604,7 +680,7 @@ function goBack() {
 }
 
 .section-card-inner {
-  padding: 40rpx 24rpx 24rpx;
+  padding: 68rpx 24rpx 24rpx;
 }
 
 .ribbon {
@@ -674,30 +750,109 @@ function goBack() {
   color: #6d5f68;
 }
 
-.hero-cover {
-  width: 220rpx;
-  min-height: 220rpx;
+.hero-cover-card {
+  width: 240rpx;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.hero-cover-preview,
+.hero-cover-empty {
+  position: relative;
+  min-height: 240rpx;
   border-radius: 28rpx;
-  padding: 24rpx 20rpx;
+  overflow: hidden;
+}
+
+.hero-cover-preview {
+  background: #f7e5df;
+}
+
+.hero-cover-image {
+  width: 100%;
+  height: 240rpx;
+  display: block;
+}
+
+.hero-cover-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(73, 54, 58, 0.24));
+}
+
+.hero-cover-badge {
+  position: absolute;
+  left: 14rpx;
+  bottom: 14rpx;
+  padding: 8rpx 14rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.88);
+  color: #7b5f65;
+  font-size: 20rpx;
+  font-weight: 700;
+}
+
+.hero-cover-empty {
+  padding: 28rpx 24rpx;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
   background: linear-gradient(180deg, #f8ede7 0%, #ebd2ca 100%);
-  flex: 0 0 auto;
 }
 
-.hero-cover-title {
-  font-size: 24rpx;
-  font-weight: 700;
-  color: #715258;
+.hero-cover-empty-icon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 20rpx;
+  background: rgba(255, 255, 255, 0.72);
+  position: relative;
 }
 
-.hero-cover-desc {
-  margin-top: 8rpx;
-  font-size: 20rpx;
+.hero-cover-empty-icon::before,
+.hero-cover-empty-icon::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: #d57f8c;
+  transform: translate(-50%, -50%);
+}
+
+.hero-cover-empty-icon::before {
+  width: 28rpx;
+  height: 4rpx;
+  border-radius: 999rpx;
+}
+
+.hero-cover-empty-icon::after {
+  width: 4rpx;
+  height: 28rpx;
+  border-radius: 999rpx;
+}
+
+.hero-cover-empty-title {
+  margin-top: 18rpx;
+  font-size: 26rpx;
+  font-weight: 800;
+  color: #7a5960;
+}
+
+.hero-cover-empty-desc {
+  margin-top: 10rpx;
+  font-size: 22rpx;
   line-height: 1.6;
-  color: #886d72;
+  color: #8f7178;
+}
+
+.hero-cover-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
 }
 
 .step-scroll,
@@ -818,6 +973,10 @@ function goBack() {
   margin-top: 6rpx;
 }
 
+.textarea-placeholder {
+  color: #b6a3aa;
+}
+
 @media screen and (max-width: 720rpx) {
   .hero-card-inner,
   .datetime-grid {
@@ -825,8 +984,13 @@ function goBack() {
     grid-template-columns: 1fr;
   }
 
-  .hero-cover {
+  .hero-cover-card {
     width: 100%;
+  }
+
+  .hero-cover-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
   }
 }
 </style>

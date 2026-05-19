@@ -134,3 +134,7 @@ export function uploadAlbumMedia(filePath) {
 export function uploadDailySummaryMedia(filePath) {
 	return uploadMedia(filePath, '/api/files/daily-summary-media')
 }
+
+export function uploadRomanticPlanMedia(filePath) {
+	return uploadMedia(filePath, '/api/files/romantic-plan-media')
+}

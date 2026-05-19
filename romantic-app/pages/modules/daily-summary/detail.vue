@@ -53,34 +53,6 @@
                 </view>
                 <view class="daily-entry-meta">{{ getEntryMeta(entry) }}</view>
 
-                <view class="daily-entry-content">{{ entry.content }}</view>
-
-                <view v-if="entry.mediaList.length" class="daily-media-grid">
-                  <view
-                    v-for="(media, mediaIndex) in entry.mediaList"
-                    :key="media.id || mediaIndex"
-                    class="daily-media-card"
-                    @click.stop="openEntryViewer(entry.mediaList, mediaIndex)"
-                  >
-                    <image
-                      v-if="media.mediaType === 'image' && resolveMedia(media.fileUrl)"
-                      class="daily-media-thumb"
-                      :src="resolveMedia(media.fileUrl)"
-                      mode="aspectFill"
-                    />
-                    <image
-                      v-else-if="resolveMedia(media.thumbnailUrl)"
-                      class="daily-media-thumb"
-                      :src="resolveMedia(media.thumbnailUrl)"
-                      mode="aspectFill"
-                    />
-                    <view v-else class="daily-media-thumb daily-media-fallback">
-                      <view class="daily-play-icon"></view>
-                    </view>
-                    <view class="daily-media-tag">{{ media.mediaType === 'video' ? TEXT.videoWord : TEXT.imageWord }}</view>
-                  </view>
-                </view>
-
                 <view class="daily-entry-actions" @click.stop>
                   <view class="daily-entry-edit" @click.stop="goEdit(entry)">{{ TEXT.editAction }}</view>
                   <view class="daily-entry-more-wrap">
@@ -102,27 +74,57 @@
                   </view>
                 </view>
 
-                <view class="daily-interaction-card">
-                  <view v-if="entry.likeUsers.length" class="interaction-feed-line interaction-feed-like">
-                    <text class="interaction-feed-heart">{{ FILLED_HEART }}</text>
-                    <text class="interaction-feed-text">{{ getEntryLikeUserSummary(entry) }}</text>
-                  </view>
-                  <scroll-view v-if="entry.commentList.length" class="daily-comment-scroll" scroll-y enhanced show-scrollbar="false">
+                <scroll-view class="daily-entry-scroll" scroll-y enhanced show-scrollbar="false">
+                  <view class="daily-entry-content">{{ entry.content }}</view>
+
+                  <view v-if="entry.mediaList.length" class="daily-media-grid">
                     <view
-                      v-for="item in entry.commentList"
-                      :key="item.id"
-                      class="interaction-feed-line interaction-feed-comment"
-                      @click.stop="handleCommentTap(entry, item)"
+                      v-for="(media, mediaIndex) in entry.mediaList"
+                      :key="media.id || mediaIndex"
+                      class="daily-media-card"
+                      @click.stop="openEntryViewer(entry.mediaList, mediaIndex)"
                     >
-                      <view class="interaction-comment-head">
-                        <text class="interaction-feed-name">{{ getCommentDisplayName(item) }}</text>
-                        <text class="interaction-comment-time">{{ formatCommentTime(item.createdAt || item.updatedAt) }}</text>
+                      <image
+                        v-if="media.mediaType === 'image' && resolveMedia(media.fileUrl)"
+                        class="daily-media-thumb"
+                        :src="resolveMedia(media.fileUrl)"
+                        mode="aspectFill"
+                      />
+                      <image
+                        v-else-if="resolveMedia(media.thumbnailUrl)"
+                        class="daily-media-thumb"
+                        :src="resolveMedia(media.thumbnailUrl)"
+                        mode="aspectFill"
+                      />
+                      <view v-else class="daily-media-thumb daily-media-fallback">
+                        <view class="daily-play-icon"></view>
                       </view>
-                      <text class="interaction-comment-content">{{ item.content }}</text>
+                      <view class="daily-media-tag">{{ media.mediaType === 'video' ? TEXT.videoWord : TEXT.imageWord }}</view>
                     </view>
-                  </scroll-view>
-                  <view v-if="!hasEntryInteraction(entry)" class="entry-empty-tip">{{ TEXT.emptyEntryInteraction }}</view>
-                </view>
+                  </view>
+
+                  <view class="daily-interaction-card">
+                    <view v-if="entry.likeUsers.length" class="interaction-feed-line interaction-feed-like">
+                      <text class="interaction-feed-heart">{{ FILLED_HEART }}</text>
+                      <text class="interaction-feed-text">{{ getEntryLikeUserSummary(entry) }}</text>
+                    </view>
+                    <view v-if="entry.commentList.length" class="daily-comment-list">
+                      <view
+                        v-for="item in entry.commentList"
+                        :key="item.id"
+                        class="interaction-feed-line interaction-feed-comment"
+                        @click.stop="handleCommentTap(entry, item)"
+                      >
+                        <view class="interaction-comment-head">
+                          <text class="interaction-feed-name">{{ getCommentDisplayName(item) }}</text>
+                          <text class="interaction-comment-time">{{ formatCommentTime(item.createdAt || item.updatedAt) }}</text>
+                        </view>
+                        <text class="interaction-comment-content">{{ item.content }}</text>
+                      </view>
+                    </view>
+                    <view v-if="!hasEntryInteraction(entry)" class="entry-empty-tip">{{ TEXT.emptyEntryInteraction }}</view>
+                  </view>
+                </scroll-view>
               </view>
             </swiper-item>
           </swiper>
@@ -174,16 +176,17 @@
     </view>
 
     <view v-if="commentInputVisible && activeEntry?.id" class="comment-composer" @click.stop>
-      <input
+      <textarea
         v-model="commentForm.content"
-        class="comment-input"
+        class="comment-input comment-textarea"
         :focus="commentFocus"
-        :maxlength="200"
+        :maxlength="500"
         :cursor-spacing="24"
         :placeholder="commentInputPlaceholder"
         placeholder-class="app-account-input-placeholder"
-        confirm-type="send"
-        @confirm="handleSubmitComment"
+        auto-height
+        :show-confirm-bar="false"
+        :adjust-position="true"
       />
       <view class="comment-composer-actions">
         <view class="comment-limit">{{ commentLengthText }}</view>
@@ -261,7 +264,7 @@ const TEXT = {
   cancelAction: '取消',
   addAnotherButton: '再写一条今天的小计',
   firstEntryButton: '开始记录今天',
-  commentLengthSuffix: '/200'
+  commentLengthSuffix: '/500'
 }
 
 const { themeStyle } = useThemePage()
@@ -855,12 +858,17 @@ function formatHistoryDate(value) {
 }
 
 .daily-entry-content {
-  margin-top: 22rpx;
   font-size: 30rpx;
   line-height: 1.9;
   color: var(--app-color-text-strong);
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.daily-entry-scroll {
+  flex: 1;
+  min-height: 0;
+  margin-top: 22rpx;
 }
 
 .daily-media-grid {
@@ -1038,8 +1046,8 @@ function formatHistoryDate(value) {
   word-break: break-word;
 }
 
-.daily-comment-scroll {
-  max-height: 250rpx;
+.daily-comment-list {
+  width: 100%;
 }
 
 .entry-empty-tip,
@@ -1199,13 +1207,18 @@ function formatHistoryDate(value) {
 
 .comment-input {
   width: 100%;
-  min-height: 84rpx;
-  padding: 0 22rpx;
+  min-height: 120rpx;
+  padding: 18rpx 22rpx;
   border-radius: 22rpx;
   box-sizing: border-box;
   background: rgba(242, 250, 248, 0.96);
   font-size: 28rpx;
+  line-height: 1.7;
   color: var(--app-color-text-strong);
+}
+
+.comment-textarea {
+  max-height: 260rpx;
 }
 
 .comment-composer-actions {

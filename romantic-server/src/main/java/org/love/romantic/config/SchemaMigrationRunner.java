@@ -195,7 +195,7 @@ public class SchemaMigrationRunner {
                 + "id BIGINT PRIMARY KEY AUTO_INCREMENT,"
                 + "memory_id BIGINT NOT NULL,"
                 + "username VARCHAR(64) NOT NULL,"
-                + "content VARCHAR(200) NOT NULL,"
+                + "content VARCHAR(500) NOT NULL,"
                 + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
                 + "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
                 + "KEY idx_album_memory_comment_memory_id (memory_id),"
@@ -217,7 +217,7 @@ public class SchemaMigrationRunner {
                 + "biz_type VARCHAR(64) NOT NULL,"
                 + "biz_id BIGINT NOT NULL,"
                 + "username VARCHAR(64) NOT NULL,"
-                + "content VARCHAR(200) NOT NULL,"
+                + "content VARCHAR(500) NOT NULL,"
                 + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
                 + "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
                 + "KEY idx_biz_comment_record_biz (biz_type, biz_id),"
@@ -506,7 +506,7 @@ public class SchemaMigrationRunner {
         executeCommentSql("ALTER TABLE album_memory_comment MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
         executeCommentSql("ALTER TABLE album_memory_comment MODIFY COLUMN memory_id BIGINT NOT NULL COMMENT '所属回忆 ID'");
         executeCommentSql("ALTER TABLE album_memory_comment MODIFY COLUMN username VARCHAR(64) NOT NULL COMMENT '评论账号'");
-        executeCommentSql("ALTER TABLE album_memory_comment MODIFY COLUMN content VARCHAR(200) NOT NULL COMMENT '评论内容'");
+        executeCommentSql("ALTER TABLE album_memory_comment MODIFY COLUMN content VARCHAR(500) NOT NULL COMMENT '评论内容'");
         executeCommentSql("ALTER TABLE album_memory_comment MODIFY COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT '评论时间'");
         executeCommentSql("ALTER TABLE album_memory_comment MODIFY COLUMN updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'");
 
@@ -520,7 +520,7 @@ public class SchemaMigrationRunner {
         executeCommentSql("ALTER TABLE biz_comment_record MODIFY COLUMN biz_type VARCHAR(64) NOT NULL COMMENT '业务类型'");
         executeCommentSql("ALTER TABLE biz_comment_record MODIFY COLUMN biz_id BIGINT NOT NULL COMMENT '业务 ID'");
         executeCommentSql("ALTER TABLE biz_comment_record MODIFY COLUMN username VARCHAR(64) NOT NULL COMMENT '评论账号'");
-        executeCommentSql("ALTER TABLE biz_comment_record MODIFY COLUMN content VARCHAR(200) NOT NULL COMMENT '评论内容'");
+        executeCommentSql("ALTER TABLE biz_comment_record MODIFY COLUMN content VARCHAR(500) NOT NULL COMMENT '评论内容'");
         executeCommentSql("ALTER TABLE biz_comment_record MODIFY COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT '评论时间'");
         executeCommentSql("ALTER TABLE biz_comment_record MODIFY COLUMN updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'");
 
