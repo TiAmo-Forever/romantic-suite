@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 @Data
 @ApiModel("浪漫计划反馈请求")
@@ -21,5 +22,6 @@ public class RomanticPlanFeedbackRequest {
 
     @ApiModelProperty("反馈内容")
     @NotBlank(message = "请先填写反馈内容")
+    @Size(max = 1000, message = "反馈内容不能超过 1000 个字符")
     private String content;
 }

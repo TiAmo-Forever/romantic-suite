@@ -138,7 +138,7 @@
         v-model="commentForm.content"
         class="comment-input"
         :focus="commentFocus"
-        :maxlength="200"
+        :maxlength="500"
         :cursor-spacing="24"
         :placeholder="commentInputPlaceholder"
         placeholder-class="app-account-input-placeholder"
@@ -226,7 +226,7 @@ const TEXT = {
   creatorPrefix: '由 ',
   creatorSuffix: ' 收进相册',
   creatorFallback: '这段回忆已经被认真收进相册了',
-  commentLengthSuffix: '/200',
+  commentLengthSuffix: '/500',
   replyPrefix: '回复 ',
   replyDivider: '：',
   deleteOwnCommentTitle: '删除我的评论',

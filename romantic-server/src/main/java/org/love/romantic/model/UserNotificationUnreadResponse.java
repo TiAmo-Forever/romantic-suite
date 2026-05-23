@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -22,4 +24,13 @@ public class UserNotificationUnreadResponse {
 
     @ApiModelProperty("总条数")
     private Long totalCount;
+
+    @ApiModelProperty("今日新增条数")
+    private Long todayCount;
+
+    @ApiModelProperty("按消息类型汇总的条数")
+    private Map<String, Long> bizTypeCounts;
+
+    @ApiModelProperty("今日按消息类型汇总的条数")
+    private Map<String, Long> todayBizTypeCounts;
 }

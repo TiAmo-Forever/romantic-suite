@@ -136,7 +136,7 @@
         v-model="commentForm.content"
         class="comment-input"
         :focus="commentFocus"
-        :maxlength="200"
+        :maxlength="500"
         :cursor-spacing="24"
         :placeholder="commentInputPlaceholder"
         placeholder-class="app-account-input-placeholder"
@@ -235,7 +235,7 @@ const TEXT = {
   futureSuffix: ' 天',
   pastPrefix: '已过去 ',
   pastSuffix: ' 天',
-  commentLengthSuffix: '/200',
+  commentLengthSuffix: '/500',
   replyPrefix: '回复 ',
   replyDivider: '：',
   deleteOwnCommentTitle: '删除我的评论',

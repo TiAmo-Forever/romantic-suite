@@ -138,7 +138,7 @@
 
 				<view class="form-item">
 					<view class="label">这次想一起做什么</view>
-					<textarea v-model="form.note" class="textarea app-input-shell app-textarea" maxlength="120" placeholder="请输入计划内容" placeholder-class="input-placeholder" />
+					<textarea v-model="form.note" class="textarea app-input-shell app-textarea" maxlength="1000" placeholder="请输入计划内容" placeholder-class="input-placeholder" />
 				</view>
 
 				<view class="sheet-actions">

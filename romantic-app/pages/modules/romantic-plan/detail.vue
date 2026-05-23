@@ -179,7 +179,7 @@
               <textarea
                 v-model="feedbackContent"
                 class="feedback-textarea"
-                maxlength="300"
+                maxlength="1000"
                 placeholder="写写今天推进得怎么样，或者下次准备怎么继续。"
                 placeholder-class="textarea-placeholder"
               ></textarea>

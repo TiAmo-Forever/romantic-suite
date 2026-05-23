@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class ImprovementFeedbackRequest {
 
     @ApiModelProperty("反馈内容")
     @NotBlank(message = "请填写反馈内容")
+    @Size(max = 1000, message = "反馈内容不能超过 1000 个字符")
     private String content;
 
     @ApiModelProperty("反馈媒体列表")

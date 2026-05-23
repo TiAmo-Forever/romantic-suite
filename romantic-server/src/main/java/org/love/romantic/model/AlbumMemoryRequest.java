@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +25,7 @@ public class AlbumMemoryRequest {
     private String location;
 
     @ApiModelProperty("回忆内容")
+    @Size(max = 1000, message = "回忆内容不能超过 1000 个字符")
     private String summary;
 
     @ApiModelProperty("标签列表")

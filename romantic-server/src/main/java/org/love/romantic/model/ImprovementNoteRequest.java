@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class ImprovementNoteRequest {
     private String title;
 
     @ApiModelProperty("详细说明")
+    @Size(max = 1000, message = "详细说明不能超过 1000 个字符")
     private String description;
 
     @ApiModelProperty("针对对象：me、lover、both")
@@ -30,6 +32,7 @@ public class ImprovementNoteRequest {
     private String startDate;
 
     @ApiModelProperty("最近反馈摘要")
+    @Size(max = 1000, message = "反馈摘要不能超过 1000 个字符")
     private String latestFeedback;
 
     @ApiModelProperty("主记录媒体列表")

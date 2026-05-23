@@ -1,5 +1,5 @@
 ﻿<template>
-  <view class="page app-account-page daily-detail-page" :style="themeStyle" @click="handlePageTap">
+  <view class="page app-account-page daily-detail-page" :style="themeStyle">
     <GlobalNotificationBanner />
     <view class="app-account-topbar-shell">
       <AccountHeader :title="TEXT.pageTitle" :eyebrow="TEXT.eyebrow" />
@@ -39,7 +39,7 @@
 
         <view v-if="summary.entryList.length" class="daily-swiper-shell">
           <swiper class="daily-swiper" :current="activeEntryIndex" @change="handleEntryChange">
-            <swiper-item v-for="entry in summary.entryList" :key="entry.id">
+            <swiper-item v-for="(entry, index) in summary.entryList" :key="entry.id">
               <view class="daily-entry-card" :class="getEntryCardClass(entry.creatorUsername)">
                 <view class="daily-entry-topline">
                   <view class="daily-entry-left">
@@ -49,35 +49,25 @@
                     </view>
                     <view class="entry-mood-pill" :class="`entry-mood-pill-${entry.mood}`">{{ entry.moodMeta.label }}</view>
                   </view>
-                  <view class="daily-entry-time">{{ formatCommentTime(entry.updatedAt || entry.createdAt) }}</view>
+                  <view class="daily-entry-page-index">第 {{ index + 1 }} 页</view>
                 </view>
                 <view class="daily-entry-meta">{{ getEntryMeta(entry) }}</view>
 
-                <view class="daily-entry-actions" @click.stop>
+                <view class="daily-entry-actions">
                   <view class="daily-entry-edit" @click.stop="goEdit(entry)">{{ TEXT.editAction }}</view>
-                  <view class="daily-entry-more-wrap">
-                    <view class="daily-entry-more" @click.stop="toggleActionMenu">
-                      <text class="daily-entry-more-dot"></text>
-                      <text class="daily-entry-more-dot"></text>
-                      <text class="daily-entry-more-dot"></text>
-                    </view>
-                    <view v-if="showActionMenu && activeEntry?.id === entry.id" class="daily-action-pop">
-                      <view class="daily-action-item" @click.stop="handleLikeFromMenu">
-                        <text class="daily-action-icon">{{ FILLED_HEART }}</text>
-                        <text>{{ likeActionText }}</text>
-                      </view>
-                      <view class="daily-action-divider"></view>
-                      <view class="daily-action-item comment-only" @click.stop="openCommentComposer()">
-                        <text>{{ TEXT.commentAction }}</text>
-                      </view>
-                    </view>
+                  <view class="daily-entry-stamp">
+                    <text>{{ formatCommentTime(entry.updatedAt || entry.createdAt) }}</text>
                   </view>
                 </view>
 
                 <scroll-view class="daily-entry-scroll" scroll-y enhanced show-scrollbar="false">
-                  <view class="daily-entry-content">{{ entry.content }}</view>
+                  <view class="daily-entry-paper">
+                    <view class="daily-entry-paper-label">{{ TEXT.entryContentLabel }}</view>
+                    <view class="daily-entry-content">{{ entry.content }}</view>
+                  </view>
 
                   <view v-if="entry.mediaList.length" class="daily-media-grid">
+                    <view class="daily-entry-paper-label media-label">{{ TEXT.entryMediaLabel }}</view>
                     <view
                       v-for="(media, mediaIndex) in entry.mediaList"
                       :key="media.id || mediaIndex"
@@ -102,29 +92,23 @@
                       <view class="daily-media-tag">{{ media.mediaType === 'video' ? TEXT.videoWord : TEXT.imageWord }}</view>
                     </view>
                   </view>
-
-                  <view class="daily-interaction-card">
-                    <view v-if="entry.likeUsers.length" class="interaction-feed-line interaction-feed-like">
-                      <text class="interaction-feed-heart">{{ FILLED_HEART }}</text>
-                      <text class="interaction-feed-text">{{ getEntryLikeUserSummary(entry) }}</text>
-                    </view>
-                    <view v-if="entry.commentList.length" class="daily-comment-list">
-                      <view
-                        v-for="item in entry.commentList"
-                        :key="item.id"
-                        class="interaction-feed-line interaction-feed-comment"
-                        @click.stop="handleCommentTap(entry, item)"
-                      >
-                        <view class="interaction-comment-head">
-                          <text class="interaction-feed-name">{{ getCommentDisplayName(item) }}</text>
-                          <text class="interaction-comment-time">{{ formatCommentTime(item.createdAt || item.updatedAt) }}</text>
-                        </view>
-                        <text class="interaction-comment-content">{{ item.content }}</text>
-                      </view>
-                    </view>
-                    <view v-if="!hasEntryInteraction(entry)" class="entry-empty-tip">{{ TEXT.emptyEntryInteraction }}</view>
-                  </view>
                 </scroll-view>
+
+                <view class="daily-entry-footer">
+                  <view class="daily-entry-summary-card">
+                    <view class="daily-entry-summary-kicker">{{ TEXT.entrySummaryLabel }}</view>
+                    <view class="daily-entry-summary-text">{{ getEntryInteractionSummary(entry) }}</view>
+                  </view>
+                  <view class="daily-entry-footer-actions">
+                    <view class="daily-inline-action" @click.stop="handleLikeToggle(entry)">
+                      <text class="daily-inline-action-heart">{{ FILLED_HEART }}</text>
+                      <text>{{ entry.likedByCurrentUser ? TEXT.unlikeAction : TEXT.likeAction }}</text>
+                    </view>
+                    <view class="daily-inline-action primary" @click.stop="openCommentDrawer(null, entry.id, true)">
+                      <text>{{ entry.commentList.length ? TEXT.viewCommentAction : TEXT.writeCommentAction }}</text>
+                    </view>
+                  </view>
+                </view>
               </view>
             </swiper-item>
           </swiper>
@@ -175,24 +159,71 @@
       </view>
     </view>
 
-    <view v-if="commentInputVisible && activeEntry?.id" class="comment-composer" @click.stop>
-      <textarea
-        v-model="commentForm.content"
-        class="comment-input comment-textarea"
-        :focus="commentFocus"
-        :maxlength="500"
-        :cursor-spacing="24"
-        :placeholder="commentInputPlaceholder"
-        placeholder-class="app-account-input-placeholder"
-        auto-height
-        :show-confirm-bar="false"
-        :adjust-position="true"
-      />
-      <view class="comment-composer-actions">
-        <view class="comment-limit">{{ commentLengthText }}</view>
-        <button class="comment-send-btn" :disabled="submittingComment" @click="handleSubmitComment">
-          {{ submittingComment ? TEXT.commentSending : TEXT.commentSend }}
-        </button>
+    <view v-if="commentDrawerVisible && activeEntry?.id" class="comment-drawer-mask" @click="closeCommentDrawer">
+      <view class="comment-drawer-card" @click.stop>
+        <view class="comment-drawer-handle"></view>
+        <view class="comment-drawer-head">
+          <view>
+            <view class="comment-drawer-title">{{ TEXT.commentDrawerTitle }}</view>
+            <view class="comment-drawer-subtitle">{{ commentDrawerSubtitle }}</view>
+          </view>
+          <view class="comment-drawer-badge">{{ activeEntryCommentStats }}</view>
+        </view>
+
+        <scroll-view class="comment-drawer-scroll" scroll-y enhanced show-scrollbar="false">
+          <view class="comment-overview-card">
+            <view class="comment-overview-title">{{ TEXT.commentOverviewTitle }}</view>
+            <view class="comment-overview-copy">{{ getEntryInteractionSummary(activeEntry) }}</view>
+          </view>
+
+          <view v-if="activeEntry.likeUsers.length" class="comment-like-strip">
+            <text class="comment-like-strip-heart">{{ FILLED_HEART }}</text>
+            <text class="comment-like-strip-text">{{ getEntryLikeUserSummary(activeEntry) }}</text>
+          </view>
+
+          <view v-if="activeEntry.commentList.length" class="comment-thread-list">
+            <view
+              v-for="item in activeEntry.commentList"
+              :key="item.id"
+              class="comment-thread-card"
+              :class="{ mine: String(item.commenterUsername || '').trim() === currentUsername }"
+              @click.stop="handleCommentTap(activeEntry, item)"
+            >
+              <view class="comment-thread-topline">
+                <view class="comment-thread-name">{{ getCommentDisplayName(item) }}</view>
+                <view class="comment-thread-time">{{ formatCommentTime(item.createdAt || item.updatedAt) }}</view>
+              </view>
+              <view class="comment-thread-content">{{ item.content }}</view>
+            </view>
+          </view>
+
+          <view v-else class="comment-thread-empty">{{ TEXT.emptyEntryInteraction }}</view>
+        </scroll-view>
+
+        <view class="comment-composer drawer-composer">
+          <view v-if="replyTargetComment" class="comment-reply-banner">
+            <text class="comment-reply-text">{{ `${TEXT.replyingPrefix}${getCommentDisplayName(replyTargetComment)}` }}</text>
+            <text class="comment-reply-clear" @click.stop="clearReplyTarget">{{ TEXT.clearReplyAction }}</text>
+          </view>
+          <textarea
+            v-model="commentForm.content"
+            class="comment-input comment-textarea"
+            :focus="commentFocus"
+            :maxlength="500"
+            :cursor-spacing="24"
+            :placeholder="commentInputPlaceholder"
+            placeholder-class="app-account-input-placeholder"
+            auto-height
+            :show-confirm-bar="false"
+            :adjust-position="true"
+          />
+          <view class="comment-composer-actions">
+            <view class="comment-limit">{{ commentLengthText }}</view>
+            <button class="comment-send-btn" :disabled="submittingComment" @click="handleSubmitComment">
+              {{ submittingComment ? TEXT.commentSending : TEXT.commentSend }}
+            </button>
+          </view>
+        </view>
       </view>
     </view>
 
@@ -236,12 +267,19 @@ const TEXT = {
   historyTitle: '历史查看',
   recordBookTitle: '当天记录册',
   recordBookDesc: '左右翻看这一天里的每一条小计，把一整天慢慢读完。',
+  entryContentLabel: '今天记下',
+  entryMediaLabel: '贴图',
+  entrySummaryLabel: '互动摘要',
   emptyUpdated: '今天正在等待被认真写下来',
   updatedPrefix: '最后更新：',
   commentAction: '评论',
+  commentDrawerTitle: '今天的留言',
+  commentOverviewTitle: '先把内容和回应分开来看',
   commentPlaceholder: '写下一句想留在今天的话',
   commentReplyPrefix: '回复 ',
   commentReplyDivider: '：',
+  replyingPrefix: '正在回复 ',
+  clearReplyAction: '取消',
   commentSend: '发送',
   commentSending: '发送中',
   commentFailed: '评论失败，请稍后再试',
@@ -252,6 +290,8 @@ const TEXT = {
   unlikeAction: '取消点赞',
   likeFailed: '操作失败，请稍后再试',
   editAction: '编辑',
+  viewCommentAction: '打开留言区',
+  writeCommentAction: '写一句留言',
   imageWord: '图片',
   videoWord: '视频',
   emptyBoardDesc: '今天还没有任何一条小计，先留下第一段吧。',
@@ -284,11 +324,10 @@ const summary = reactive({
 
 const activeDate = ref('')
 const activeEntryIndex = ref(0)
-const showActionMenu = ref(false)
 const submittingComment = ref(false)
 const deletingComment = ref(false)
 const liking = ref(false)
-const commentInputVisible = ref(false)
+const commentDrawerVisible = ref(false)
 const commentFocus = ref(false)
 const commentActionSheetVisible = ref(false)
 const historyDrawerVisible = ref(false)
@@ -311,7 +350,10 @@ const heroTitle = computed(() => {
 })
 const heroDesc = computed(() => {
   if (!summary.hasRecord) return '从一条今天的小计开始，慢慢把普通的一天也收藏起来。'
-  return summary.content || moodMeta.value.caption
+  if (summary.entryCount > 1) {
+    return '把这一天拆成几页来写，回看时会更像慢慢翻一本当天的手账。'
+  }
+  return '先把今天的情绪和片段收好，具体内容留到下面那一页再慢慢读。'
 })
 const entryCountText = computed(() => (summary.hasRecord ? `今天写下了 ${summary.entryCount} 条小计` : '今天还没有小计'))
 const activeEntry = computed(() => summary.entryList[activeEntryIndex.value] || null)
@@ -321,7 +363,17 @@ const activeEntrySummary = computed(() => {
 })
 const historyList = computed(() => Array.isArray(summary.historyList) ? summary.historyList : [])
 const historyDrawerSubtitle = computed(() => `共 ${historyList.value.length} 天可以回看`)
-const likeActionText = computed(() => (activeEntry.value?.likedByCurrentUser ? TEXT.unlikeAction : TEXT.likeAction))
+const activeEntryCommentStats = computed(() => {
+  if (!activeEntry.value) return '0 条留言'
+  const commentCount = Array.isArray(activeEntry.value.commentList) ? activeEntry.value.commentList.length : 0
+  return `${commentCount} 条留言`
+})
+const commentDrawerSubtitle = computed(() => {
+  if (!activeEntry.value) return '把今天这一页的回应单独收在这里。'
+  const likeCount = Array.isArray(activeEntry.value.likeUsers) ? activeEntry.value.likeUsers.length : 0
+  const commentCount = Array.isArray(activeEntry.value.commentList) ? activeEntry.value.commentList.length : 0
+  return `${likeCount} 个爱心 · ${commentCount} 条留言`
+})
 const commentLengthText = computed(() => `${String(commentForm.content || '').length}${TEXT.commentLengthSuffix}`)
 const commentInputPlaceholder = computed(() => {
   if (!replyTargetComment.value) return TEXT.commentPlaceholder
@@ -384,17 +436,12 @@ function goEdit(entry) {
   goPage(`/pages/modules/daily-summary/edit?summaryId=${encodeURIComponent(summary.id)}&entryId=${encodeURIComponent(entry.id)}&date=${encodeURIComponent(activeDate.value || summary.summaryDate)}`)
 }
 
-function toggleActionMenu() {
-  if (!activeEntry.value?.id) return
-  showActionMenu.value = !showActionMenu.value
-}
-
-async function handleLikeFromMenu() {
-  if (!summary.id || !activeEntry.value?.id || liking.value) return
+async function handleLikeToggle(entry) {
+  const targetEntry = entry?.id ? entry : activeEntry.value
+  if (!summary.id || !targetEntry?.id || liking.value) return
   try {
     liking.value = true
-    await toggleDailySummaryEntryLike(summary.id, activeEntry.value.id)
-    showActionMenu.value = false
+    await toggleDailySummaryEntryLike(summary.id, targetEntry.id)
     await loadSummary(activeDate.value)
   } catch (error) {
     uni.showToast({ title: error?.message || TEXT.likeFailed, icon: 'none' })
@@ -403,15 +450,22 @@ async function handleLikeFromMenu() {
   }
 }
 
-function openCommentComposer(comment = null, entryId = '') {
-  if (!activeEntry.value?.id) return
+function openCommentDrawer(comment = null, entryId = '', focus = false) {
+  const targetEntryId = entryId || activeEntry.value?.id
+  if (!targetEntryId) return
   replyTargetComment.value = comment
-  replyEntryId.value = entryId || activeEntry.value.id
-  showActionMenu.value = false
-  commentInputVisible.value = true
-  nextTick(() => {
-    commentFocus.value = true
-  })
+  replyEntryId.value = targetEntryId
+  commentDrawerVisible.value = true
+  commentFocus.value = false
+  if (focus) {
+    nextTick(() => {
+      commentFocus.value = true
+    })
+  }
+}
+
+function openCommentComposer(comment = null, entryId = '') {
+  openCommentDrawer(comment, entryId, true)
 }
 
 async function handleSubmitComment() {
@@ -430,7 +484,7 @@ async function handleSubmitComment() {
     submittingComment.value = true
     await createDailySummaryEntryComment(summary.id, targetEntryId, { content })
     commentForm.content = ''
-    closeCommentComposer()
+    closeCommentDrawer()
     await loadSummary(activeDate.value)
   } catch (error) {
     uni.showToast({ title: error?.message || TEXT.commentFailed, icon: 'none' })
@@ -475,21 +529,21 @@ function closeCommentActionSheet() {
   selectedCommentEntryId.value = ''
 }
 
-function closeCommentComposer() {
-  commentInputVisible.value = false
-  commentFocus.value = false
+function clearReplyTarget() {
   replyTargetComment.value = null
-  replyEntryId.value = ''
+  replyEntryId.value = activeEntry.value?.id || ''
+}
+
+function closeCommentDrawer() {
+  commentDrawerVisible.value = false
+  commentFocus.value = false
+  clearReplyTarget()
 }
 
 function closeTransientState() {
-  showActionMenu.value = false
   closeCommentActionSheet()
-  closeCommentComposer()
-}
-
-function handlePageTap() {
-  showActionMenu.value = false
+  closeCommentDrawer()
+  commentForm.content = ''
 }
 
 function hasEntryInteraction(entry) {
@@ -498,6 +552,22 @@ function hasEntryInteraction(entry) {
 
 function getEntryLikeUserSummary(entry) {
   return (entry.likeUsers || []).map((item) => item?.nickname || item?.username || '未命名').join('、')
+}
+
+function getEntryInteractionSummary(entry) {
+  if (!entry) return '这一天的回应会单独收在这里。'
+  const likeCount = Array.isArray(entry.likeUsers) ? entry.likeUsers.length : 0
+  const commentCount = Array.isArray(entry.commentList) ? entry.commentList.length : 0
+  if (!likeCount && !commentCount) {
+    return '先把今天的内容写下来，回应和爱心就会慢慢聚过来。'
+  }
+  if (likeCount && commentCount) {
+    return `${likeCount} 个爱心和 ${commentCount} 条留言，已经把这页日常接住了。`
+  }
+  if (likeCount) {
+    return `${likeCount} 个爱心已经先落在这页，留言区也随时可以继续写。`
+  }
+  return `${commentCount} 条留言正在这里慢慢延长今天的对话。`
 }
 
 function getCommentDisplayName(comment) {
@@ -767,7 +837,7 @@ function formatHistoryDate(value) {
 
 .daily-swiper {
   width: 100%;
-  height: 1080rpx;
+  height: 980rpx;
 }
 
 .daily-entry-card {
@@ -781,7 +851,9 @@ function formatHistoryDate(value) {
   flex-direction: column;
   padding: 28rpx;
   border-radius: 30rpx;
-  background: var(--author-surface, rgba(255, 255, 255, 0.98));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), var(--author-surface, rgba(255, 255, 255, 0.98))),
+    var(--author-surface, rgba(255, 255, 255, 0.98));
   box-shadow:
     inset 0 0 0 2rpx var(--author-outline, rgba(67, 122, 118, 0.08)),
     0 18rpx 34rpx rgba(67, 122, 118, 0.08);
@@ -804,6 +876,19 @@ function formatHistoryDate(value) {
   gap: 12rpx;
   min-width: 0;
   flex-wrap: wrap;
+}
+
+.daily-entry-page-index {
+  min-height: 44rpx;
+  padding: 0 16rpx;
+  border-radius: 999rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--author-accent, var(--app-color-primary-strong));
+  font-size: 20rpx;
+  font-weight: 700;
 }
 
 .identity-badge {
@@ -857,7 +942,49 @@ function formatHistoryDate(value) {
   margin-top: 12rpx;
 }
 
+.daily-entry-paper {
+  position: relative;
+  overflow: hidden;
+  padding: 28rpx 24rpx 30rpx;
+  border-radius: 26rpx;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 252, 246, 0.96));
+  box-shadow:
+    inset 0 0 0 2rpx rgba(255, 255, 255, 0.82),
+    0 10rpx 24rpx rgba(95, 113, 112, 0.05);
+}
+
+.daily-entry-paper::after {
+  content: '';
+  position: absolute;
+  inset: 24rpx 22rpx 24rpx auto;
+  width: 2rpx;
+  background: linear-gradient(180deg, rgba(228, 220, 202, 0), rgba(228, 220, 202, 0.92) 20%, rgba(228, 220, 202, 0.92) 80%, rgba(228, 220, 202, 0));
+  opacity: 0.42;
+}
+
+.daily-entry-paper-label {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  min-height: 42rpx;
+  padding: 0 14rpx;
+  border-radius: 999rpx;
+  background: rgba(243, 237, 225, 0.88);
+  color: #a27d57;
+  font-size: 20rpx;
+  font-weight: 700;
+  letter-spacing: 1rpx;
+}
+
+.daily-entry-paper-label.media-label {
+  grid-column: 1 / -1;
+  margin-bottom: -2rpx;
+}
+
 .daily-entry-content {
+  margin-top: 16rpx;
   font-size: 30rpx;
   line-height: 1.9;
   color: var(--app-color-text-strong);
@@ -936,118 +1063,78 @@ function formatHistoryDate(value) {
   font-weight: 700;
 }
 
-.daily-entry-more-wrap {
-  position: relative;
-}
-
-.daily-entry-more {
+.daily-entry-stamp {
+  min-height: 52rpx;
+  padding: 0 18rpx;
+  border-radius: 18rpx;
   display: inline-flex;
   align-items: center;
-  gap: 6rpx;
-  padding: 12rpx 14rpx;
-  border-radius: 18rpx;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 8rpx 18rpx rgba(0, 0, 0, 0.06);
-}
-
-.daily-entry-more-dot {
-  width: 8rpx;
-  height: 8rpx;
-  border-radius: 50%;
-  background: rgba(81, 111, 109, 0.84);
-}
-
-.daily-action-pop {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 12rpx);
-  z-index: 5;
-  min-width: 204rpx;
-  padding: 8rpx 0;
-  border-radius: 24rpx;
-  background: rgba(49, 53, 60, 0.96);
-  box-shadow: 0 18rpx 32rpx rgba(0, 0, 0, 0.12);
-}
-
-.daily-action-item {
-  display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 10rpx;
-  min-height: 72rpx;
-  padding: 0 24rpx;
-  color: #fff;
-  font-size: 26rpx;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--author-accent, var(--app-color-primary-strong));
+  font-size: 22rpx;
   font-weight: 700;
+  box-shadow: inset 0 0 0 2rpx rgba(255, 255, 255, 0.68);
 }
 
-.daily-action-item.comment-only {
-  gap: 0;
+.daily-entry-footer {
+  margin-top: 20rpx;
 }
 
-.daily-action-icon {
-  font-size: 28rpx;
-  line-height: 1;
-}
-
-.daily-action-divider {
-  margin: 0 18rpx;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.16);
-}
-
-.daily-interaction-card {
-  margin-top: 18rpx;
+.daily-entry-summary-card {
+  padding: 20rpx 22rpx;
   border-radius: 24rpx;
   background: var(--author-surface-soft, rgba(255, 255, 255, 0.64));
-  overflow: hidden;
+  box-shadow: inset 0 0 0 2rpx rgba(255, 255, 255, 0.56);
 }
 
-.interaction-feed-line {
-  padding: 18rpx 22rpx;
+.daily-entry-summary-kicker {
+  font-size: 20rpx;
+  font-weight: 700;
+  letter-spacing: 1rpx;
+  color: var(--author-accent, var(--app-color-primary-strong));
 }
 
-.interaction-feed-line + .interaction-feed-line {
-  border-top: 1px solid rgba(215, 231, 228, 0.92);
-}
-
-.interaction-feed-like {
-  display: flex;
-  align-items: center;
-  gap: 10rpx;
-}
-
-.interaction-feed-heart {
-  font-size: 26rpx;
-  color: #f06c8f;
-}
-
-.interaction-feed-text,
-.interaction-feed-name,
-.interaction-comment-content {
+.daily-entry-summary-text {
+  margin-top: 10rpx;
   font-size: 24rpx;
-  line-height: 1.7;
+  line-height: 1.75;
   color: var(--app-color-text-strong);
 }
 
-.interaction-comment-head {
-  justify-content: space-between;
-  gap: 18rpx;
+.daily-entry-footer-actions {
+  margin-top: 16rpx;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rpx;
 }
 
-.interaction-feed-name {
+.daily-inline-action {
+  min-height: 78rpx;
+  padding: 0 18rpx;
+  border-radius: 22rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--author-accent, var(--app-color-primary-strong));
+  font-size: 24rpx;
   font-weight: 700;
+  box-shadow:
+    inset 0 0 0 2rpx rgba(255, 255, 255, 0.7),
+    0 10rpx 20rpx rgba(95, 113, 112, 0.06);
 }
 
-.interaction-comment-content {
-  margin-top: 8rpx;
-  display: block;
-  white-space: pre-wrap;
-  word-break: break-word;
+.daily-inline-action.primary {
+  background: linear-gradient(180deg, rgba(255, 249, 239, 0.98), rgba(255, 255, 255, 0.96));
+  color: #a36e55;
 }
 
-.daily-comment-list {
-  width: 100%;
+.daily-inline-action-heart {
+  font-size: 26rpx;
+  line-height: 1;
+  color: #ef728d;
 }
 
 .entry-empty-tip,
@@ -1191,18 +1278,209 @@ function formatHistoryDate(value) {
   word-break: break-word;
 }
 
-.comment-composer {
+.comment-drawer-mask {
   position: fixed;
-  left: 24rpx;
-  right: 24rpx;
-  bottom: calc(env(safe-area-inset-bottom) + 112rpx);
+  inset: 0;
   z-index: 32;
+  background: rgba(17, 18, 22, 0.18);
+  display: flex;
+  align-items: flex-end;
+}
+
+.comment-drawer-card {
+  width: 100%;
+  max-width: 750rpx;
+  max-height: 76vh;
+  padding: 18rpx 24rpx calc(env(safe-area-inset-bottom) + 24rpx);
+  border-radius: 32rpx 32rpx 0 0;
+  background: rgba(255, 255, 255, 0.97);
+  box-sizing: border-box;
+  box-shadow: 0 -18rpx 36rpx rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-drawer-handle {
+  width: 88rpx;
+  height: 8rpx;
+  border-radius: 999rpx;
+  background: rgba(153, 174, 171, 0.55);
+  margin: 0 auto 20rpx;
+}
+
+.comment-drawer-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.comment-drawer-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--app-color-text-strong);
+}
+
+.comment-drawer-subtitle {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: var(--app-color-text-muted);
+}
+
+.comment-drawer-badge {
+  flex-shrink: 0;
+  min-height: 52rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(243, 250, 248, 0.96);
+  color: var(--app-color-primary-strong);
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.comment-drawer-scroll {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  margin-top: 20rpx;
+}
+
+.comment-overview-card {
+  padding: 22rpx 22rpx 20rpx;
+  border-radius: 24rpx;
+  background: rgba(246, 251, 249, 0.96);
+  box-shadow: inset 0 0 0 2rpx rgba(229, 242, 239, 0.96);
+}
+
+.comment-overview-title {
+  font-size: 22rpx;
+  font-weight: 700;
+  color: var(--app-color-primary-strong);
+}
+
+.comment-overview-copy {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.75;
+  color: var(--app-color-text-strong);
+}
+
+.comment-like-strip {
+  margin-top: 16rpx;
+  padding: 18rpx 20rpx;
+  border-radius: 22rpx;
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  background: rgba(255, 244, 247, 0.92);
+}
+
+.comment-like-strip-heart {
+  font-size: 26rpx;
+  color: #ef728d;
+}
+
+.comment-like-strip-text {
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: var(--app-color-text-strong);
+}
+
+.comment-thread-list {
+  margin-top: 16rpx;
+  display: grid;
+  gap: 14rpx;
+}
+
+.comment-thread-card {
+  padding: 20rpx 22rpx;
+  border-radius: 24rpx;
+  background: rgba(243, 248, 255, 0.92);
+  box-shadow: inset 0 0 0 2rpx rgba(222, 234, 249, 0.96);
+}
+
+.comment-thread-card.mine {
+  background: rgba(255, 242, 247, 0.94);
+  box-shadow: inset 0 0 0 2rpx rgba(249, 225, 234, 0.98);
+}
+
+.comment-thread-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.comment-thread-name {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: var(--app-color-text-strong);
+}
+
+.comment-thread-time {
+  font-size: 22rpx;
+  color: var(--app-color-text-muted);
+}
+
+.comment-thread-content {
+  margin-top: 10rpx;
+  font-size: 25rpx;
+  line-height: 1.75;
+  color: var(--app-color-text-strong);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.comment-thread-empty {
+  margin-top: 16rpx;
+  padding: 28rpx 24rpx;
+  border-radius: 24rpx;
+  background: rgba(247, 249, 250, 0.96);
+  font-size: 24rpx;
+  line-height: 1.75;
+  color: var(--app-color-text-muted);
+  text-align: center;
+}
+
+.comment-composer {
   padding: 20rpx;
   border-radius: 28rpx;
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(18px);
   box-shadow: 0 18rpx 34rpx rgba(83, 148, 138, 0.12);
   box-sizing: border-box;
+}
+
+.drawer-composer {
+  margin-top: 18rpx;
+  padding: 18rpx;
+  border-radius: 26rpx;
+  background: rgba(250, 252, 251, 0.96);
+  box-shadow: inset 0 0 0 2rpx rgba(234, 241, 239, 0.96);
+}
+
+.comment-reply-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+  margin-bottom: 12rpx;
+  padding: 0 6rpx;
+}
+
+.comment-reply-text {
+  font-size: 22rpx;
+  color: var(--app-color-primary-strong);
+  font-weight: 700;
+}
+
+.comment-reply-clear {
+  font-size: 22rpx;
+  color: var(--app-color-text-muted);
 }
 
 .comment-input {

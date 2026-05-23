@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.love.romantic.auth.AuthContext;
+import org.love.romantic.common.NotificationBizTypeConstants;
 import org.love.romantic.entity.CoupleProfile;
 import org.love.romantic.entity.UserNotification;
 import org.love.romantic.exception.BusinessException;
@@ -14,15 +15,20 @@ import org.love.romantic.mapper.UserNotificationMapper;
 import org.love.romantic.model.NotificationRealtimeEvent;
 import org.love.romantic.model.UserNotificationPageResponse;
 import org.love.romantic.model.UserNotificationResponse;
+import org.love.romantic.model.UserNotificationUnreadResponse;
 import org.love.romantic.service.NotificationRealtimePushService;
 import org.love.romantic.service.UserNotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -33,6 +39,11 @@ import java.util.stream.Collectors;
 public class UserNotificationServiceImpl implements UserNotificationService {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final String BIZ_FILTER_ALL = "all";
+    private static final String BIZ_FILTER_DAILY = "daily";
+    private static final String BIZ_FILTER_IMPROVEMENT = "improvement";
+    private static final String BIZ_FILTER_PLAN = "plan";
+    private static final String LEGACY_LOGIN_BIZ_TYPE = "login";
 
     private final UserNotificationMapper userNotificationMapper;
     private final CoupleProfileMapper coupleProfileMapper;
@@ -50,21 +61,19 @@ public class UserNotificationServiceImpl implements UserNotificationService {
     }
 
     @Override
-    public UserNotificationPageResponse pageCurrentUserNotifications(String filter, long pageNo, long pageSize) {
+    public UserNotificationPageResponse pageCurrentUserNotifications(String filter, String bizType, long pageNo, long pageSize) {
         String username = AuthContext.getRequiredUsername();
         long safePageNo = Math.max(1L, pageNo);
         long safePageSize = Math.min(Math.max(1L, pageSize), 50L);
         Page<UserNotification> page = new Page<>(safePageNo, safePageSize);
-        LambdaQueryWrapper<UserNotification> wrapper = new LambdaQueryWrapper<UserNotification>()
-                .eq(UserNotification::getRecipientUsername, username);
-
-        String safeFilter = StringUtils.hasText(filter) ? filter.trim().toLowerCase(Locale.ROOT) : "all";
-        if ("unread".equals(safeFilter)) {
-            wrapper.eq(UserNotification::getIsRead, false);
-        } else if ("read".equals(safeFilter)) {
-            wrapper.eq(UserNotification::getIsRead, true);
-        }
-
+        String safeFilter = normalizeReadFilter(filter);
+        String safeBizType = normalizeBizTypeFilter(bizType);
+        LambdaQueryWrapper<UserNotification> wrapper = buildNotificationQuery(
+                username,
+                safeFilter,
+                safeBizType,
+                null,
+                null);
         wrapper.orderByDesc(UserNotification::getCreatedAt)
                 .orderByDesc(UserNotification::getId);
         Page<UserNotification> result = userNotificationMapper.selectPage(page, wrapper);
@@ -89,15 +98,26 @@ public class UserNotificationServiceImpl implements UserNotificationService {
     }
 
     @Override
-    public long countCurrentUserUnreadNotifications() {
+    public UserNotificationUnreadResponse getCurrentUserNotificationStats() {
         String username = AuthContext.getRequiredUsername();
-        return countUnreadByUsername(username);
-    }
+        long unreadCount = countNotifications(username, "unread", BIZ_FILTER_ALL, null, null);
+        long totalCount = countNotifications(username, "all", BIZ_FILTER_ALL, null, null);
+        long readCount = Math.max(0L, totalCount - unreadCount);
+        LocalDate today = LocalDate.now();
+        LocalDateTime todayStart = today.atStartOfDay();
+        LocalDateTime tomorrowStart = today.plusDays(1).atStartOfDay();
+        long todayCount = countNotifications(username, "all", BIZ_FILTER_ALL, todayStart, tomorrowStart);
 
-    @Override
-    public long countCurrentUserTotalNotifications() {
-        String username = AuthContext.getRequiredUsername();
-        return countTotalByUsername(username);
+        Map<String, Long> bizTypeCounts = buildBizTypeCounts(username, null, null);
+        Map<String, Long> todayBizTypeCounts = buildBizTypeCounts(username, todayStart, tomorrowStart);
+        return UserNotificationUnreadResponse.builder()
+                .unreadCount(unreadCount)
+                .readCount(readCount)
+                .totalCount(totalCount)
+                .todayCount(todayCount)
+                .bizTypeCounts(bizTypeCounts)
+                .todayBizTypeCounts(todayBizTypeCounts)
+                .build();
     }
 
     @Override
@@ -188,14 +208,11 @@ public class UserNotificationServiceImpl implements UserNotificationService {
     }
 
     private long countUnreadByUsername(String username) {
-        return userNotificationMapper.selectCount(new LambdaQueryWrapper<UserNotification>()
-                .eq(UserNotification::getRecipientUsername, username)
-                .eq(UserNotification::getIsRead, false));
+        return countNotifications(username, "unread", BIZ_FILTER_ALL, null, null);
     }
 
     private long countTotalByUsername(String username) {
-        return userNotificationMapper.selectCount(new LambdaQueryWrapper<UserNotification>()
-                .eq(UserNotification::getRecipientUsername, username));
+        return countNotifications(username, "all", BIZ_FILTER_ALL, null, null);
     }
 
     private UserNotification findLatestNotification(String username) {
@@ -242,6 +259,116 @@ public class UserNotificationServiceImpl implements UserNotificationService {
             result.put(profile.getUsername(), profile.getNickname());
         }
         return result;
+    }
+
+    private LambdaQueryWrapper<UserNotification> buildNotificationQuery(String username,
+                                                                        String filter,
+                                                                        String bizType,
+                                                                        LocalDateTime createdAtStart,
+                                                                        LocalDateTime createdAtEnd) {
+        LambdaQueryWrapper<UserNotification> wrapper = new LambdaQueryWrapper<UserNotification>()
+                .eq(UserNotification::getRecipientUsername, username);
+
+        if ("unread".equals(filter)) {
+            wrapper.eq(UserNotification::getIsRead, false);
+        } else if ("read".equals(filter)) {
+            wrapper.eq(UserNotification::getIsRead, true);
+        }
+
+        List<String> acceptedBizTypes = resolveBizTypesForFilter(bizType);
+        if (!acceptedBizTypes.isEmpty()) {
+            wrapper.in(UserNotification::getBizType, acceptedBizTypes);
+        }
+
+        if (createdAtStart != null) {
+            wrapper.ge(UserNotification::getCreatedAt, createdAtStart);
+        }
+        if (createdAtEnd != null) {
+            wrapper.lt(UserNotification::getCreatedAt, createdAtEnd);
+        }
+        return wrapper;
+    }
+
+    private long countNotifications(String username,
+                                    String filter,
+                                    String bizType,
+                                    LocalDateTime createdAtStart,
+                                    LocalDateTime createdAtEnd) {
+        return userNotificationMapper.selectCount(buildNotificationQuery(
+                username,
+                normalizeReadFilter(filter),
+                normalizeBizTypeFilter(bizType),
+                createdAtStart,
+                createdAtEnd));
+    }
+
+    private Map<String, Long> buildBizTypeCounts(String username,
+                                                 LocalDateTime createdAtStart,
+                                                 LocalDateTime createdAtEnd) {
+        Map<String, Long> counts = new LinkedHashMap<>();
+        counts.put(BIZ_FILTER_ALL, countNotifications(username, "all", BIZ_FILTER_ALL, createdAtStart, createdAtEnd));
+        counts.put(NotificationBizTypeConstants.ANNIVERSARY,
+                countNotifications(username, "all", NotificationBizTypeConstants.ANNIVERSARY, createdAtStart, createdAtEnd));
+        counts.put(NotificationBizTypeConstants.ALBUM,
+                countNotifications(username, "all", NotificationBizTypeConstants.ALBUM, createdAtStart, createdAtEnd));
+        counts.put(BIZ_FILTER_DAILY,
+                countNotifications(username, "all", BIZ_FILTER_DAILY, createdAtStart, createdAtEnd));
+        counts.put(BIZ_FILTER_IMPROVEMENT,
+                countNotifications(username, "all", BIZ_FILTER_IMPROVEMENT, createdAtStart, createdAtEnd));
+        counts.put(NotificationBizTypeConstants.COUNTDOWN,
+                countNotifications(username, "all", NotificationBizTypeConstants.COUNTDOWN, createdAtStart, createdAtEnd));
+        counts.put(NotificationBizTypeConstants.AUTH,
+                countNotifications(username, "all", NotificationBizTypeConstants.AUTH, createdAtStart, createdAtEnd));
+        counts.put(BIZ_FILTER_PLAN,
+                countNotifications(username, "all", BIZ_FILTER_PLAN, createdAtStart, createdAtEnd));
+        return counts;
+    }
+
+    private String normalizeReadFilter(String filter) {
+        String safeFilter = StringUtils.hasText(filter) ? filter.trim().toLowerCase(Locale.ROOT) : "all";
+        if ("unread".equals(safeFilter) || "read".equals(safeFilter)) {
+            return safeFilter;
+        }
+        return "all";
+    }
+
+    private String normalizeBizTypeFilter(String bizType) {
+        return StringUtils.hasText(bizType) ? bizType.trim().toLowerCase(Locale.ROOT) : BIZ_FILTER_ALL;
+    }
+
+    private List<String> resolveBizTypesForFilter(String bizType) {
+        String safeBizType = normalizeBizTypeFilter(bizType);
+        switch (safeBizType) {
+            case "":
+            case BIZ_FILTER_ALL:
+                return Collections.emptyList();
+            case NotificationBizTypeConstants.ANNIVERSARY:
+                return Collections.singletonList(NotificationBizTypeConstants.ANNIVERSARY);
+            case NotificationBizTypeConstants.ALBUM:
+                return Collections.singletonList(NotificationBizTypeConstants.ALBUM);
+            case NotificationBizTypeConstants.COUNTDOWN:
+                return Collections.singletonList(NotificationBizTypeConstants.COUNTDOWN);
+            case NotificationBizTypeConstants.AUTH:
+            case LEGACY_LOGIN_BIZ_TYPE:
+                return Arrays.asList(NotificationBizTypeConstants.AUTH, LEGACY_LOGIN_BIZ_TYPE);
+            case BIZ_FILTER_DAILY:
+            case NotificationBizTypeConstants.DAILY_SUMMARY:
+            case NotificationBizTypeConstants.DAILY_SUMMARY_ENTRY:
+                return Arrays.asList(
+                        NotificationBizTypeConstants.DAILY_SUMMARY,
+                        NotificationBizTypeConstants.DAILY_SUMMARY_ENTRY);
+            case BIZ_FILTER_IMPROVEMENT:
+            case NotificationBizTypeConstants.IMPROVEMENT_NOTE:
+            case NotificationBizTypeConstants.IMPROVEMENT_FEEDBACK:
+                return Arrays.asList(
+                        NotificationBizTypeConstants.IMPROVEMENT_NOTE,
+                        NotificationBizTypeConstants.IMPROVEMENT_FEEDBACK);
+            case BIZ_FILTER_PLAN:
+            case NotificationBizTypeConstants.ROMANTIC_PLAN:
+                return Collections.singletonList(NotificationBizTypeConstants.ROMANTIC_PLAN);
+            default:
+                return Collections.singletonList(safeBizType);
+        }
     }
 
     private UserNotificationResponse toResponse(UserNotification item, Map<String, String> nicknameMap) {

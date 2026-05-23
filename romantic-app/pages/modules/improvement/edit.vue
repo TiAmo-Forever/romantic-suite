@@ -12,7 +12,7 @@
         </AccountField>
 
         <AccountField label="详细说明">
-          <textarea v-model="form.description" maxlength="300" class="textarea app-textarea" placeholder="请输入详细说明" placeholder-class="app-account-input-placeholder" />
+          <textarea v-model="form.description" maxlength="1000" class="textarea app-textarea" placeholder="请输入详细说明" placeholder-class="app-account-input-placeholder" />
         </AccountField>
 
         <picker class="picker-row-shell" mode="selector" :range="targetOptions" range-key="label" :value="targetIndex" @change="handleTargetChange">
@@ -51,7 +51,7 @@
         </view>
 
         <AccountField label="最近反馈摘要">
-          <input v-model="form.latestFeedback" class="input app-field" placeholder="请输入反馈摘要" placeholder-class="app-account-input-placeholder" />
+          <input v-model="form.latestFeedback" maxlength="1000" class="input app-field" placeholder="请输入反馈摘要" placeholder-class="app-account-input-placeholder" />
         </AccountField>
       </AccountPanel>
 

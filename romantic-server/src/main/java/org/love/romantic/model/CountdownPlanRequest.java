@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 /**
  * 共享见面倒计时保存请求。
@@ -22,6 +23,7 @@ public class CountdownPlanRequest {
     private String place;
 
     @ApiModelProperty("备注说明")
+    @Size(max = 1000, message = "计划内容不能超过 1000 个字符")
     private String note;
 
     @ApiModelProperty("下次见面时间，格式：yyyy-MM-dd 或 yyyy-MM-dd HH:mm")

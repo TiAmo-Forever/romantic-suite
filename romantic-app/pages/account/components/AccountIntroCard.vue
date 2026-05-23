@@ -2,7 +2,7 @@
 	<view class="app-card app-account-intro-card">
 		<view class="app-account-intro-kicker">{{ eyebrow }}</view>
 		<view class="app-account-intro-title">{{ title }}</view>
-		<view class="app-account-intro-desc">{{ description }}</view>
+		<view v-if="description" class="app-account-intro-desc">{{ description }}</view>
 		<view v-if="tags.length || hasMetaSlot" class="app-account-intro-meta">
 			<view v-for="item in tags" :key="item" class="app-account-intro-chip">{{ item }}</view>
 			<slot name="meta" />

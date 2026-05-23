@@ -43,7 +43,7 @@ public class SchemaMigrationRunner {
                 + "id BIGINT PRIMARY KEY AUTO_INCREMENT,"
                 + "lover_name VARCHAR(64) NOT NULL,"
                 + "place VARCHAR(100) NOT NULL DEFAULT '',"
-                + "note VARCHAR(255) NOT NULL DEFAULT '',"
+                + "note VARCHAR(1000) NOT NULL DEFAULT '',"
                 + "next_meeting_at DATETIME NOT NULL,"
                 + "last_meeting_at DATETIME NOT NULL,"
                 + "is_all_day TINYINT(1) NOT NULL DEFAULT 0,"
@@ -59,7 +59,7 @@ public class SchemaMigrationRunner {
                 + "id BIGINT PRIMARY KEY AUTO_INCREMENT,"
                 + "summary_date DATE NOT NULL,"
                 + "mood VARCHAR(32) NOT NULL,"
-                + "content VARCHAR(300) NOT NULL,"
+                + "content VARCHAR(1000) NOT NULL,"
                 + "creator_username VARCHAR(64) NOT NULL,"
                 + "updated_by VARCHAR(64) NOT NULL,"
                 + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
@@ -72,7 +72,7 @@ public class SchemaMigrationRunner {
                 + "id BIGINT PRIMARY KEY AUTO_INCREMENT,"
                 + "summary_id BIGINT NOT NULL,"
                 + "mood VARCHAR(32) NOT NULL,"
-                + "content VARCHAR(300) NOT NULL,"
+                + "content VARCHAR(1000) NOT NULL,"
                 + "creator_username VARCHAR(64) NOT NULL,"
                 + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
                 + "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
@@ -101,7 +101,7 @@ public class SchemaMigrationRunner {
                 + "status VARCHAR(16) NOT NULL DEFAULT 'improving',"
                 + "status_emoji VARCHAR(16) NOT NULL DEFAULT '🌱',"
                 + "start_date DATE NOT NULL,"
-                + "latest_feedback VARCHAR(255) NOT NULL DEFAULT '',"
+                + "latest_feedback VARCHAR(1000) NOT NULL DEFAULT '',"
                 + "creator_username VARCHAR(64) NOT NULL,"
                 + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
                 + "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
@@ -114,7 +114,7 @@ public class SchemaMigrationRunner {
                 + "note_id BIGINT NOT NULL,"
                 + "status VARCHAR(16) NOT NULL DEFAULT 'improving',"
                 + "status_emoji VARCHAR(16) NOT NULL DEFAULT '🌱',"
-                + "content VARCHAR(255) NOT NULL,"
+                + "content VARCHAR(1000) NOT NULL,"
                 + "creator_username VARCHAR(64) NOT NULL,"
                 + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
                 + "KEY idx_improvement_feedback_note_id (note_id)"
@@ -141,7 +141,7 @@ public class SchemaMigrationRunner {
                 + "actor_username VARCHAR(64) NOT NULL DEFAULT '',"
                 + "type VARCHAR(64) NOT NULL,"
                 + "title VARCHAR(120) NOT NULL,"
-                + "content VARCHAR(255) NOT NULL,"
+                + "content VARCHAR(1000) NOT NULL,"
                 + "biz_type VARCHAR(64) NOT NULL DEFAULT '',"
                 + "biz_id BIGINT NOT NULL DEFAULT 0,"
                 + "payload_json TEXT NOT NULL,"
@@ -161,7 +161,7 @@ public class SchemaMigrationRunner {
                 + "title VARCHAR(120) NOT NULL,"
                 + "memory_date DATE NOT NULL,"
                 + "location VARCHAR(100) NOT NULL DEFAULT '',"
-                + "summary VARCHAR(255) NOT NULL DEFAULT '',"
+                + "summary VARCHAR(1000) NOT NULL DEFAULT '',"
                 + "tags_json TEXT NOT NULL,"
                 + "cover_url VARCHAR(255) NOT NULL DEFAULT '',"
                 + "like_count BIGINT NOT NULL DEFAULT 0,"
@@ -251,7 +251,7 @@ public class SchemaMigrationRunner {
                 + "id BIGINT PRIMARY KEY AUTO_INCREMENT,"
                 + "plan_id BIGINT NOT NULL,"
                 + "title VARCHAR(120) NOT NULL,"
-                + "content VARCHAR(300) NOT NULL DEFAULT '',"
+                + "content VARCHAR(1000) NOT NULL DEFAULT '',"
                 + "scheduled_at DATETIME NULL,"
                 + "end_at DATETIME NULL,"
                 + "location VARCHAR(120) NOT NULL DEFAULT '',"
@@ -271,7 +271,7 @@ public class SchemaMigrationRunner {
                 + "plan_item_id BIGINT NOT NULL DEFAULT 0,"
                 + "feedback_date DATE NOT NULL,"
                 + "status VARCHAR(16) NOT NULL DEFAULT 'done',"
-                + "content VARCHAR(300) NOT NULL,"
+                + "content VARCHAR(1000) NOT NULL,"
                 + "creator_username VARCHAR(64) NOT NULL,"
                 + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
                 + "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
@@ -443,13 +443,18 @@ public class SchemaMigrationRunner {
         executeCommentSql("ALTER TABLE romantic_plan COMMENT = '浪漫计划主表'");
         executeCommentSql("ALTER TABLE romantic_plan_item COMMENT = '浪漫计划条目表'");
         executeCommentSql("ALTER TABLE romantic_plan_feedback COMMENT = '浪漫计划反馈表'");
+        executeCommentSql("ALTER TABLE countdown_plan MODIFY COLUMN note VARCHAR(1000) NOT NULL DEFAULT '' COMMENT '计划说明'");
+        executeCommentSql("ALTER TABLE improvement_note MODIFY COLUMN description TEXT NOT NULL COMMENT '事情说明'");
+        executeCommentSql("ALTER TABLE improvement_note MODIFY COLUMN latest_feedback VARCHAR(1000) NOT NULL DEFAULT '' COMMENT '最近一次反馈内容'");
+        executeCommentSql("ALTER TABLE improvement_feedback MODIFY COLUMN content VARCHAR(1000) NOT NULL COMMENT '反馈内容'");
+        executeCommentSql("ALTER TABLE user_notification MODIFY COLUMN content VARCHAR(1000) NOT NULL COMMENT '通知内容'");
 
         executeCommentSql("ALTER TABLE album_memory MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
         executeCommentSql("ALTER TABLE album_memory MODIFY COLUMN username VARCHAR(64) NOT NULL COMMENT '创建账号'");
         executeCommentSql("ALTER TABLE album_memory MODIFY COLUMN title VARCHAR(120) NOT NULL COMMENT '回忆标题'");
         executeCommentSql("ALTER TABLE album_memory MODIFY COLUMN memory_date DATE NOT NULL COMMENT '回忆日期'");
         executeCommentSql("ALTER TABLE album_memory MODIFY COLUMN location VARCHAR(100) NOT NULL DEFAULT '' COMMENT '地点'");
-        executeCommentSql("ALTER TABLE album_memory MODIFY COLUMN summary VARCHAR(255) NOT NULL DEFAULT '' COMMENT '回忆内容'");
+        executeCommentSql("ALTER TABLE album_memory MODIFY COLUMN summary VARCHAR(1000) NOT NULL DEFAULT '' COMMENT '回忆内容'");
         executeCommentSql("ALTER TABLE album_memory MODIFY COLUMN tags_json TEXT NOT NULL COMMENT '标签 JSON'");
         executeCommentSql("ALTER TABLE album_memory MODIFY COLUMN cover_url VARCHAR(255) NOT NULL DEFAULT '' COMMENT '封面路径'");
         executeCommentSql("ALTER TABLE album_memory MODIFY COLUMN like_count BIGINT NOT NULL DEFAULT 0 COMMENT '点赞次数'");
@@ -477,7 +482,7 @@ public class SchemaMigrationRunner {
         executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
         executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN plan_id BIGINT NOT NULL COMMENT '所属计划 ID'");
         executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN title VARCHAR(120) NOT NULL COMMENT '条目标题'");
-        executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN content VARCHAR(300) NOT NULL DEFAULT '' COMMENT '条目内容'");
+        executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN content VARCHAR(1000) NOT NULL DEFAULT '' COMMENT '条目内容'");
         executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN scheduled_at DATETIME NULL COMMENT '安排时间'");
         executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN end_at DATETIME NULL COMMENT '结束时间'");
         executeCommentSql("ALTER TABLE romantic_plan_item MODIFY COLUMN location VARCHAR(120) NOT NULL DEFAULT '' COMMENT '地点说明'");
@@ -493,7 +498,7 @@ public class SchemaMigrationRunner {
         executeCommentSql("ALTER TABLE romantic_plan_feedback MODIFY COLUMN plan_item_id BIGINT NOT NULL DEFAULT 0 COMMENT '关联条目 ID'");
         executeCommentSql("ALTER TABLE romantic_plan_feedback MODIFY COLUMN feedback_date DATE NOT NULL COMMENT '反馈日期'");
         executeCommentSql("ALTER TABLE romantic_plan_feedback MODIFY COLUMN status VARCHAR(16) NOT NULL DEFAULT 'done' COMMENT '反馈状态'");
-        executeCommentSql("ALTER TABLE romantic_plan_feedback MODIFY COLUMN content VARCHAR(300) NOT NULL COMMENT '反馈内容'");
+        executeCommentSql("ALTER TABLE romantic_plan_feedback MODIFY COLUMN content VARCHAR(1000) NOT NULL COMMENT '反馈内容'");
         executeCommentSql("ALTER TABLE romantic_plan_feedback MODIFY COLUMN creator_username VARCHAR(64) NOT NULL COMMENT '创建账号'");
         executeCommentSql("ALTER TABLE romantic_plan_feedback MODIFY COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'");
         executeCommentSql("ALTER TABLE romantic_plan_feedback MODIFY COLUMN updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'");
@@ -527,7 +532,7 @@ public class SchemaMigrationRunner {
         executeCommentSql("ALTER TABLE daily_summary MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
         executeCommentSql("ALTER TABLE daily_summary MODIFY COLUMN summary_date DATE NOT NULL COMMENT '对应日期'");
         executeCommentSql("ALTER TABLE daily_summary MODIFY COLUMN mood VARCHAR(32) NOT NULL COMMENT '最新一条氛围标识'");
-        executeCommentSql("ALTER TABLE daily_summary MODIFY COLUMN content VARCHAR(300) NOT NULL COMMENT '最新一条预览内容'");
+        executeCommentSql("ALTER TABLE daily_summary MODIFY COLUMN content VARCHAR(1000) NOT NULL COMMENT '最新一条预览内容'");
         executeCommentSql("ALTER TABLE daily_summary MODIFY COLUMN creator_username VARCHAR(64) NOT NULL COMMENT '首次创建账号'");
         executeCommentSql("ALTER TABLE daily_summary MODIFY COLUMN updated_by VARCHAR(64) NOT NULL COMMENT '最近更新账号'");
         executeCommentSql("ALTER TABLE daily_summary MODIFY COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'");
@@ -536,7 +541,7 @@ public class SchemaMigrationRunner {
         executeCommentSql("ALTER TABLE daily_summary_entry MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
         executeCommentSql("ALTER TABLE daily_summary_entry MODIFY COLUMN summary_id BIGINT NOT NULL COMMENT '所属日期记录 ID'");
         executeCommentSql("ALTER TABLE daily_summary_entry MODIFY COLUMN mood VARCHAR(32) NOT NULL COMMENT '条目氛围标识'");
-        executeCommentSql("ALTER TABLE daily_summary_entry MODIFY COLUMN content VARCHAR(300) NOT NULL COMMENT '条目内容'");
+        executeCommentSql("ALTER TABLE daily_summary_entry MODIFY COLUMN content VARCHAR(1000) NOT NULL COMMENT '条目内容'");
         executeCommentSql("ALTER TABLE daily_summary_entry MODIFY COLUMN creator_username VARCHAR(64) NOT NULL COMMENT '创建账号'");
         executeCommentSql("ALTER TABLE daily_summary_entry MODIFY COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'");
         executeCommentSql("ALTER TABLE daily_summary_entry MODIFY COLUMN updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'");

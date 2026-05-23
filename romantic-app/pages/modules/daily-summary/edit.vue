@@ -33,12 +33,12 @@
       <AccountPanel title="今天的一句话" description="这不是正式日记，只要留下今天最想记住的一小段就好。">
         <textarea
           v-model="form.content"
-          maxlength="300"
+          maxlength="1000"
           class="app-textarea daily-textarea"
           placeholder="写下今天最想认真留住的一句话……"
           placeholder-class="app-account-input-placeholder"
         />
-        <view class="content-meta">{{ form.content.length }}/300</view>
+        <view class="content-meta">{{ form.content.length }}/1000</view>
       </AccountPanel>
 
       <AccountPanel title="图片与视频" description="可以给今天的小计补上一张照片，或者一段短短的视频。">

@@ -38,7 +38,7 @@
         <AccountField :label="TEXT.summaryLabel">
           <textarea
             v-model="form.summary"
-            maxlength="200"
+            maxlength="1000"
             class="textarea app-textarea"
             :placeholder="TEXT.summaryPlaceholder"
             placeholder-class="app-account-input-placeholder"

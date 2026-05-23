@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 @Data
 @ApiModel("浪漫计划条目保存请求")
@@ -15,6 +16,7 @@ public class RomanticPlanItemRequest {
     private String title;
 
     @ApiModelProperty("条目内容")
+    @Size(max = 1000, message = "条目内容不能超过 1000 个字符")
     private String content;
 
     @ApiModelProperty("安排时间，格式 yyyy-MM-dd HH:mm:ss")

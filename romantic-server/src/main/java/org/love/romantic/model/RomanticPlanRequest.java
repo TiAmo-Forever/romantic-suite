@@ -6,6 +6,7 @@ import lombok.Data;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class RomanticPlanRequest {
     private String title;
 
     @ApiModelProperty("计划说明")
+    @Size(max = 1000, message = "计划说明不能超过 1000 个字符")
     private String description;
 
     @ApiModelProperty("计划类型：daily、interval、stage")

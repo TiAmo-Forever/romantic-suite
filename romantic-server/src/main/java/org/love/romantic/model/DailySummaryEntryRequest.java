@@ -18,7 +18,7 @@ public class DailySummaryEntryRequest {
 
     @ApiModelProperty("条目内容")
     @NotBlank(message = "条目内容不能为空")
-    @Size(max = 300, message = "条目内容不能超过 300 个字符")
+    @Size(max = 1000, message = "条目内容不能超过 1000 个字符")
     private String content;
 
     @ApiModelProperty("媒体列表")

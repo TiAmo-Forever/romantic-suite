@@ -2769,3 +2769,143 @@
 - 前端新增 `uploadRomanticPlanMedia`，保存浪漫计划时若选择了新封面，会先上传图片，再把返回路径写入 `coverUrl`。
 - 后端补充 `/api/files/romantic-plan-media` 上传接口，并新增 `romantic.storage.romanticPlanDirectory` 目录配置，避免与甜蜜相册资源混放。
 - 页面巡检通过；后端编译已执行确认。
+
+## 2026-05-23 更新记录
+
+### 目标
+
+- 精简消息中心顶部与列表区的说明文案，减少页面里“解释产品”的段落感。
+- 调整消息卡交互层级，让登录提醒不再跳转到账号安全页，只承担提醒与已读流转作用。
+- 重新整理消息中心整页排版与视觉风格，让它从“账号设置附属面板”更明显地转成独立的消息收件箱页面。
+
+### 处理顺序
+
+1. 先重新阅读 `WORKSPACE_NOTES.md` 与前端消息中心页面，确认当前通知中心的结构、文案和跳转逻辑。
+2. 修改 `romantic-app/pages/modules/notifications/index.vue`，移除顶部导视卡说明文案和提醒列表说明文案。
+3. 收口通知点击逻辑，改为优先按通知事件类型处理兜底跳转；登录提醒直接标记已读、不再跳转。
+4. 先做一轮减法收口，再将 `index.vue` 从 `AccountIntroCard + AccountPanel` 组合结构中拆出，重做顶部头图区、工具条和消息流卡片。
+5. 微调消息卡样式，去掉不可跳转提醒的箭头，限制长内容在列表卡中的展示行数，并把登录提醒改成更轻的短卡气质。
+6. 补齐组件层细节，让 `AccountIntroCard` 在没有描述文案时不再渲染空白说明区域。
+
+### 关键问题
+
+- 消息中心当前有两段说明文案连续堆叠，信息密度偏高，实际浏览提醒前要先读较长介绍，页面节奏偏重。
+- 登录提醒沿用“点开后尽量跳业务页”的统一逻辑，会把用户带到账号安全页，但这类提醒本身并不需要继续操作。
+- 原页面整体仍明显继承账号设置模块的卡片语言，顶部导视卡、列表分区卡和消息卡层层套壳，消息流本身不够突出。
+- 列表卡正文默认完整铺开后，长提醒在列表态会明显拉高单卡高度，影响连续浏览效率。
+
+### 关键结果
+
+- 已完成消息中心整页重排：
+  - `romantic-app/pages/modules/notifications/index.vue` 已从账号页通用导视卡/分区卡结构中拆出，改成独立的“头图区 + 收件箱工具条 + 时间流消息卡”布局。
+  - 页面整体视觉已切换到暖白纸面、浅橙与浅绿混合的收件箱气质，不再沿用原先偏粉的账号设置附属风格。
+- 已调整消息提醒点击规则：
+  - 登录提醒点击后只处理已读状态，不再跳转到账号安全页。
+  - 删除类提醒继续保留列表页兜底跳转，其他共享业务仍按原业务页详情或列表页跳转。
+  - 不可跳转的提醒卡不再显示右侧箭头，降低“还能继续进入”的误导感。
+- 已优化消息卡阅读节奏：
+  - 顶部改为独立头图区，集中展示未读数、总数、当前筛选摘要和最近更新时间。
+  - 筛选区已改成一体化收件箱工具条，列表前不再插入额外解释段落。
+  - 各业务类型提醒已增加独立色彩气质和字形徽记，登录提醒改成更轻的紧凑卡片。
+  - 长内容改为列表态最多展示 3 行，避免单条提醒在列表中占用过高高度。
+  - `AccountIntroCard` 组件已支持“无描述时不渲染描述区”，避免删掉说明后留下空白占位。
+
+### 验证情况
+
+- 已执行前端页面源码巡检：
+  - `powershell -ExecutionPolicy Bypass -File D:\JavaProject\romantic-suite\romantic-app\tools\check-pages-source.ps1`
+- 当前线程里没有已附着的前端运行会话，也没有现成可直接打开的本地地址，因此本轮未做浏览器实机预览验证。
+- 本轮未改动后端接口与数据库结构，未单独执行后端编译验证。
+
+### 2026-05-23 补充：今日小计详情页记录册与评论拆层
+
+#### 目标
+
+- 改掉“当天记录册”里正文、媒体、点赞、评论全混在一张卡里的拥挤感。
+- 让“今日小计”详情页更像双人手账记录册，而不是长内容卡片后面直接拼评论流。
+- 保留现有点赞、评论、回复、删评能力，但把评论区从正文阅读层中独立出去。
+
+#### 处理顺序
+
+1. 重新梳理 `romantic-app/pages/modules/daily-summary/detail.vue` 当前模板结构，确认正文区、媒体区、点赞区、评论区和底部输入区的混排关系。
+2. 将单条记录卡重构为“身份与情绪头部 + 纸面正文区 + 媒体贴图区 + 互动摘要与操作区”的手账页结构。
+3. 去掉正文卡内部直接平铺的评论列表，改为独立的“今天的留言”底部抽屉承接爱心摘要、评论列表和输入框。
+4. 保留评论发送、回复、删除、点赞的原有接口逻辑，改为适配新的抽屉式交互入口。
+5. 执行前端页面源码巡检，确认这轮重排没有引入新的页面结构异常。
+
+#### 关键问题
+
+- 原来的 `daily-entry-card` 同时承载正文、媒体、爱心摘要和评论列表，阅读时会出现“内容还没看完，评论已经挤进来”的断层感。
+- 评论列表直接挂在正文滚动区里，会让“记录今天”与“回应今天”混成一个层级，弱化了当天记录册本身的主角位置。
+- 现有三点菜单承接点赞和评论入口偏隐蔽，也不利于把互动区改造成更自然的“回应层”。
+
+#### 关键结果
+
+- 已重构 `romantic-app/pages/modules/daily-summary/detail.vue` 的当天记录册：
+  - 单条记录卡改成更像手账页的结构，新增页码标识、纸面正文区、媒体贴图区和底部互动摘要区。
+  - 正文与媒体仍保留在卡片主阅读层，评论不再直接混排在正文下面。
+  - 卡片底部改为直接可见的“点赞 / 打开留言区”操作，不再依赖原先的三点菜单。
+- 已将评论区独立成底部抽屉：
+  - 新增“今天的留言”抽屉，单独展示互动摘要、爱心摘要、评论列表和评论输入区。
+  - 评论回复改成在抽屉输入区上方显示“正在回复 ……”提示，阅读层与回复层更清楚。
+  - 自己的评论与对方评论在抽屉中用不同卡片气质区分，保留点按自评删除、点按他评回复的现有能力。
+- 已同步调整交互节奏：
+  - 点赞操作改为卡片底部直接触达。
+  - “打开留言区 / 写一句留言”根据评论是否存在给出不同入口文案。
+  - 历史抽屉、记录切换、重新加载时会自动收起评论抽屉与临时输入状态，避免状态串页。
+
+#### 验证情况
+
+- 已执行前端页面源码巡检：
+  - `powershell -ExecutionPolicy Bypass -File D:\JavaProject\romantic-suite\romantic-app\tools\check-pages-source.ps1`
+- 本轮未改动后端接口与数据库结构，未单独执行后端编译验证。
+
+#### 2026-05-23 补充：今日小计头图区摘要减法
+
+- 已继续精简 `romantic-app/pages/modules/daily-summary/detail.vue` 顶部头图区文案：
+  - 不再直接显示当天第一条小计的正文内容，避免在进入页面第一屏就提前泄露具体记录内容。
+  - 当前头图区只保留更轻的概览型摘要，把真正的正文阅读留给下方记录册页。
+
+#### 2026-05-23 补充：评论 500 / 内容 1000 长度统一
+
+- 已统一前端输入长度：
+  - 评论类输入统一到 500：`anniversary/detail.vue`、`album/detail.vue`、`improvement/detail.vue`，原本残留的 `/200` 计数也一并改成 `/500`。
+  - 内容类输入统一到 1000：`daily-summary/edit.vue`、`romantic-plan/edit.vue`、`romantic-plan/detail.vue`、`improvement/edit.vue`、`improvement/detail.vue`、`album/edit.vue`、`anniversary/edit.vue`、`countdown/index.vue`。
+- 已统一后端请求校验：
+  - 评论请求继续由 `InteractionCommentRequest` 维持 500。
+  - 内容相关请求补齐或提升到 1000：`AlbumMemoryRequest`、`AnniversaryEventRequest`、`CountdownPlanRequest`、`DailySummaryRequest`、`DailySummaryEntryRequest`、`ImprovementNoteRequest`、`ImprovementFeedbackRequest`、`RomanticPlanRequest`、`RomanticPlanItemRequest`、`RomanticPlanFeedbackRequest`。
+- 已统一数据库字段容量：
+  - `countdown_plan.note`
+  - `improvement_note.latest_feedback`
+  - `improvement_feedback.content`
+  - `user_notification.content`
+  - `album_memory.summary`
+  - `daily_summary.content`
+  - `daily_summary_entry.content`
+  - `romantic_plan_item.content`
+  - `romantic_plan_feedback.content`
+  - 上述字段在 `schema.sql` 与 `SchemaMigrationRunner.java` 中都已同步扩到 1000，避免新库和旧库行为不一致。
+
+#### 2026-05-23 补充：消息中心统计修正、分类筛选与一键已读增强
+
+- 已修正 `romantic-app/pages/modules/notifications/index.vue` 顶部摘要统计口径：
+  - “今天一共收到了 … 条动态” 不再误用历史总数，改为读取后端返回的 `todayCount`。
+  - 在切换到某一类消息时，顶部摘要会按该类型当天新增数量展示，不再把历史累计数误当作今日数据。
+  - 状态筛选与类型筛选组合后，工具条文案会基于当前筛选结果数量动态调整。
+- 已增强消息中心筛选能力：
+  - 保留原有 `全部 / 未读 / 已读` 状态筛选。
+  - 新增 `全部类型 / 纪念日 / 相册 / 今日小计 / 改进 / 倒计时 / 登录提醒 / 浪漫计划` 的消息类型筛选。
+  - 前端请求 `bizType` 参数，后端分页接口同步支持按消息类型过滤。
+- 已增强一键已读能力：
+  - “全部设为已读” 按钮改为始终可见，当前没有未读时置灰并给出已有兜底提示。
+  - 保持原有逐条已读逻辑不变，登录提醒依旧只标记已读、不做页面跳转。
+- 已扩展后端通知统计接口：
+  - `GET /api/notifications/unread-count` 现返回 `todayCount`、`bizTypeCounts` 与 `todayBizTypeCounts`。
+  - `GET /api/notifications/page` 新增 `bizType` 查询参数，支持将 `daily`、`improvement`、`plan` 这类前端分组映射到实际业务通知类型。
+
+#### 2026-05-23 补充：消息类型筛选改为下拉选择
+
+- 已继续收敛 `romantic-app/pages/modules/notifications/index.vue` 的工具条排版：
+  - 保留上方 `全部 / 未读 / 已读` 三个状态筛选按钮不变。
+  - 将下方原本平铺的一整排消息类型标签改为单个下拉选择入口，避免类型按钮过多导致页面显得拥挤零碎。
+  - 下拉入口会直接显示当前所选类型与对应条数，保持筛选信息可见，同时让工具条更整洁。

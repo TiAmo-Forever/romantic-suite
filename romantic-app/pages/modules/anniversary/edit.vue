@@ -34,7 +34,7 @@
         </AccountField>
 
         <AccountField label="文字说明">
-          <textarea v-model="form.description" maxlength="500" class="textarea app-textarea" placeholder="请输入内容" placeholder-class="app-account-input-placeholder" />
+          <textarea v-model="form.description" maxlength="1000" class="textarea app-textarea" placeholder="请输入内容" placeholder-class="app-account-input-placeholder" />
         </AccountField>
 
         <AccountField label="提醒设置">

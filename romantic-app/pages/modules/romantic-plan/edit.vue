@@ -87,7 +87,7 @@
                 <textarea
                   v-model="form.description"
                   class="field-textarea"
-                  maxlength="300"
+                  maxlength="1000"
                   placeholder="写下这份计划为什么做，或者想达到什么效果。"
                   placeholder-class="textarea-placeholder"
                 ></textarea>
@@ -207,7 +207,7 @@
                 <textarea
                   v-model="item.content"
                   class="field-textarea"
-                  maxlength="300"
+                  maxlength="1000"
                   placeholder="补充这一步要做什么，或者需要注意什么。"
                   placeholder-class="textarea-placeholder"
                 ></textarea>

@@ -39,24 +39,19 @@ public class UserNotificationController {
     public ApiResponse<UserNotificationPageResponse> pageMine(
             @ApiParam("筛选类型：all / unread / read")
             @RequestParam(value = "filter", defaultValue = "all") String filter,
+            @ApiParam("业务类型：all / anniversary / album / daily / improvement / countdown / auth / plan")
+            @RequestParam(value = "bizType", defaultValue = "all") String bizType,
             @ApiParam("页码，从 1 开始")
             @RequestParam(value = "page", defaultValue = "1") Long page,
             @ApiParam("每页条数")
             @RequestParam(value = "pageSize", defaultValue = "10") Long pageSize) {
-        return ApiResponse.ok("查询成功", userNotificationService.pageCurrentUserNotifications(filter, page, pageSize));
+        return ApiResponse.ok("查询成功", userNotificationService.pageCurrentUserNotifications(filter, bizType, page, pageSize));
     }
 
     @ApiOperation("查询当前账号的通知数量统计")
     @GetMapping("/unread-count")
     public ApiResponse<UserNotificationUnreadResponse> unreadCount() {
-        long unreadCount = userNotificationService.countCurrentUserUnreadNotifications();
-        long totalCount = userNotificationService.countCurrentUserTotalNotifications();
-        long readCount = Math.max(0L, totalCount - unreadCount);
-        return ApiResponse.ok("查询成功", UserNotificationUnreadResponse.builder()
-                .unreadCount(unreadCount)
-                .readCount(readCount)
-                .totalCount(totalCount)
-                .build());
+        return ApiResponse.ok("查询成功", userNotificationService.getCurrentUserNotificationStats());
     }
 
     @ApiOperation("标记单条通知已读")

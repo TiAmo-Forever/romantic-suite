@@ -16,6 +16,7 @@ export async function fetchNotificationList(params = {}) {
     url: '/api/notifications/page',
     data: {
       filter: params.filter || 'all',
+      bizType: params.bizType || 'all',
       page: Number(params.page || 1),
       pageSize: Number(params.pageSize || 10)
     }
@@ -43,7 +44,12 @@ export async function fetchNotificationStats() {
   return {
     unreadCount: Number(data.unreadCount || 0),
     readCount: Number(data.readCount || 0),
-    totalCount: Number(data.totalCount || 0)
+    totalCount: Number(data.totalCount || 0),
+    todayCount: Number(data.todayCount || 0),
+    bizTypeCounts: data.bizTypeCounts && typeof data.bizTypeCounts === 'object' ? data.bizTypeCounts : {},
+    todayBizTypeCounts: data.todayBizTypeCounts && typeof data.todayBizTypeCounts === 'object'
+      ? data.todayBizTypeCounts
+      : {}
   }
 }
 

@@ -154,7 +154,7 @@
               <input
                 v-model="feedbackCommentForm.content"
                 class="comment-input"
-                :maxlength="200"
+                :maxlength="500"
                 :cursor-spacing="24"
                 :placeholder="feedbackCommentPlaceholder(latestFeedback)"
                 placeholder-class="app-account-input-placeholder"
@@ -286,7 +286,7 @@
                   <input
                     v-model="feedbackCommentForm.content"
                     class="comment-input"
-                    :maxlength="200"
+                    :maxlength="500"
                     :cursor-spacing="24"
                     :placeholder="feedbackCommentPlaceholder(item)"
                     placeholder-class="app-account-input-placeholder"
@@ -339,7 +339,7 @@
         <AccountField label="反馈内容">
           <textarea
             v-model="sheetForm.content"
-            maxlength="200"
+            maxlength="1000"
             class="textarea app-textarea"
             placeholder="请输入这次的反馈内容"
             placeholder-class="app-account-input-placeholder"
@@ -451,7 +451,7 @@ const TEXT = {
   feedbackCommentDeleteTitle: '删除反馈评论',
   feedbackCommentDeleteContent: '删除后这条评论会立即移除，是否继续？',
   commentFallbackUser: '未命名',
-  commentLengthSuffix: '/200',
+  commentLengthSuffix: '/500',
   sheetCreateTitle: '记录新反馈',
   sheetCreateDesc: '把这次新的变化认真记下来。',
   sheetEditTitle: '编辑反馈',
