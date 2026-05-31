@@ -50,6 +50,15 @@ public class ProfileController {
     }
 
     /**
+     * 查询当前登录账号对应的对方资料。
+     */
+    @ApiOperation("查询对方资料")
+    @GetMapping("/mine/partner")
+    public ApiResponse<ProfileResponse> getPartnerProfile() {
+        return ApiResponse.ok("对方资料加载成功", coupleProfileService.getPartnerProfile());
+    }
+
+    /**
      * 保存当前登录账号资料。
      */
     @ApiOperation("更新当前资料")

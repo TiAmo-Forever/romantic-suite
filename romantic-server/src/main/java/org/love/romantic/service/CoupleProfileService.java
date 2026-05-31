@@ -24,6 +24,11 @@ public interface CoupleProfileService {
     ProfileResponse getCurrentProfile();
 
     /**
+     * 查询当前登录账号对应的对方资料。
+     */
+    ProfileResponse getPartnerProfile();
+
+    /**
      * 执行账号登录。
      */
     LoginResponse login(LoginRequest request);

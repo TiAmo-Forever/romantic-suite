@@ -14,23 +14,26 @@
     </view>
 
     <view class="mine-hero app-fade-up app-delay-1">
-      <view class="mine-hero-glow"></view>
-      <view class="mine-avatar-shell" @click="previewAvatar">
-        <image v-if="isImageAvatar" class="mine-avatar-image" :src="avatarImageUrl" mode="aspectFill"></image>
-        <view v-else class="mine-avatar-text">{{ avatarDisplay }}</view>
-      </view>
-      <view class="mine-name">{{ profile.nickname || user?.username || TEXT.defaultName }}</view>
-      <view class="mine-intro">{{ profile.bio || TEXT.defaultIntro }}</view>
-      <view class="mine-meta-row">
-        <view class="mine-meta-pill">
-          <text class="mine-meta-dot"></text>
-          <text>{{ profile.city || TEXT.cityFallback }}</text>
+      <view class="mine-hero-glow mine-hero-glow-a"></view>
+      <view class="mine-hero-glow mine-hero-glow-b"></view>
+      <view class="mine-hero-badge">Our Story</view>
+      <view class="mine-avatar-pair">
+        <view class="mine-avatar-shell mine-avatar-shell-main" @click="goAvatarSettings">
+          <image v-if="isImageAvatar" class="mine-avatar-image" :src="avatarImageUrl" mode="aspectFill"></image>
+          <view v-else class="mine-avatar-text">{{ avatarDisplay }}</view>
         </view>
-        <view class="mine-meta-pill">
-          <text class="mine-meta-dot"></text>
-          <text>{{ loverDisplay }}</text>
+        <view class="mine-avatar-bridge" aria-hidden="true">
+          <view class="mine-avatar-bridge-core">♥</view>
+        </view>
+        <view class="mine-avatar-shell mine-avatar-shell-partner">
+          <image v-if="partnerIsImageAvatar" class="mine-avatar-image" :src="partnerAvatarImageUrl" mode="aspectFill"></image>
+          <view v-else class="mine-avatar-partner-text">{{ loverAvatarDisplay }}</view>
         </view>
       </view>
+      <view class="mine-avatar-tip">点击左侧头像修改</view>
+      <view class="mine-name">{{ coupleTitle }}</view>
+      <view class="mine-days">{{ togetherDaysText }}</view>
+      <view class="mine-intro">{{ coupleMoodLine }}</view>
     </view>
 
     <view class="mine-feature-stack app-fade-up app-delay-2">
@@ -135,10 +138,9 @@ import { computed, ref } from 'vue'
 import { onHide, onShow, onUnload } from '@dcloudio/uni-app'
 import { getUser, requireAuth, logout } from '@/utils/auth.js'
 import { resolveAvatarUrl } from '@/utils/avatar.js'
-import { previewImages } from '@/utils/image-preview.js'
 import { getAvatarPresetMap, getProfile } from '@/utils/profile.js'
 import { fetchLatestNotification, fetchUnreadNotificationCount } from '@/services/notifications.js'
-import { fetchRemoteProfile } from '@/services/profile.js'
+import { fetchPartnerProfile, fetchRemoteProfile } from '@/services/profile.js'
 import iconData from '@/assets/icons/icon-data-outline.svg'
 import iconNotification from '@/assets/icons/icon-notification-outline.svg'
 import iconProfile from '@/assets/icons/icon-profile-outline.svg'
@@ -177,6 +179,7 @@ const TEXT = {
 const { themeStyle } = useThemePage()
 const user = ref(null)
 const profile = ref(getProfile())
+const partnerProfile = ref(null)
 const avatarPresetMap = getAvatarPresetMap()
 const currentTheme = ref(getCurrentThemePreset(getThemeSettings()))
 const unreadNotificationCount = ref(0)
@@ -185,6 +188,8 @@ let unsubscribeNotificationSocket = null
 
 const isImageAvatar = computed(() => profile.value.avatarType === 'upload' && !!profile.value.avatarImage)
 const avatarImageUrl = computed(() => resolveAvatarUrl(profile.value.avatarImage))
+const partnerIsImageAvatar = computed(() => partnerProfile.value?.avatarType === 'upload' && !!partnerProfile.value?.avatarImage)
+const partnerAvatarImageUrl = computed(() => resolveAvatarUrl(partnerProfile.value?.avatarImage || ''))
 const avatarDisplay = computed(() => {
   if (profile.value.avatarType === 'preset') {
     return avatarPresetMap[profile.value.avatarPreset] || '爱'
@@ -192,6 +197,36 @@ const avatarDisplay = computed(() => {
   return String(profile.value.avatarText || '').trim() || '爱'
 })
 const loverDisplay = computed(() => profile.value.loverNickname || TEXT.loverFallback)
+const loverAvatarDisplay = computed(() => {
+  if (partnerProfile.value) {
+    if (partnerProfile.value.avatarType === 'preset') {
+      return avatarPresetMap[partnerProfile.value.avatarPreset] || '爱'
+    }
+    const partnerAvatarText = String(partnerProfile.value.avatarText || '').trim()
+    if (partnerAvatarText) return partnerAvatarText.slice(0, 2)
+  }
+
+  const raw = String(partnerProfile.value?.nickname || '').trim() || String(profile.value.loverNickname || '').trim()
+  if (!raw) return '♥'
+  if (/^[A-Za-z]{2,}$/.test(raw)) return raw.slice(0, 1).toUpperCase()
+  return raw.slice(0, 1)
+})
+const partnerCallDisplay = computed(() => partnerProfile.value?.loverNickname || partnerProfile.value?.nickname || 'TA')
+const coupleTitle = computed(() => `${loverDisplay.value} × ${partnerCallDisplay.value}`)
+const togetherDaysText = computed(() => {
+  const startDate = parseDateOnly(profile.value.anniversaryDate)
+  if (!startDate) return '把我们的日子慢慢写长'
+
+  const today = startOfDay(new Date())
+  const diffDays = Math.floor((today.getTime() - startDate.getTime()) / DAY_MS)
+  if (diffDays >= 0) return `已经一起 ${diffDays + 1} 天`
+  return `距离我们的纪念开始还有 ${Math.abs(diffDays)} 天`
+})
+const coupleMoodLine = computed(() => {
+  const bio = String(profile.value.bio || '').trim()
+  if (bio && bio.length <= 20) return bio
+  return '今天也在认真喜欢对方'
+})
 const anniversaryDisplay = computed(() => profile.value.anniversaryDate || '纪念日未设置')
 const relationshipTag = computed(() => profile.value.loverNickname || '点滴')
 const profileSummary = computed(() => {
@@ -217,12 +252,18 @@ const notificationSummaryText = computed(() => {
   return title || content || TEXT.messageEmptyDesc
 })
 
+const DAY_MS = 24 * 60 * 60 * 1000
+
 function goHome() {
   goPage('/pages/home/home')
 }
 
 function goAccountSettings() {
   goPage('/pages/account/profile')
+}
+
+function goAvatarSettings() {
+  goPage('/pages/account/avatar')
 }
 
 function goRelationshipSettings() {
@@ -245,11 +286,6 @@ function goNotifications() {
   goPage('/pages/modules/notifications/index')
 }
 
-function previewAvatar() {
-  if (!avatarImageUrl.value) return
-  previewImages([avatarImageUrl.value], avatarImageUrl.value)
-}
-
 async function handleLogout() {
   await logout()
   uni.reLaunch({ url: '/pages/login/login' })
@@ -260,6 +296,14 @@ async function syncProfileFromServer() {
     profile.value = await fetchRemoteProfile()
   } catch (error) {
     profile.value = getProfile()
+  }
+}
+
+async function syncPartnerProfileFromServer() {
+  try {
+    partnerProfile.value = await fetchPartnerProfile()
+  } catch (error) {
+    partnerProfile.value = null
   }
 }
 
@@ -287,6 +331,18 @@ function applyRealtimeNotificationEvent(event) {
   latestNotification.value = event?.latestNotification || null
 }
 
+function parseDateOnly(value) {
+  if (!value) return null
+  const date = new Date(`${String(value).trim()}T00:00:00`)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+function startOfDay(date) {
+  const current = new Date(date)
+  current.setHours(0, 0, 0, 0)
+  return current
+}
+
 onShow(async () => {
   if (!requireAuth()) return
   if (!unsubscribeNotificationSocket) {
@@ -295,6 +351,7 @@ onShow(async () => {
   user.value = getUser()
   await Promise.all([
     syncProfileFromServer(),
+    syncPartnerProfileFromServer(),
     loadUnreadNotificationCount(),
     loadLatestNotification()
   ])
@@ -400,38 +457,89 @@ onUnload(() => {
 
 .mine-hero {
   margin-top: 24rpx;
-  padding: 42rpx 28rpx 36rpx;
-  border-radius: 40rpx;
+  padding: 34rpx 28rpx 36rpx;
+  border-radius: 42rpx;
   background:
-    radial-gradient(circle at top right, rgba(255, 255, 255, 0.42), transparent 34%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 250, 252, 0.92));
+    radial-gradient(circle at top center, rgba(255, 255, 255, 0.74), transparent 46%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(255, 249, 251, 0.94));
   box-shadow: var(--app-shadow-card);
   text-align: center;
   overflow: hidden;
+  border: 2rpx solid rgba(255, 255, 255, 0.62);
 }
 
 .mine-hero-glow {
   position: absolute;
-  inset: auto auto 0 50%;
-  width: 360rpx;
-  height: 220rpx;
-  transform: translateX(-50%);
-  background: color-mix(in srgb, var(--app-page-glow-soft) 64%, transparent 36%);
+  border-radius: 50%;
   filter: blur(18rpx);
 }
 
-.mine-avatar-shell {
-  width: 156rpx;
-  height: 156rpx;
-  margin: 0 auto;
-  border-radius: 50%;
-  overflow: hidden;
+.mine-hero-glow-a {
+  width: 220rpx;
+  height: 220rpx;
+  top: -56rpx;
+  right: -44rpx;
+  background: rgba(128, 232, 221, 0.18);
+}
+
+.mine-hero-glow-b {
+  width: 190rpx;
+  height: 190rpx;
+  left: -30rpx;
+  bottom: -42rpx;
+  background: rgba(255, 191, 214, 0.24);
+}
+
+.mine-hero-badge,
+.mine-avatar-pair,
+.mine-avatar-tip,
+.mine-name,
+.mine-days,
+.mine-intro {
   position: relative;
   z-index: 1;
+}
+
+.mine-hero-badge {
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 8rpx 20rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.76);
+  color: #87a5a1;
+  font-size: 20rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+}
+
+.mine-avatar-pair {
+  margin-top: 26rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18rpx;
+}
+
+.mine-avatar-shell {
+  width: 132rpx;
+  height: 132rpx;
+  border-radius: 50%;
+  overflow: hidden;
   box-shadow:
-    0 18rpx 30rpx rgba(255, 128, 160, 0.14),
-    inset 0 0 0 8rpx rgba(255, 255, 255, 0.62);
-  background: var(--app-card-gradient-soft);
+    0 18rpx 30rpx rgba(255, 176, 204, 0.18),
+    inset 0 0 0 6rpx rgba(255, 255, 255, 0.68);
+  background: rgba(255, 255, 255, 0.9);
+  flex-shrink: 0;
+}
+
+.mine-avatar-shell-main {
+  border: 2rpx solid rgba(133, 219, 211, 0.32);
+}
+
+.mine-avatar-shell-partner {
+  border: 2rpx solid rgba(255, 198, 210, 0.42);
+  background: linear-gradient(135deg, #ffe4ec, #fff8fa);
 }
 
 .mine-avatar-image,
@@ -444,59 +552,75 @@ onUnload(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 58rpx;
+  font-size: 50rpx;
   font-weight: 700;
   color: #fff;
   background: var(--app-gradient-primary);
 }
 
-.mine-name {
+.mine-avatar-partner-text {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 46rpx;
+  font-weight: 700;
+  color: #d88197;
+}
+
+.mine-avatar-bridge {
   position: relative;
-  z-index: 1;
-  margin-top: 24rpx;
-  font-size: 54rpx;
+  width: 44rpx;
+  height: 12rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(90deg, rgba(145, 228, 218, 0.55), rgba(255, 191, 214, 0.65));
+}
+
+.mine-avatar-bridge-core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 36rpx;
+  height: 36rpx;
+  margin-left: -18rpx;
+  margin-top: -18rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ee9ab2;
+  font-size: 18rpx;
+  box-shadow: 0 8rpx 16rpx rgba(255, 173, 195, 0.18);
+}
+
+.mine-avatar-tip {
+  margin-top: 14rpx;
+  font-size: 22rpx;
+  color: color-mix(in srgb, var(--app-color-primary-strong) 62%, #b89ba5 38%);
+}
+
+.mine-name {
+  margin-top: 22rpx;
+  font-size: 46rpx;
   line-height: 1.18;
   font-weight: 700;
   color: var(--mine-text-main);
 }
 
+.mine-days {
+  margin-top: 14rpx;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #67bdb7;
+}
+
 .mine-intro {
-  position: relative;
-  z-index: 1;
-  margin-top: 12rpx;
+  margin-top: 16rpx;
   font-size: 24rpx;
   line-height: 1.7;
   color: var(--mine-text-sub);
-}
-
-.mine-meta-row {
-  position: relative;
-  z-index: 1;
-  margin-top: 22rpx;
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 12rpx;
-}
-
-.mine-meta-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 10rpx;
-  min-height: 56rpx;
-  padding: 0 18rpx;
-  border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.74);
-  color: var(--mine-text-sub);
-  font-size: 22rpx;
-  box-shadow: inset 0 0 0 2rpx rgba(255, 255, 255, 0.4);
-}
-
-.mine-meta-dot {
-  width: 10rpx;
-  height: 10rpx;
-  border-radius: 50%;
-  background: var(--app-color-primary);
 }
 
 .mine-feature-stack {

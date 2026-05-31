@@ -8,7 +8,7 @@
           <view class="avatar-back-icon" aria-hidden="true"></view>
         </view>
         <view class="avatar-topbar-title">设置头像</view>
-        <button class="avatar-save-btn" @click="handleSave">{{ TEXT.saveButton }}</button>
+        <view class="avatar-topbar-spacer" aria-hidden="true"></view>
       </view>
     </view>
 
@@ -104,6 +104,10 @@
         <view class="avatar-inline-action" @click="chooseAvatarImage">{{ TEXT.reselectButton }}</view>
         <view class="avatar-inline-action ghost" @click="clearAvatarImage">{{ TEXT.clearButton }}</view>
       </view>
+    </view>
+
+    <view class="avatar-bottom-bar">
+      <button class="avatar-bottom-save-btn" @click="handleSave">{{ TEXT.saveButton }}</button>
     </view>
   </view>
 </template>
@@ -282,10 +286,14 @@ async function handleSave() {
 .avatar-page {
   min-height: 100vh;
   background: var(--app-page-gradient-main);
+  display: flex;
+  flex-direction: column;
 }
 
 .avatar-page-content {
+  flex: 1;
   padding-top: 22rpx;
+  padding-bottom: 36rpx;
 }
 
 .avatar-page-content .app-account-stack {
@@ -300,7 +308,7 @@ async function handleSave() {
 }
 
 .avatar-back-btn,
-.avatar-save-btn {
+.avatar-topbar-spacer {
   flex-shrink: 0;
 }
 
@@ -328,26 +336,39 @@ async function handleSave() {
 .avatar-topbar-title {
   flex: 1;
   min-width: 0;
+  text-align: center;
   font-size: 34rpx;
   font-weight: 700;
   color: var(--app-color-primary-strong);
 }
 
-.avatar-save-btn {
-  min-width: 124rpx;
-  height: 74rpx;
-  line-height: 74rpx;
-  padding: 0 28rpx;
+.avatar-topbar-spacer {
+  width: 78rpx;
+  height: 78rpx;
+}
+
+.avatar-bottom-bar {
+  padding: 12rpx 32rpx calc(28rpx + env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: center;
+}
+
+.avatar-bottom-save-btn {
+  width: 100%;
+  max-width: 520rpx;
+  height: 86rpx;
+  line-height: 86rpx;
+  padding: 0 32rpx;
   border: none;
   border-radius: 999rpx;
   background: var(--app-gradient-primary);
   color: #fff;
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 700;
-  box-shadow: var(--app-shadow-soft);
+  box-shadow: var(--app-shadow-card);
 }
 
-.avatar-save-btn::after {
+.avatar-bottom-save-btn::after {
   border: none;
 }
 

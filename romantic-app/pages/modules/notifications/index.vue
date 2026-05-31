@@ -9,7 +9,7 @@
       <AccountHeader title="消息中心" eyebrow="共享收件箱" />
     </view>
 
-    <view class="app-account-content notification-content">
+    <view class="app-account-content notification-page-content">
       <view class="notification-hero app-fade-up">
         <view class="notification-hero-copy">
           <view class="notification-hero-kicker">daily stream</view>
@@ -114,7 +114,7 @@
               <view class="notification-title">{{ item.title }}</view>
               <view v-if="!item.isRead" class="notification-dot"></view>
             </view>
-            <view class="notification-content" :class="{ compact: isCompactNotification(item) }">
+            <view class="notification-card-content" :class="{ compact: isCompactNotification(item) }">
               {{ item.content }}
             </view>
             <view class="notification-meta">
@@ -152,6 +152,7 @@
         <view v-else-if="hasMore" class="pagination-copy">上滑继续翻看更早的消息</view>
         <view v-else class="pagination-copy pagination-copy-finished">已经翻到这页最早的提醒了</view>
       </view>
+
     </view>
   </view>
 </template>
@@ -633,7 +634,7 @@ onUnload(() => {
   --notice-line: rgba(35, 77, 69, 0.08);
   --notice-shadow: 0 24rpx 70rpx rgba(114, 115, 91, 0.12);
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
   background:
     radial-gradient(circle at top left, rgba(244, 219, 199, 0.72), transparent 30%),
     radial-gradient(circle at top right, rgba(214, 232, 223, 0.7), transparent 24%),
@@ -680,10 +681,10 @@ onUnload(() => {
   backdrop-filter: blur(16px);
 }
 
-.notification-content {
+.notification-page-content {
   position: relative;
   z-index: 2;
-  padding: 12rpx 24rpx 48rpx;
+  padding: 12rpx 24rpx calc(48rpx + env(safe-area-inset-bottom));
 }
 
 .notification-hero {
@@ -741,17 +742,20 @@ onUnload(() => {
 
 .notification-stat-grid {
   margin-top: 26rpx;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14rpx;
+  display: flex;
+  flex-wrap: wrap;
+  margin: 26rpx -7rpx 0;
 }
 
 .notification-stat-card {
+  width: calc(50% - 14rpx);
   min-height: 124rpx;
+  margin: 0 7rpx 14rpx;
   padding: 20rpx 20rpx 18rpx;
   border-radius: 28rpx;
   background: rgba(255, 255, 255, 0.72);
   box-shadow: inset 0 0 0 2rpx rgba(255, 255, 255, 0.84);
+  box-sizing: border-box;
 }
 
 .notification-stat-card-strong {
@@ -759,8 +763,9 @@ onUnload(() => {
 }
 
 .notification-stat-card-wide {
-  grid-column: 1 / -1;
+  width: calc(100% - 14rpx);
   min-height: 104rpx;
+  margin-bottom: 0;
 }
 
 .notification-stat-value {
@@ -980,8 +985,10 @@ onUnload(() => {
 
 .notification-stream {
   margin-top: 20rpx;
-  display: grid;
-  gap: 18rpx;
+}
+
+.notification-card-shell + .notification-card-shell {
+  margin-top: 18rpx;
 }
 
 .notification-card-shell {
@@ -1102,7 +1109,7 @@ onUnload(() => {
   flex-shrink: 0;
 }
 
-.notification-content {
+.notification-card-content {
   margin-top: 12rpx;
   font-size: 24rpx;
   line-height: 1.8;
@@ -1113,7 +1120,7 @@ onUnload(() => {
   -webkit-line-clamp: 3;
 }
 
-.notification-content.compact {
+.notification-card-content.compact {
   -webkit-line-clamp: 2;
 }
 

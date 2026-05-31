@@ -2909,3 +2909,37 @@
   - 保留上方 `全部 / 未读 / 已读` 三个状态筛选按钮不变。
   - 将下方原本平铺的一整排消息类型标签改为单个下拉选择入口，避免类型按钮过多导致页面显得拥挤零碎。
   - 下拉入口会直接显示当前所选类型与对应条数，保持筛选信息可见，同时让工具条更整洁。
+
+#### 2026-05-24 补充：今日小计留言区在小程序内无法下拉滚动
+
+- 已修正 `romantic-app/pages/modules/daily-summary/detail.vue` 留言抽屉的滚动容器结构：
+  - 将留言抽屉卡片从仅 `max-height` 的自适应容器，改为带明确 `height` / `min-height` / `overflow: hidden` 的固定底部层，避免小程序里 `scroll-view` 高度计算不稳定。
+  - 给留言滚动区补上 `enable-flex`，并增加 `height: 0` 配合 `flex: 1`，让评论列表在小程序环境下能稳定接管竖向滚动。
+
+#### 2026-05-24 补充：消息中心在小程序里只能显示上半部分
+
+- 已修正 `romantic-app/pages/modules/notifications/index.vue` 的页面容器裁切方式：
+  - 之前消息中心根容器使用了 `overflow: hidden` 来约束背景装饰球的溢出，这在小程序里会连同页面纵向滚动一起裁掉，表现为页面只能显示上半部分、下面内容很难完整滚出来。
+  - 现已改为只限制横向溢出 `overflow-x: hidden`，保留正常的纵向页面滚动。
+  - 同时补上底部 `safe-area-inset-bottom` 留白，避免最后一段列表内容在小程序底部区域贴边或被遮住。
+
+- 已继续修正同页样式串扰问题：
+  - `notification-content` 这个类名原先同时用于“整页内容容器”和“单条消息正文”，后定义的正文截断样式会覆盖外层容器。
+  - 在小程序里，这会导致整页内容容器被错误套上 `-webkit-line-clamp` 和 `overflow: hidden` 一类正文裁切规则，从而出现页面只显示上半部分、下方大片空白的现象。
+  - 现已拆分为 `notification-page-content` 与 `notification-card-content` 两个独立类名，避免页面容器与消息正文互相污染。
+
+- 已继续收敛消息中心的小程序版式兼容性：
+  - 顶部统计区和消息列表原先使用了 `display: grid` 与 `grid-column`，在小程序环境下存在布局高度计算不稳定的风险。
+  - 现已将统计区改为更稳的 `flex + wrap` 两列布局，并将消息列表改回普通纵向流式堆叠，避免出现统计卡只显示半截、后续区域被整体挤空的情况。
+
+- 已新增消息中心真机布局探针日志：
+  - 在 `romantic-app/pages/modules/notifications/index.vue` 中加入 `notification-layout-probe` 日志。
+  - 日志会在页面打开、列表重载、筛选切换、消息类型切换后自动输出系统信息与关键节点尺寸。
+  - 当前会采集 `.notification-page`、`.notification-page-content`、`.notification-hero`、`.notification-toolbar`、`.filter-row-types`、`.type-picker`、`.type-picker-trigger`、`.notification-stream`、`.notification-empty-shell`、`.pagination-state` 的 `top/width/height/bottom`，用于定位 iOS 真机里到底是哪一层被异常撑高、裁切或盖住。
+
+- 已补充页面内可视化诊断兜底：
+  - 考虑到 iOS 真机调试控制台可能看不到 `console.info` / `console.log`，消息中心页面底部新增了临时诊断卡片。
+  - 诊断卡片会直接把设备信息、窗口尺寸、安全区以及关键节点的 `top / height / bottom` 渲染到页面内，方便在真机上直接截图回传，不依赖调试控制台。
+
+- 当前临时诊断探针已撤除：
+  - 在确认消息中心真机显示恢复正常后，已移除消息中心页面内的调试卡片、布局探针日志和相关临时脚本，仅保留正式布局修复代码。

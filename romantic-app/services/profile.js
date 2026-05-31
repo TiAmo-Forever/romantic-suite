@@ -51,6 +51,24 @@ export async function fetchRemoteProfile(options = {}) {
   }
 }
 
+export async function fetchPartnerProfile(options = {}) {
+  const { allowOfflineFallback = true } = options
+
+  try {
+    const response = await request({
+      url: '/api/profiles/mine/partner'
+    })
+
+    const profile = ensureSuccess(response, '获取对方资料失败')
+    return profile ? normalizeRemoteProfile(profile) : null
+  } catch (error) {
+    if (allowOfflineFallback && isServerOffline()) {
+      return null
+    }
+    throw error
+  }
+}
+
 export async function updateRemoteProfile(patch) {
   if (!ensureServerWritable()) {
     throw new Error('离线模式下不支持修改')

@@ -170,7 +170,7 @@
           <view class="comment-drawer-badge">{{ activeEntryCommentStats }}</view>
         </view>
 
-        <scroll-view class="comment-drawer-scroll" scroll-y enhanced show-scrollbar="false">
+        <scroll-view class="comment-drawer-scroll" scroll-y enable-flex enhanced show-scrollbar="false">
           <view class="comment-overview-card">
             <view class="comment-overview-title">{{ TEXT.commentOverviewTitle }}</view>
             <view class="comment-overview-copy">{{ getEntryInteractionSummary(activeEntry) }}</view>
@@ -1290,7 +1290,9 @@ function formatHistoryDate(value) {
 .comment-drawer-card {
   width: 100%;
   max-width: 750rpx;
+  height: 76vh;
   max-height: 76vh;
+  min-height: 560rpx;
   padding: 18rpx 24rpx calc(env(safe-area-inset-bottom) + 24rpx);
   border-radius: 32rpx 32rpx 0 0;
   background: rgba(255, 255, 255, 0.97);
@@ -1298,6 +1300,7 @@ function formatHistoryDate(value) {
   box-shadow: 0 -18rpx 36rpx rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .comment-drawer-handle {
@@ -1345,6 +1348,7 @@ function formatHistoryDate(value) {
 .comment-drawer-scroll {
   width: 100%;
   flex: 1;
+  height: 0;
   min-height: 0;
   margin-top: 20rpx;
 }

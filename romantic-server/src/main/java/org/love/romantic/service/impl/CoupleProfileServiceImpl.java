@@ -74,6 +74,13 @@ public class CoupleProfileServiceImpl implements CoupleProfileService {
     }
 
     @Override
+    public ProfileResponse getPartnerProfile() {
+        CoupleProfile currentProfile = requireCurrentProfile();
+        CoupleProfile partnerProfile = findPartnerProfile(currentProfile.getUsername());
+        return partnerProfile == null ? null : toProfileResponse(partnerProfile);
+    }
+
+    @Override
     public LoginResponse login(LoginRequest request) {
         CoupleProfile profile = getProfileByUsername(request.getUsername());
         if (profile == null || !profile.getPassword().equals(request.getPassword())) {
@@ -204,6 +211,17 @@ public class CoupleProfileServiceImpl implements CoupleProfileService {
         }
         LambdaQueryWrapper<CoupleProfile> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(CoupleProfile::getUsername, username.trim()).last("LIMIT 1");
+        return coupleProfileMapper.selectOne(queryWrapper);
+    }
+
+    private CoupleProfile findPartnerProfile(String username) {
+        if (!StringUtils.hasText(username)) {
+            return null;
+        }
+        LambdaQueryWrapper<CoupleProfile> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.ne(CoupleProfile::getUsername, username.trim())
+                .orderByAsc(CoupleProfile::getId)
+                .last("LIMIT 1");
         return coupleProfileMapper.selectOne(queryWrapper);
     }
 

@@ -2,31 +2,41 @@
   <view class="page app-account-page" :style="themeStyle">
     <GlobalNotificationBanner />
     <view class="app-account-topbar-shell">
-      <AccountHeader title="账号设置" eyebrow="设置中心" />
+      <AccountHeader title="我的设置" eyebrow="关系与账号" />
     </view>
 
     <view class="app-account-content">
       <view class="hero-card app-fade-up">
         <view class="hero-glow hero-glow-a"></view>
         <view class="hero-glow hero-glow-b"></view>
-        <view class="hero-left">
-          <view class="hero-avatar">
+        <view class="hero-badge">Our Story</view>
+        <view class="hero-avatar-pair">
+          <view class="hero-avatar hero-avatar-main">
             <image v-if="isImageAvatar" class="hero-avatar-image" :src="avatarImageUrl" mode="aspectFill" @click.stop="previewAvatar"></image>
             <text v-else class="hero-avatar-text">{{ avatarDisplay }}</text>
           </view>
-          <view class="hero-copy">
-            <view class="hero-title">{{ profile.nickname || '浪漫用户' }}</view>
-            <view class="hero-desc">{{ profile.bio || '把常用资料、安全设置和同步入口都收在这里。' }}</view>
+          <view class="hero-avatar-link" aria-hidden="true">
+            <view class="hero-avatar-link-core">♥</view>
+          </view>
+          <view class="hero-avatar hero-avatar-partner">
+            <image v-if="partnerIsImageAvatar" class="hero-avatar-image" :src="partnerAvatarImageUrl" mode="aspectFill"></image>
+            <text v-else class="hero-avatar-partner-text">{{ loverAvatarDisplay }}</text>
           </view>
         </view>
-        <view class="hero-tags">
-          <view v-if="profile.city" class="hero-chip app-pill app-pill-glass">{{ profile.city }}</view>
-          <view v-if="profile.loverNickname" class="hero-chip app-pill app-pill-glass">{{ profile.loverNickname }}</view>
-        </view>
+        <view class="hero-title">{{ coupleTitle }}</view>
+        <view class="hero-days">{{ togetherDaysText }}</view>
+        <view class="hero-desc">{{ coupleMoodLine }}</view>
+        <view class="hero-bottom-line"></view>
+        <view class="hero-hint">头像和关系信息都可以在下面继续完善</view>
+      </view>
+
+      <view class="hero-intro app-fade-up app-delay-1">
+        <view class="hero-intro-title">把“我”和“我们”都放在同一个舒服的位置</view>
+        <view class="hero-intro-desc">这里主要负责账号资料、关系设定和安全管理，不抢首页的信息舞台，但保留一点专属于两个人的感觉。</view>
       </view>
 
       <AccountPanel title="资料与外观" description="先整理当前账号自己的资料与头像，让首页和个人卡片展示更自然。">
-        <view class="menu-list menu-list-tight app-fade-up app-delay-1">
+        <view class="menu-list menu-list-tight app-fade-up app-delay-2">
           <view class="menu-card app-card-soft" hover-class="menu-card-active" hover-stay-time="70" @click="goPage('/pages/account/profile')">
             <view class="menu-accent accent-profile"></view>
             <view class="menu-main">
@@ -69,7 +79,7 @@
       </AccountPanel>
 
       <AccountPanel title="关系与安全" description="这里同时管理共享的关系资料，以及只属于当前账号自己的登录安全设置。">
-        <view class="menu-list menu-list-tight app-fade-up app-delay-2">
+        <view class="menu-list menu-list-tight app-fade-up app-delay-3">
           <view class="menu-card app-card-soft" hover-class="menu-card-active" hover-stay-time="70" @click="goPage('/pages/account/relationship')">
             <view class="menu-accent accent-relationship"></view>
             <view class="menu-main">
@@ -113,7 +123,7 @@
       </AccountPanel>
 
       <AccountPanel title="数据管理" description="谨慎处理当前账号资料的重置与同步操作，避免误覆盖本地暂存内容。">
-        <view class="menu-list menu-list-tight app-fade-up app-delay-3">
+        <view class="menu-list menu-list-tight app-fade-up app-delay-4">
           <view class="menu-card app-card-soft" hover-class="menu-card-active" hover-stay-time="70" @click="goPage('/pages/account/data')">
             <view class="menu-accent accent-data"></view>
             <view class="menu-main">
@@ -145,7 +155,7 @@ import { onShow } from '@dcloudio/uni-app'
 import { requireAuth } from '@/utils/auth.js'
 import { resolveAvatarUrl } from '@/utils/avatar.js'
 import { previewImages } from '@/utils/image-preview.js'
-import { fetchRemoteProfile } from '@/services/profile.js'
+import { fetchPartnerProfile, fetchRemoteProfile } from '@/services/profile.js'
 import { goPage } from '@/utils/nav.js'
 import { getAvatarPresetMap, getProfile } from '@/utils/profile.js'
 import { useThemePage } from '@/utils/useThemePage.js'
@@ -154,18 +164,52 @@ import AccountPanel from '@/pages/account/components/AccountPanel.vue'
 
 const { themeStyle } = useThemePage()
 const profile = ref(getProfile())
+const partnerProfile = ref(null)
 const avatarPresetMap = getAvatarPresetMap()
 
 const isImageAvatar = computed(() => profile.value.avatarType === 'upload' && !!profile.value.avatarImage)
 const avatarImageUrl = computed(() => resolveAvatarUrl(profile.value.avatarImage))
+const partnerIsImageAvatar = computed(() => partnerProfile.value?.avatarType === 'upload' && !!partnerProfile.value?.avatarImage)
+const partnerAvatarImageUrl = computed(() => resolveAvatarUrl(partnerProfile.value?.avatarImage || ''))
 const avatarDisplay = computed(() => {
   if (profile.value.avatarType === 'preset') {
     return avatarPresetMap[profile.value.avatarPreset] || '♥'
   }
   return String(profile.value.avatarText || '').trim() || '♥'
 })
-
 const anniversaryDisplay = computed(() => profile.value.anniversaryDate || '未设置')
+const loverAvatarDisplay = computed(() => {
+  if (partnerProfile.value) {
+    if (partnerProfile.value.avatarType === 'preset') {
+      return avatarPresetMap[partnerProfile.value.avatarPreset] || '♥'
+    }
+
+    const partnerAvatarText = String(partnerProfile.value.avatarText || '').trim()
+    if (partnerAvatarText) return partnerAvatarText.slice(0, 2)
+  }
+
+  const raw = String(partnerProfile.value?.nickname || '').trim() || String(profile.value.loverNickname || '').trim()
+  if (!raw) return '♥'
+  if (/^[A-Za-z]{2,}$/.test(raw)) return raw.slice(0, 1).toUpperCase()
+  return raw.slice(0, 1)
+})
+const loverDisplay = computed(() => profile.value.loverNickname || 'TA')
+const partnerCallDisplay = computed(() => partnerProfile.value?.loverNickname || partnerProfile.value?.nickname || 'TA')
+const coupleTitle = computed(() => `${loverDisplay.value} × ${partnerCallDisplay.value}`)
+const togetherDaysText = computed(() => {
+  const startDate = parseDateOnly(profile.value.anniversaryDate)
+  if (!startDate) return '把我们的日子慢慢写长'
+
+  const today = startOfDay(new Date())
+  const diffDays = Math.floor((today.getTime() - startDate.getTime()) / DAY_MS)
+  if (diffDays >= 0) return `已经一起 ${diffDays + 1} 天`
+  return `距离我们的纪念开始还有 ${Math.abs(diffDays)} 天`
+})
+const coupleMoodLine = computed(() => {
+  const bio = String(profile.value.bio || '').trim()
+  if (bio && bio.length <= 18) return bio
+  return '今天也在认真喜欢对方'
+})
 const passwordDots = computed(() => '•'.repeat(Math.max((profile.value.password || '').length, 4)))
 const profileSummaryTag = computed(() => profile.value.city || '未设置')
 const profileSummary = computed(() => {
@@ -196,18 +240,45 @@ const securitySummary = computed(() => {
   return length ? `当前密码长度 ${length} 位` : '还没有设置可用密码'
 })
 
+const DAY_MS = 24 * 60 * 60 * 1000
+
 onShow(async () => {
   if (!requireAuth()) return
-  try {
-    profile.value = await fetchRemoteProfile()
-  } catch (error) {
-    profile.value = getProfile()
-  }
+
+  await Promise.all([syncProfileFromServer(), syncPartnerProfileFromServer()])
 })
 
 function previewAvatar() {
   if (!avatarImageUrl.value) return
   previewImages([avatarImageUrl.value], avatarImageUrl.value)
+}
+
+async function syncProfileFromServer() {
+  try {
+    profile.value = await fetchRemoteProfile()
+  } catch (error) {
+    profile.value = getProfile()
+  }
+}
+
+async function syncPartnerProfileFromServer() {
+  try {
+    partnerProfile.value = await fetchPartnerProfile()
+  } catch (error) {
+    partnerProfile.value = null
+  }
+}
+
+function parseDateOnly(value) {
+  if (!value) return null
+  const date = new Date(`${String(value).trim()}T00:00:00`)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+function startOfDay(date) {
+  const current = new Date(date)
+  current.setHours(0, 0, 0, 0)
+  return current
 }
 </script>
 
@@ -215,96 +286,199 @@ function previewAvatar() {
 .hero-card {
   position: relative;
   overflow: hidden;
-  padding: 30rpx;
-  border-radius: 32rpx;
-  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.24), transparent 30%), var(--app-gradient-hero);
-  color: #fff;
+  padding: 34rpx 30rpx 30rpx;
+  border-radius: 36rpx;
+  background:
+    radial-gradient(circle at top center, rgba(255, 255, 255, 0.72), transparent 52%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 248, 249, 0.94));
+  color: var(--app-color-primary-strong);
   box-shadow: var(--app-shadow-card);
+  border: 2rpx solid rgba(255, 255, 255, 0.6);
 }
 
 .hero-glow {
   position: absolute;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.16);
-  filter: blur(8rpx);
+  filter: blur(10rpx);
 }
 
 .hero-glow-a {
-  width: 180rpx;
-  height: 180rpx;
-  right: -30rpx;
-  top: -40rpx;
+  width: 220rpx;
+  height: 220rpx;
+  right: -40rpx;
+  top: -56rpx;
+  background: rgba(119, 233, 220, 0.18);
 }
 
 .hero-glow-b {
-  width: 120rpx;
-  height: 120rpx;
-  left: 40rpx;
-  bottom: -36rpx;
+  width: 180rpx;
+  height: 180rpx;
+  left: -24rpx;
+  bottom: -40rpx;
+  background: rgba(255, 191, 214, 0.24);
 }
 
-.hero-left,
-.hero-tags {
+.hero-badge,
+.hero-avatar-pair,
+.hero-title,
+.hero-days,
+.hero-desc,
+.hero-bottom-line,
+.hero-hint {
   position: relative;
   z-index: 1;
 }
 
-.hero-left {
+.hero-badge {
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 8rpx 20rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.72);
+  color: #87a5a1;
+  font-size: 20rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+}
+
+.hero-avatar-pair {
   display: flex;
   align-items: center;
-  gap: 20rpx;
+  justify-content: center;
+  gap: 18rpx;
+  margin-top: 26rpx;
 }
 
 .hero-avatar {
-  width: 110rpx;
-  height: 110rpx;
+  width: 126rpx;
+  height: 126rpx;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.86);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   flex-shrink: 0;
-  box-shadow: inset 0 0 0 4rpx rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 18rpx 28rpx rgba(255, 176, 204, 0.18),
+    inset 0 0 0 4rpx rgba(255, 255, 255, 0.68);
+}
+
+.hero-avatar-main {
+  border: 2rpx solid rgba(133, 219, 211, 0.32);
+}
+
+.hero-avatar-partner {
+  border: 2rpx solid rgba(255, 198, 210, 0.4);
+  background: linear-gradient(135deg, #ffe4ec, #fff7f8);
 }
 
 .hero-avatar-image {
   width: 100%;
   height: 100%;
+  display: block;
 }
 
 .hero-avatar-text {
-  font-size: 38rpx;
+  font-size: 42rpx;
   font-weight: 700;
+  color: var(--app-color-primary-strong);
 }
 
-.hero-copy {
-  flex: 1;
-  min-width: 0;
+.hero-avatar-partner-text {
+  font-size: 42rpx;
+  font-weight: 700;
+  color: #d88197;
+}
+
+.hero-avatar-link {
+  position: relative;
+  width: 42rpx;
+  height: 12rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(90deg, rgba(145, 228, 218, 0.55), rgba(255, 191, 214, 0.65));
+}
+
+.hero-avatar-link-core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 36rpx;
+  height: 36rpx;
+  margin-left: -18rpx;
+  margin-top: -18rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ee9ab2;
+  font-size: 18rpx;
+  box-shadow: 0 8rpx 16rpx rgba(255, 173, 195, 0.16);
 }
 
 .hero-title {
-  font-size: 40rpx;
+  margin-top: 26rpx;
+  text-align: center;
+  font-size: 42rpx;
   font-weight: 700;
+  color: #486b69;
+}
+
+.hero-days {
+  margin-top: 14rpx;
+  text-align: center;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #67bdb7;
 }
 
 .hero-desc {
-  margin-top: 10rpx;
+  margin-top: 16rpx;
+  text-align: center;
   font-size: 24rpx;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.92);
+  color: #6c8a88;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   word-break: break-all;
 }
 
-.hero-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14rpx;
-  margin-top: 20rpx;
+.hero-bottom-line {
+  width: 120rpx;
+  height: 4rpx;
+  margin: 20rpx auto 0;
+  border-radius: 999rpx;
+  background: linear-gradient(90deg, rgba(142, 227, 217, 0.08), rgba(236, 156, 186, 0.9), rgba(142, 227, 217, 0.08));
+}
+
+.hero-hint {
+  margin-top: 18rpx;
+  text-align: center;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: #8ea09e;
+}
+
+.hero-intro {
+  padding: 10rpx 8rpx 2rpx;
+}
+
+.hero-intro-title {
+  font-size: 24rpx;
+  font-weight: 700;
+  line-height: 1.6;
+  color: var(--app-color-primary-strong);
+}
+
+.hero-intro-desc {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  line-height: 1.8;
+  color: #87a09e;
 }
 
 .menu-list {
