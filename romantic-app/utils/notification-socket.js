@@ -11,6 +11,11 @@ let reconnectTimer = null
 let manualClosed = false
 let connecting = false
 
+function isAdminAccount() {
+  const user = uni.getStorageSync(USER_KEY) || {}
+  return String(user.accountType || '').trim().toUpperCase() !== 'NORMAL'
+}
+
 function clearReconnectTimer() {
   if (reconnectTimer) {
     clearTimeout(reconnectTimer)
@@ -35,7 +40,7 @@ function normalizeWsBaseUrl() {
 function buildSocketUrl() {
   const token = uni.getStorageSync(TOKEN_KEY)
   const baseUrl = normalizeWsBaseUrl()
-  if (!baseUrl || !token) {
+  if (!baseUrl || !token || isAdminAccount()) {
     return ''
   }
   return `${baseUrl}/ws/notifications?token=${encodeURIComponent(token)}`
@@ -90,7 +95,7 @@ async function handleRealtimeEvent(rawEvent) {
 }
 
 function scheduleReconnect() {
-  if (manualClosed || !uni.getStorageSync(TOKEN_KEY)) {
+  if (manualClosed || !uni.getStorageSync(TOKEN_KEY) || isAdminAccount()) {
     return
   }
   clearReconnectTimer()
@@ -100,7 +105,7 @@ function scheduleReconnect() {
 }
 
 export function ensureNotificationSocket() {
-  if (!uni.getStorageSync(TOKEN_KEY) || connecting || socketTask) {
+  if (!uni.getStorageSync(TOKEN_KEY) || isAdminAccount() || connecting || socketTask) {
     return
   }
 

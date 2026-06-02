@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.love.romantic.auth.AuthContext;
+import org.love.romantic.common.AccountTypeConstants;
 import org.love.romantic.common.NotificationBizTypeConstants;
 import org.love.romantic.entity.CoupleProfile;
 import org.love.romantic.entity.UserNotification;
@@ -243,7 +244,15 @@ public class UserNotificationServiceImpl implements UserNotificationService {
     }
 
     private List<String> resolvePartnerUsernames(String actorUsername) {
+        CoupleProfile actorProfile = coupleProfileMapper.selectOne(new LambdaQueryWrapper<CoupleProfile>()
+                .eq(CoupleProfile::getUsername, actorUsername)
+                .last("LIMIT 1"));
+        if (actorProfile == null || AccountTypeConstants.isAdmin(actorProfile.getAccountType())) {
+            return Collections.emptyList();
+        }
+
         return coupleProfileMapper.selectList(new LambdaQueryWrapper<CoupleProfile>()
+                        .eq(CoupleProfile::getAccountType, AccountTypeConstants.NORMAL)
                         .orderByAsc(CoupleProfile::getId))
                 .stream()
                 .map(CoupleProfile::getUsername)

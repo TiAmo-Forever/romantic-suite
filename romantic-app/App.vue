@@ -4,19 +4,24 @@
 
 <script setup>
 import { onLaunch, onShow } from '@dcloudio/uni-app'
+import { isAdminUser } from '@/utils/auth.js'
 import { checkAnniversaryReminderPopup } from '@/utils/anniversary-reminder.js'
 import { ensureNotificationSocket } from '@/utils/notification-socket.js'
 import { applyTheme } from '@/utils/theme.js'
 
 onLaunch(() => {
   applyTheme()
-  ensureNotificationSocket()
+  if (!isAdminUser()) {
+    ensureNotificationSocket()
+  }
 })
 
 onShow(() => {
   applyTheme()
-  checkAnniversaryReminderPopup()
-  ensureNotificationSocket()
+  if (!isAdminUser()) {
+    checkAnniversaryReminderPopup()
+    ensureNotificationSocket()
+  }
 })
 </script>
 

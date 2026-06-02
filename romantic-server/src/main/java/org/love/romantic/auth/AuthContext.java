@@ -1,5 +1,6 @@
 package org.love.romantic.auth;
 
+import org.love.romantic.common.AccountTypeConstants;
 import org.love.romantic.exception.BusinessException;
 
 /**
@@ -26,6 +27,14 @@ public final class AuthContext {
             throw new BusinessException("未登录或登录已失效");
         }
         return loginUser.getUsername();
+    }
+
+    public static String getRequiredAccountType() {
+        LoginUser loginUser = getCurrentUser();
+        if (loginUser == null) {
+            throw new BusinessException("未登录或登录已失效");
+        }
+        return AccountTypeConstants.normalize(loginUser.getAccountType());
     }
 
     public static void clear() {

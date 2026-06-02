@@ -14,10 +14,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     private final AuthTokenInterceptor authTokenInterceptor;
+    private final AdminAccessInterceptor adminAccessInterceptor;
     private final StorageProperties storageProperties;
 
-    public WebConfig(AuthTokenInterceptor authTokenInterceptor, StorageProperties storageProperties) {
+    public WebConfig(AuthTokenInterceptor authTokenInterceptor,
+                     AdminAccessInterceptor adminAccessInterceptor,
+                     StorageProperties storageProperties) {
         this.authTokenInterceptor = authTokenInterceptor;
+        this.adminAccessInterceptor = adminAccessInterceptor;
         this.storageProperties = storageProperties;
     }
 
@@ -43,8 +47,23 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/anniversaries/**",
                         "/api/notifications/**",
                         "/api/improvement-notes/**",
+                        "/api/admin/**",
                         "/api/romantic-plans/**",
                         "/api/auth/logout"
+                )
+                .excludePathPatterns("/api/health/**");
+
+        registry.addInterceptor(adminAccessInterceptor)
+                .addPathPatterns(
+                        "/api/profiles/**",
+                        "/api/files/**",
+                        "/api/countdown/**",
+                        "/api/daily-summaries/**",
+                        "/api/albums/**",
+                        "/api/anniversaries/**",
+                        "/api/notifications/**",
+                        "/api/improvement-notes/**",
+                        "/api/romantic-plans/**"
                 )
                 .excludePathPatterns("/api/health/**");
     }

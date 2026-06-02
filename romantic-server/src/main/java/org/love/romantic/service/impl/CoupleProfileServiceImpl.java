@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.love.romantic.auth.AuthContext;
 import org.love.romantic.auth.AuthTokenService;
+import org.love.romantic.common.AccountTypeConstants;
 import org.love.romantic.common.NotificationBizTypeConstants;
 import org.love.romantic.common.NotificationTypeConstants;
 import org.love.romantic.entity.CoupleProfile;
@@ -90,20 +91,23 @@ public class CoupleProfileServiceImpl implements CoupleProfileService {
 
         String token = authTokenService.createToken(profile);
         log.info("登录成功，username={}, profileId={}", profile.getUsername(), profile.getId());
-        userNotificationService.notifyPartners(
-                profile.getUsername(),
-                NotificationTypeConstants.LOGIN,
-                "TA 回来了",
-                "对方刚刚登录了爱意成笺，今天的甜蜜日常也开始继续书写了。",
-                NotificationBizTypeConstants.AUTH,
-                profile.getId(),
-                Map.of("username", profile.getUsername())
-        );
+        if (!AccountTypeConstants.isAdmin(profile.getAccountType())) {
+            userNotificationService.notifyPartners(
+                    profile.getUsername(),
+                    NotificationTypeConstants.LOGIN,
+                    "TA 回来了",
+                    "对方刚刚登录了爱意成笺，今天的甜蜜日常也开始继续书写了。",
+                    NotificationBizTypeConstants.AUTH,
+                    profile.getId(),
+                    Map.of("username", profile.getUsername())
+            );
+        }
 
         return LoginResponse.builder()
                 .token(token)
                 .username(profile.getUsername())
                 .nickname(profile.getNickname())
+                .accountType(AccountTypeConstants.normalize(profile.getAccountType()))
                 .profile(toProfileResponse(profile))
                 .build();
     }
@@ -220,6 +224,7 @@ public class CoupleProfileServiceImpl implements CoupleProfileService {
         }
         LambdaQueryWrapper<CoupleProfile> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.ne(CoupleProfile::getUsername, username.trim())
+                .eq(CoupleProfile::getAccountType, AccountTypeConstants.NORMAL)
                 .orderByAsc(CoupleProfile::getId)
                 .last("LIMIT 1");
         return coupleProfileMapper.selectOne(queryWrapper);
@@ -293,6 +298,7 @@ public class CoupleProfileServiceImpl implements CoupleProfileService {
         return ProfileResponse.builder()
                 .id(profile.getId())
                 .username(profile.getUsername())
+                .accountType(AccountTypeConstants.normalize(profile.getAccountType()))
                 .nickname(profile.getNickname())
                 .city(profile.getCity())
                 .loverNickname(profile.getLoverNickname())

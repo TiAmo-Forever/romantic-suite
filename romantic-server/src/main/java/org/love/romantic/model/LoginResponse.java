@@ -22,6 +22,9 @@ public class LoginResponse {
     @ApiModelProperty("展示昵称")
     private String nickname;
 
+    @ApiModelProperty("账号类型")
+    private String accountType;
+
     @ApiModelProperty("当前账号资料")
     private ProfileResponse profile;
 }

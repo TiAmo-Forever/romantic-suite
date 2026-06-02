@@ -33,6 +33,9 @@ public class CoupleProfile {
     @ApiModelProperty("登录密码")
     private String password;
 
+    @ApiModelProperty("账号类型")
+    private String accountType;
+
     @ApiModelProperty("昵称")
     private String nickname;
 

@@ -1,6 +1,7 @@
 package org.love.romantic.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.love.romantic.common.AccountTypeConstants;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.stereotype.Component;
@@ -34,6 +35,7 @@ public class SchemaMigrationRunner {
         ensureAlbumTables();
         ensureRomanticPlanTables();
         ensureColumns();
+        migrateAccountTypes();
         ensureAvatarImageColumnType();
         refreshMysqlComments();
     }
@@ -312,6 +314,8 @@ public class SchemaMigrationRunner {
                 "ALTER TABLE couple_profile ADD COLUMN username VARCHAR(64) NOT NULL DEFAULT 'chenjia'");
         ensureColumn("couple_profile", "password",
                 "ALTER TABLE couple_profile ADD COLUMN password VARCHAR(64) NOT NULL DEFAULT 'admin'");
+        ensureColumn("couple_profile", "account_type",
+                "ALTER TABLE couple_profile ADD COLUMN account_type VARCHAR(16) NOT NULL DEFAULT 'NORMAL'");
         ensureColumn("couple_profile", "default_meeting_place",
                 "ALTER TABLE couple_profile ADD COLUMN default_meeting_place VARCHAR(64) NOT NULL DEFAULT '上海'");
         ensureColumn("couple_profile", "default_meeting_area_id",
@@ -336,6 +340,22 @@ public class SchemaMigrationRunner {
                 "CREATE INDEX idx_anniversary_event_pinned ON anniversary_event (is_pinned, event_date)");
         ensureColumn("album_memory", "like_count",
                 "ALTER TABLE album_memory ADD COLUMN like_count BIGINT NOT NULL DEFAULT 0");
+    }
+
+    private void migrateAccountTypes() {
+        try {
+            jdbcTemplate.update(
+                    "UPDATE couple_profile SET account_type = ? WHERE UPPER(account_type) <> ?",
+                    AccountTypeConstants.ADMIN,
+                    AccountTypeConstants.NORMAL
+            );
+            jdbcTemplate.update(
+                    "UPDATE couple_profile SET username = 'admin', password = 'admin' WHERE account_type = ? AND username <> 'admin'",
+                    AccountTypeConstants.ADMIN
+            );
+        } catch (Exception exception) {
+            log.warn("迁移账号类型失败，message={}", exception.getMessage());
+        }
     }
 
     private void ensureColumn(String tableName, String columnName, String alterSql) {
@@ -448,6 +468,8 @@ public class SchemaMigrationRunner {
         executeCommentSql("ALTER TABLE improvement_note MODIFY COLUMN latest_feedback VARCHAR(1000) NOT NULL DEFAULT '' COMMENT '最近一次反馈内容'");
         executeCommentSql("ALTER TABLE improvement_feedback MODIFY COLUMN content VARCHAR(1000) NOT NULL COMMENT '反馈内容'");
         executeCommentSql("ALTER TABLE user_notification MODIFY COLUMN content VARCHAR(1000) NOT NULL COMMENT '通知内容'");
+        executeCommentSql("ALTER TABLE couple_profile COMMENT = '情侣账号资料表'");
+        executeCommentSql("ALTER TABLE couple_profile MODIFY COLUMN account_type VARCHAR(16) NOT NULL DEFAULT 'NORMAL' COMMENT '账号类型'");
 
         executeCommentSql("ALTER TABLE album_memory MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
         executeCommentSql("ALTER TABLE album_memory MODIFY COLUMN username VARCHAR(64) NOT NULL COMMENT '创建账号'");

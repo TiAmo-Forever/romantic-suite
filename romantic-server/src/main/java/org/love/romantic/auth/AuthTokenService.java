@@ -1,5 +1,6 @@
 package org.love.romantic.auth;
 
+import org.love.romantic.common.AccountTypeConstants;
 import org.love.romantic.entity.CoupleProfile;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +31,7 @@ public class AuthTokenService {
                 LoginUser.builder()
                         .profileId(profile.getId())
                         .username(profile.getUsername())
+                        .accountType(AccountTypeConstants.normalize(profile.getAccountType()))
                         .expiresAt(expiresAt)
                         .build(),
                 expiresAt

@@ -19,6 +19,9 @@ public class ProfileResponse {
     @ApiModelProperty("登录账号")
     private String username;
 
+    @ApiModelProperty("账号类型")
+    private String accountType;
+
     @ApiModelProperty("自己的真实姓名")
     private String nickname;
 

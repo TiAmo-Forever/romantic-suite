@@ -21,6 +21,11 @@ public class LoginUser {
     private final String username;
 
     /**
+     * 账号类型。
+     */
+    private final String accountType;
+
+    /**
      * token 过期时间戳，单位为毫秒。
      */
     private final long expiresAt;

@@ -1,4 +1,6 @@
-﻿export function goPage(url) {
+import { isAdminUser } from '@/utils/auth.js'
+
+export function goPage(url) {
 	uni.navigateTo({ url, animationType: 'pop-in', animationDuration: 220 })
 }
 
@@ -15,7 +17,8 @@ export function switchRootPage(url) {
 }
 
 export function openHomePage() {
-	switchRootPage('/pages/home/home')
+	const user = uni.getStorageSync('romantic_user') || {}
+	switchRootPage(isAdminUser(user) ? '/pages/admin/overview' : '/pages/home/home')
 }
 
 export function backPage() {

@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS couple_profile (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键 ID',
     username VARCHAR(64) NOT NULL UNIQUE COMMENT '登录账号',
     password VARCHAR(64) NOT NULL COMMENT '登录密码',
+    account_type VARCHAR(16) NOT NULL DEFAULT 'NORMAL' COMMENT '账号类型',
     nickname VARCHAR(64) NOT NULL COMMENT '自己的真实姓名',
     city VARCHAR(64) NOT NULL COMMENT '所在城市',
     lover_nickname VARCHAR(64) NOT NULL COMMENT '对方对你的称呼',

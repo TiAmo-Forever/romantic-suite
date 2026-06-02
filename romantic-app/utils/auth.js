@@ -7,6 +7,8 @@ import { saveAndApplyTheme } from '@/utils/theme.js'
 const TOKEN_KEY = 'romantic_token'
 const USER_KEY = 'romantic_user'
 const LOGIN_PAGE = '/pages/login/login'
+const NORMAL_ACCOUNT_TYPE = 'NORMAL'
+const ADMIN_ACCOUNT_TYPE = 'ADMIN'
 let redirectingToLogin = false
 
 export async function login(username, password) {
@@ -14,7 +16,8 @@ export async function login(username, password) {
 		const payload = await loginByServer({ username, password })
 		const user = {
 			username: payload.username,
-			nickname: payload.nickname || payload.profile?.nickname || 'Romantic Space'
+			nickname: payload.nickname || payload.profile?.nickname || 'Romantic Space',
+			accountType: normalizeAccountType(payload.accountType || payload.profile?.accountType)
 		}
 
 		uni.setStorageSync(TOKEN_KEY, payload.token)
@@ -28,7 +31,9 @@ export async function login(username, password) {
 			saveAndApplyTheme({ presetKey: payload.profile.themePresetKey || 'pink' })
 		}
 
-		ensureNotificationSocket()
+		if (!isAdminUser(user)) {
+			ensureNotificationSocket()
+		}
 
 		return { success: true, user }
 	} catch (error) {
@@ -81,7 +86,18 @@ export function isLogin() {
 }
 
 export function getUser() {
-	return uni.getStorageSync(USER_KEY) || null
+	const user = uni.getStorageSync(USER_KEY) || null
+	if (!user || typeof user !== 'object') {
+		return null
+	}
+	return {
+		...user,
+		accountType: normalizeAccountType(user.accountType)
+	}
+}
+
+export function isAdminUser(user = getUser()) {
+	return String(user?.accountType || '').trim().toUpperCase() === ADMIN_ACCOUNT_TYPE
 }
 
 export function requireAuth() {
@@ -91,4 +107,12 @@ export function requireAuth() {
 
 	redirectToLogin('Please sign in first')
 	return false
+}
+
+function normalizeAccountType(accountType) {
+	const normalized = String(accountType || '').trim().toUpperCase()
+	if (!normalized || normalized === NORMAL_ACCOUNT_TYPE) {
+		return NORMAL_ACCOUNT_TYPE
+	}
+	return ADMIN_ACCOUNT_TYPE
 }
