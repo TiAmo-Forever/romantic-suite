@@ -76,7 +76,7 @@ onShow(() => {
 
 <style scoped>
   .admin-couple-page { background: var(--app-page-gradient-main); }
-  .admin-topbar { position: sticky; top: 0; z-index: 10; background: rgba(255, 255, 255, 0.58); backdrop-filter: blur(12px); }
+  .admin-topbar { position: sticky; top: var(--app-sticky-top); z-index: 10; background: rgba(255, 255, 255, 0.58); backdrop-filter: blur(12px); }
   .top-nav-icon { width: 18rpx; height: 18rpx; border-left: 4rpx solid currentColor; border-bottom: 4rpx solid currentColor; border-radius: 2rpx; box-sizing: border-box; transform: rotate(45deg); }
   .top-nav-placeholder { width: 88rpx; }
   .couple-meta { padding: 28rpx; }

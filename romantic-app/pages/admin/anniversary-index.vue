@@ -26,13 +26,13 @@
         </view>
         <view class="event-date">{{ item.eventDate || '待设置' }}</view>
         <view class="event-status">{{ formatStatus(item) }}</view>
-        <view class="event-summary">{{ item.description || item.location || '点开看看这一天留下了哪些文字。' }}</view>
+        <view class="event-summary">{{ item.description || item.location || '暂无说明' }}</view>
       </view>
     </view>
 
     <view v-else class="empty-card app-card-soft app-fade-up app-delay-1">
       <view class="empty-title">还没有纪念日</view>
-      <view class="empty-desc">这里暂时没有可以展示的重要日子。</view>
+      <view class="empty-desc">暂无纪念日</view>
     </view>
   </view>
 </template>
@@ -91,7 +91,7 @@ onShow(() => {
 
 <style scoped>
   .admin-anniversary-page { background: var(--app-page-gradient-main); }
-  .admin-topbar { position: sticky; top: 0; z-index: 10; background: rgba(255, 255, 255, 0.58); backdrop-filter: blur(12px); }
+  .admin-topbar { position: sticky; top: var(--app-sticky-top); z-index: 10; background: rgba(255, 255, 255, 0.58); backdrop-filter: blur(12px); }
   .top-nav-icon { width: 18rpx; height: 18rpx; border-left: 4rpx solid currentColor; border-bottom: 4rpx solid currentColor; border-radius: 2rpx; box-sizing: border-box; transform: rotate(45deg); }
   .top-nav-placeholder { width: 88rpx; }
   .filter-row { display: flex; gap: 16rpx; flex-wrap: wrap; }

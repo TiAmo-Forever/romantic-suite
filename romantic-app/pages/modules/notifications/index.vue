@@ -13,9 +13,9 @@
       <view class="notification-hero app-fade-up">
         <view class="notification-hero-copy">
           <view class="notification-hero-kicker">daily stream</view>
-          <view class="notification-hero-title">今天发生的事，都收在这一页</view>
+          <view class="notification-hero-title">消息中心</view>
           <view class="notification-hero-desc">
-            打开时先看重点，想回看细节时再慢慢往下翻。
+            登录、纪念日、相册、倒计时、今日小计、改进簿、浪漫计划提醒
           </view>
         </view>
         <view class="notification-stat-grid">
@@ -134,8 +134,8 @@
       <view v-else-if="loadingInitial" class="notification-empty-shell app-fade-up app-delay-2">
         <view class="notification-empty-card">
           <view class="notification-empty-kicker">正在整理提醒</view>
-          <view class="notification-empty-title">消息马上就到这里</view>
-          <view class="notification-empty-desc">先把今天的动态捋一遍，再给你一页干净的时间流。</view>
+          <view class="notification-empty-title">暂无提醒</view>
+          <view class="notification-empty-desc">当前条件下没有可显示的提醒</view>
         </view>
       </view>
 
@@ -229,13 +229,13 @@ const toolbarTitle = computed(() => {
 const activeFilterSummary = computed(() => {
   if (activeFilter.value === 'unread') {
     return filteredTotal.value > 0
-      ? `还有 ${filteredTotal.value} 条${buildFilterSubject()}等你看`
-      : `当前没有未读的${buildFilterSubject()}`
+      ? `${filteredTotal.value} 条未读${buildFilterSubject()}`
+      : `暂无未读${buildFilterSubject()}`
   }
   if (activeFilter.value === 'read') {
     return filteredTotal.value > 0
-      ? `这里收好了 ${filteredTotal.value} 条${buildFilterSubject()}`
-      : `还没有${buildFilterSubject()}沉淀在这里`
+      ? `${filteredTotal.value} 条已读${buildFilterSubject()}`
+      : `暂无已读${buildFilterSubject()}`
   }
   const scopedTodayCount = resolveTodayTypeCount(activeBizType.value)
   if (scopedTodayCount > 0) {
@@ -244,47 +244,47 @@ const activeFilterSummary = computed(() => {
       : `今天收到了 ${scopedTodayCount} 条${activeBizTypeLabel.value}动态`
   }
   return activeBizType.value === 'all'
-    ? '今天暂时还没有新的动态'
-    : `今天还没有新的${activeBizTypeLabel.value}动态`
+    ? '今日暂无新提醒'
+    : `今日暂无新的${activeBizTypeLabel.value}提醒`
 })
 const toolbarContextLabel = computed(() => activeBizType.value === 'all' ? '消息流' : activeBizTypeLabel.value)
 const toolbarSubtitle = computed(() => {
   if (activeFilter.value === 'unread') {
     return filteredTotal.value > 0
-      ? `先把这批${toolbarContextLabel.value}里的未读消息扫一遍。`
-      : `新的${toolbarContextLabel.value}提醒一出现，就会先落到这里。`
+      ? `当前显示未读${toolbarContextLabel.value}`
+      : `暂无未读${toolbarContextLabel.value}`
   }
   if (activeFilter.value === 'read') {
     return filteredTotal.value > 0
-      ? `看过的${toolbarContextLabel.value}会安静留在这边。`
-      : `等你点开过一条${toolbarContextLabel.value}提醒后，它就会出现在这里。`
+      ? `当前显示已读${toolbarContextLabel.value}`
+      : `暂无已读${toolbarContextLabel.value}`
   }
   return activeBizType.value === 'all'
-    ? (unreadCount.value > 0 ? '先看最上面的新动态，再慢慢往前翻。' : '这页现在已经整理得很清爽了。')
-    : `现在只看${activeBizTypeLabel.value}相关的提醒，翻起来会更聚焦。`
+    ? (unreadCount.value > 0 ? '按时间倒序展示全部提醒' : '暂无提醒')
+    : `当前仅显示${activeBizTypeLabel.value}提醒`
 })
 const emptyState = computed(() => {
   if (activeFilter.value === 'unread') {
     return {
       title: activeBizType.value === 'all' ? '当前没有未读提醒' : `当前没有未读的${activeBizTypeLabel.value}提醒`,
       desc: activeBizType.value === 'all'
-        ? '新的共享动态一出现，就会先落到这里。'
-        : `新的${activeBizTypeLabel.value}动态一出现，就会先落到这里。`
+        ? '暂无新提醒'
+        : `暂无${activeBizTypeLabel.value}提醒`
     }
   }
   if (activeFilter.value === 'read') {
     return {
       title: activeBizType.value === 'all' ? '还没有已读记录' : `还没有已读的${activeBizTypeLabel.value}记录`,
       desc: activeBizType.value === 'all'
-        ? '点开过的提醒，会慢慢沉淀成这页的回看记录。'
-        : `点开过的${activeBizTypeLabel.value}提醒，会慢慢沉淀成这页的回看记录。`
+        ? '暂无已读提醒'
+        : `暂无已读${activeBizTypeLabel.value}提醒`
     }
   }
   return {
     title: activeBizType.value === 'all' ? '还没有新的提醒' : `还没有${activeBizTypeLabel.value}提醒`,
     desc: activeBizType.value === 'all'
-      ? '登录、纪念日、相册、倒计时、今日小计、改进簿和浪漫计划的动态，之后都会陆续收进来。'
-      : `${activeBizTypeLabel.value}相关的动态，之后都会陆续收进来。`
+      ? '暂无可显示的提醒'
+      : `暂无${activeBizTypeLabel.value}提醒`
   }
 })
 

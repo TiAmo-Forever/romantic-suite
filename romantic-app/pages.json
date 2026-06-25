@@ -4,7 +4,7 @@
       "path": "pages/login/login",
       "style": {
         "navigationStyle": "custom",
-        "backgroundColor": "#fff5f8"
+        "backgroundColor": "#fdf4ee"
       }
     },
     {

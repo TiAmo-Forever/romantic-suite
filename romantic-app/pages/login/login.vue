@@ -1,81 +1,74 @@
 <template>
-	<view class="page" @click="handlePageTap">
+	<view class="login-page" :style="pageStyle">
 		<GlobalNotificationBanner />
-		<view class="ambient ambient-a"></view>
-		<view class="ambient ambient-b"></view>
-		<view class="ambient ambient-c"></view>
-		<view class="sparkle sparkle-a"></view>
-		<view class="sparkle sparkle-b"></view>
-		<view class="sparkle sparkle-c"></view>
+		<view class="glow glow-a"></view>
+		<view class="glow glow-b"></view>
+		<view class="glow glow-c"></view>
+		<view class="glow glow-d"></view>
+		<view v-for="item in hearts" :key="item.id" class="heart" :style="getHeartStyle(item)">{{ item.text }}</view>
 
-		<view v-for="item in hearts" :key="item.id" class="heart" :style="getHeartStyle(item)">
-			{{ item.text }}
-		</view>
+		<view class="login-shell">
+			<view class="intro-copy">两 个 人 的 时 光</view>
 
-		<view class="page-shell">
+			<view class="hero-stage">
+				<view class="hero-ring hero-ring-outer"></view>
+				<view class="hero-ring hero-ring-inner"></view>
+				<view class="hero-float">
+					<image class="hero-illustration" :src="loginIllustrationUrl" mode="aspectFit" />
+				</view>
+			</view>
+
 			<view class="brand-block">
-				<view class="brand-mark">
-					<view class="envelope-back"></view>
-					<view class="envelope-flap"></view>
-					<view class="letter-card">
-						<view class="letter-line short"></view>
-						<view class="letter-line"></view>
-						<view class="letter-seal"></view>
-					</view>
-					<view class="leaf leaf-left"></view>
-					<view class="leaf leaf-right"></view>
-				</view>
 				<view class="brand-title">爱意成笺</view>
-				<view class="brand-divider">
-					<view class="divider-line"></view>
-					<view class="divider-text">一起记录每一个甜蜜瞬间</view>
-					<view class="divider-line"></view>
+				<view class="brand-subline">
+					<view class="brand-line"></view>
+					<text class="brand-roman">SHI GUANG</text>
+					<view class="brand-line"></view>
 				</view>
+				<view class="brand-desc">把每一天好好记下来</view>
 			</view>
 
 			<view class="login-card">
-				<view class="card-outline"></view>
-
-				<view class="field-shell">
-					<view class="field-icon" aria-hidden="true">账号</view>
-					<input
-						v-model.trim="form.username"
-						class="field-input"
-						placeholder="输入账号，继续今天的心动"
-						placeholder-class="field-placeholder"
-					/>
+				<view class="field-group">
+					<view class="field-label">账 号</view>
+					<view class="field-box">
+						<input
+							v-model.trim="form.username"
+							class="field-input"
+							placeholder="请输入邮箱或账号"
+							placeholder-class="field-placeholder"
+						/>
+					</view>
 				</view>
 
-				<view class="field-shell">
-					<view class="field-icon" aria-hidden="true">密码</view>
-					<input
-						v-model="form.password"
-						class="field-input field-input-with-action"
-						:password="!showPassword"
-						placeholder="输入密码，赴约今天的甜蜜"
-						placeholder-class="field-placeholder"
-					/>
-					<view class="field-action" :class="{ active: showPassword }" @click.stop="togglePassword">
-						<view class="eye-icon" :class="{ active: showPassword }" aria-hidden="true">
-							<view class="eye-pupil"></view>
+				<view class="field-group field-group-password">
+					<view class="field-label">密 码</view>
+					<view class="field-box field-box-password">
+						<input
+							v-model="form.password"
+							class="field-input field-input-password"
+							:password="!showPassword"
+							placeholder="请输入密码"
+							placeholder-class="field-placeholder"
+						/>
+						<view class="password-toggle" @click.stop="togglePassword">
+							<image class="password-eye-icon" :src="passwordEyeIconUrl" mode="aspectFit" />
+							<view class="password-toggle-line" :class="{ active: !showPassword }"></view>
 						</view>
 					</view>
 				</view>
 
-				<view class="assist-row">
-					<view class="remember-trigger" @click.stop="toggleRemember">
-						<view class="remember-dot" :class="{ active: rememberAccount }">
-							<view class="remember-dot-inner"></view>
-						</view>
-						<text class="assist-text">记住账号</text>
-					</view>
-					<view class="assist-link" @click.stop="handleForgotPassword">忘记密码？</view>
-				</view>
+				<button class="login-btn" :loading="submitting" @click.stop="handleLogin">进 入 我 们 的 空 间</button>
 
-				<button class="login-btn" :loading="submitting" @click.stop="handleLogin">登录</button>
 			</view>
 
-			<view class="footer-copy">爱意成笺，陪伴你们每一天的温柔时光</view>
+			<view class="bottom-ornament">
+				<view class="ornament-line"></view>
+				<view class="ornament-dot ornament-dot-small"></view>
+				<view class="ornament-dot ornament-dot-large"></view>
+				<view class="ornament-dot ornament-dot-small"></view>
+				<view class="ornament-line"></view>
+			</view>
 		</view>
 	</view>
 </template>
@@ -84,8 +77,11 @@
 import { reactive, ref, onMounted, onUnmounted } from 'vue'
 import { clearLoginState, login } from '@/utils/auth.js'
 import { openHomePage } from '@/utils/nav.js'
+import { useThemePage } from '@/utils/useThemePage.js'
 
-const REMEMBERED_LOGIN_KEY = 'romantic_remembered_login'
+const loginIllustrationUrl = '/static/login/hero.png'
+const passwordEyeIconUrl = '/static/login/eye.svg'
+const { themeStyle: pageStyle } = useThemePage()
 
 const form = reactive({
 	username: '',
@@ -93,17 +89,16 @@ const form = reactive({
 })
 
 const hearts = ref([])
-const rememberAccount = ref(false)
 const showPassword = ref(false)
 const submitting = ref(false)
 
 let heartTimer = null
 let heartId = 1
 let screenWidth = 375
-let screenHeight = 667
+let screenHeight = 851
 
 const heartTexts = ['❤', '♡', '♥', '✦', '✿']
-const heartColors = ['rgba(227, 170, 103, 0.34)', 'rgba(214, 188, 148, 0.34)', 'rgba(255, 255, 255, 0.45)']
+const heartColors = ['rgba(209, 122, 104, 0.28)', 'rgba(196, 153, 114, 0.24)', 'rgba(255, 255, 255, 0.36)']
 
 function random(min, max) {
 	return Math.random() * (max - min) + min
@@ -112,48 +107,18 @@ function random(min, max) {
 function initSystemInfo() {
 	const info = uni.getSystemInfoSync()
 	screenWidth = info.windowWidth || 375
-	screenHeight = info.windowHeight || 667
-}
-
-function restoreRememberedUsername() {
-	const rememberedLogin = uni.getStorageSync(REMEMBERED_LOGIN_KEY)
-	if (!rememberedLogin || typeof rememberedLogin !== 'object') {
-		return
-	}
-
-	form.username = String(rememberedLogin.username || '').trim()
-	form.password = String(rememberedLogin.password || '')
-
-	if (!form.username || !form.password) {
-		form.username = ''
-		form.password = ''
-		return
-	}
-
-	rememberAccount.value = true
-}
-
-function persistRememberedUsername() {
-	if (rememberAccount.value && form.username && form.password) {
-		uni.setStorageSync(REMEMBERED_LOGIN_KEY, {
-			username: form.username,
-			password: form.password
-		})
-		return
-	}
-
-	uni.removeStorageSync(REMEMBERED_LOGIN_KEY)
+	screenHeight = info.windowHeight || 851
 }
 
 function createHeart() {
 	const item = {
 		id: heartId++,
-		left: random(0, screenWidth - 30),
-		bottom: random(-20, 180),
+		left: random(0, Math.max(24, screenWidth - 30)),
+		bottom: random(-20, 220),
 		size: random(16, 28),
-		duration: random(4, 6.5),
-		drift: random(-36, 36),
-		rotate: random(-18, 18),
+		duration: random(4.2, 6.4),
+		drift: random(-32, 32),
+		rotate: random(-14, 14),
 		text: heartTexts[Math.floor(Math.random() * heartTexts.length)],
 		color: heartColors[Math.floor(Math.random() * heartColors.length)]
 	}
@@ -162,6 +127,14 @@ function createHeart() {
 	setTimeout(() => {
 		hearts.value = hearts.value.filter((value) => value.id !== item.id)
 	}, item.duration * 1000)
+}
+
+function burstHearts() {
+	for (let index = 0; index < 4; index += 1) {
+		setTimeout(() => {
+			createHeart()
+		}, index * 90)
+	}
 }
 
 function getHeartStyle(item) {
@@ -177,20 +150,8 @@ function getHeartStyle(item) {
 	}
 }
 
-function toggleRemember() {
-	rememberAccount.value = !rememberAccount.value
-	persistRememberedUsername()
-}
-
 function togglePassword() {
 	showPassword.value = !showPassword.value
-}
-
-function handleForgotPassword() {
-	uni.showToast({
-		title: '忘记密码功能暂未开放',
-		icon: 'none'
-	})
 }
 
 async function handleLogin() {
@@ -226,12 +187,11 @@ async function handleLogin() {
 			return
 		}
 
-		persistRememberedUsername()
-
 		uni.showToast({
 			title: '登录成功',
 			icon: 'success'
 		})
+
 		setTimeout(() => {
 			openHomePage()
 		}, 400)
@@ -240,18 +200,10 @@ async function handleLogin() {
 	}
 }
 
-function handlePageTap() {
-	for (let index = 0; index < 4; index += 1) {
-		setTimeout(() => {
-			createHeart()
-		}, index * 90)
-	}
-}
-
 onMounted(() => {
 	clearLoginState()
 	initSystemInfo()
-	restoreRememberedUsername()
+	burstHearts()
 	heartTimer = setInterval(createHeart, 900)
 })
 
@@ -263,417 +215,29 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-	.page {
+	.login-page {
 		position: relative;
 		min-height: 100vh;
 		overflow: hidden;
 		background:
-			radial-gradient(circle at 18% 14%, rgba(255, 255, 255, 0.76), transparent 20%),
-			radial-gradient(circle at 84% 18%, rgba(255, 232, 204, 0.5), transparent 18%),
-			radial-gradient(circle at 82% 82%, rgba(255, 228, 205, 0.44), transparent 22%),
-			linear-gradient(180deg, #fffaf3 0%, #fff5e8 48%, #fffaf4 100%);
+			radial-gradient(circle at 50% 18%, rgba(255, 247, 241, 0.72), rgba(255, 247, 241, 0) 28%),
+			linear-gradient(135deg, #fdf4ee 8.49%, #fceae0 45.85%, #f8d9ce 91.51%);
 	}
 
-	.page-shell {
+	.login-shell {
 		position: relative;
 		z-index: 2;
 		min-height: 100vh;
-		padding: 132rpx 44rpx 72rpx;
+		padding: var(--app-login-shell-padding-top) 24rpx 64rpx;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 	}
 
-	.ambient,
-	.sparkle {
+	.glow {
 		position: absolute;
 		border-radius: 50%;
 		pointer-events: none;
-	}
-
-	.ambient {
-		filter: blur(8rpx);
-		opacity: 0.72;
-	}
-
-	.ambient-a {
-		width: 320rpx;
-		height: 320rpx;
-		left: -110rpx;
-		top: 120rpx;
-		background: radial-gradient(circle, rgba(255, 240, 220, 0.66) 0%, rgba(255, 240, 220, 0) 72%);
-	}
-
-	.ambient-b {
-		width: 240rpx;
-		height: 240rpx;
-		right: -60rpx;
-		top: 460rpx;
-		background: radial-gradient(circle, rgba(255, 228, 195, 0.48) 0%, rgba(255, 228, 195, 0) 72%);
-	}
-
-	.ambient-c {
-		width: 280rpx;
-		height: 280rpx;
-		right: -90rpx;
-		bottom: 120rpx;
-		background: radial-gradient(circle, rgba(255, 238, 223, 0.56) 0%, rgba(255, 238, 223, 0) 72%);
-	}
-
-	.sparkle {
-		background: rgba(255, 255, 255, 0.82);
-		box-shadow: 0 0 20rpx rgba(255, 255, 255, 0.65);
-		animation: sparklePulse 3.2s ease-in-out infinite;
-	}
-
-	.sparkle-a {
-		width: 12rpx;
-		height: 12rpx;
-		left: 102rpx;
-		top: 160rpx;
-	}
-
-	.sparkle-b {
-		width: 16rpx;
-		height: 16rpx;
-		right: 110rpx;
-		top: 220rpx;
-		animation-delay: 0.7s;
-	}
-
-	.sparkle-c {
-		width: 14rpx;
-		height: 14rpx;
-		right: 140rpx;
-		bottom: 210rpx;
-		animation-delay: 1.3s;
-	}
-
-	.brand-block {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
-
-	.brand-mark {
-		position: relative;
-		width: 168rpx;
-		height: 130rpx;
-	}
-
-	.envelope-back {
-		position: absolute;
-		left: 22rpx;
-		right: 22rpx;
-		bottom: 18rpx;
-		height: 66rpx;
-		border-radius: 14rpx;
-		background: linear-gradient(180deg, #f7cf9f 0%, #efbb7f 100%);
-		box-shadow: 0 14rpx 26rpx rgba(214, 171, 108, 0.18);
-	}
-
-	.envelope-flap {
-		position: absolute;
-		left: 24rpx;
-		right: 24rpx;
-		top: 34rpx;
-		margin: auto;
-		width: 0;
-		height: 0;
-		border-left: 60rpx solid transparent;
-		border-right: 60rpx solid transparent;
-		border-bottom: 42rpx solid #f2c38d;
-		filter: drop-shadow(0 8rpx 12rpx rgba(216, 175, 115, 0.14));
-	}
-
-	.letter-card {
-		position: absolute;
-		left: 48rpx;
-		top: 10rpx;
-		width: 72rpx;
-		height: 54rpx;
-		padding: 10rpx 12rpx;
-		border-radius: 10rpx;
-		background: rgba(255, 250, 242, 0.96);
-		box-shadow: 0 10rpx 18rpx rgba(216, 190, 156, 0.22);
-		transform: rotate(-4deg);
-	}
-
-	.letter-line {
-		height: 4rpx;
-		margin-top: 6rpx;
-		border-radius: 999rpx;
-		background: rgba(186, 136, 88, 0.42);
-	}
-
-	.letter-line.short {
-		width: 62%;
-		margin-top: 0;
-	}
-
-	.letter-seal {
-		position: absolute;
-		right: 10rpx;
-		bottom: 10rpx;
-		width: 16rpx;
-		height: 16rpx;
-		border-radius: 50%;
-		background: linear-gradient(180deg, #ed9b6a 0%, #d87453 100%);
-	}
-
-	.leaf {
-		position: absolute;
-		top: 28rpx;
-		width: 18rpx;
-		height: 30rpx;
-		background: linear-gradient(180deg, #98be87 0%, #6ea26e 100%);
-		border-radius: 18rpx 18rpx 18rpx 2rpx;
-		transform-origin: bottom center;
-	}
-
-	.leaf-left {
-		right: 28rpx;
-		transform: rotate(-18deg);
-	}
-
-	.leaf-right {
-		right: 12rpx;
-		height: 26rpx;
-		transform: rotate(22deg);
-	}
-
-	.brand-title {
-		margin-top: 20rpx;
-		font-size: 82rpx;
-		line-height: 1;
-		font-weight: 500;
-		letter-spacing: 4rpx;
-		color: #b77943;
-		text-shadow: 0 6rpx 18rpx rgba(191, 148, 93, 0.12);
-	}
-
-	.brand-divider {
-		margin-top: 26rpx;
-		display: flex;
-		align-items: center;
-		gap: 18rpx;
-	}
-
-	.divider-line {
-		width: 74rpx;
-		height: 2rpx;
-		background: linear-gradient(90deg, rgba(217, 186, 148, 0), rgba(217, 186, 148, 0.72), rgba(217, 186, 148, 0));
-	}
-
-	.divider-text {
-		font-size: 28rpx;
-		color: #9ba08d;
-		letter-spacing: 1rpx;
-	}
-
-	.login-card {
-		position: relative;
-		width: 100%;
-		margin-top: 88rpx;
-		padding: 44rpx 34rpx 40rpx;
-		border-radius: 42rpx;
-		background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 252, 247, 0.92) 100%);
-		box-shadow:
-			0 28rpx 60rpx rgba(205, 179, 142, 0.16),
-			inset 0 0 0 2rpx rgba(234, 220, 201, 0.58);
-	}
-
-	.card-outline {
-		position: absolute;
-		inset: 10rpx;
-		border-radius: 36rpx;
-		border: 2rpx solid rgba(233, 225, 214, 0.78);
-		pointer-events: none;
-	}
-
-	.field-shell {
-		position: relative;
-		display: flex;
-		align-items: center;
-		height: 96rpx;
-		margin-top: 22rpx;
-		padding: 0 26rpx;
-		border-radius: 26rpx;
-		background: linear-gradient(180deg, #ffffff 0%, #fffdfa 100%);
-		box-shadow:
-			0 10rpx 24rpx rgba(211, 192, 164, 0.12),
-			inset 0 0 0 2rpx rgba(236, 225, 211, 0.7);
-	}
-
-	.field-shell:first-of-type {
-		margin-top: 0;
-	}
-
-	.field-icon {
-		flex-shrink: 0;
-		min-width: 74rpx;
-		padding-right: 10rpx;
-		font-size: 28rpx;
-		font-weight: 600;
-		line-height: 1;
-		text-align: center;
-		white-space: nowrap;
-		color: rgba(141, 117, 92, 0.78);
-	}
-
-	.field-input {
-		flex: 1;
-		height: 100%;
-		padding: 0 16rpx;
-		font-size: 30rpx;
-		color: #7d6a58;
-	}
-
-	.field-input-with-action {
-		padding-right: 74rpx;
-	}
-
-	.field-placeholder {
-		color: #c6b9aa;
-	}
-
-	.field-action {
-		position: absolute;
-		right: 18rpx;
-		top: 50%;
-		width: 56rpx;
-		height: 56rpx;
-		border-radius: 16rpx;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: linear-gradient(180deg, #fffcf8 0%, #fff7ef 100%);
-		box-shadow: inset 0 0 0 2rpx rgba(228, 211, 186, 0.72);
-		transform: translateY(-50%);
-	}
-
-	.field-action.active {
-		box-shadow: inset 0 0 0 2rpx rgba(214, 186, 140, 0.9);
-	}
-
-	.eye-icon {
-		position: relative;
-		width: 24rpx;
-		height: 15rpx;
-		border: 2.5rpx solid rgba(150, 137, 118, 0.88);
-		border-radius: 34rpx / 22rpx;
-		box-sizing: border-box;
-	}
-
-	.eye-icon::after {
-		content: '';
-		position: absolute;
-		left: 50%;
-		top: -1rpx;
-		width: 28rpx;
-		height: 3rpx;
-		border-radius: 999rpx;
-		background: rgba(176, 156, 132, 0.88);
-		transform: translateX(-50%) rotate(-28deg) scaleX(0);
-		transform-origin: center;
-		transition: transform 0.18s ease;
-	}
-
-	.eye-icon.active::after {
-		transform: translateX(-50%) rotate(-28deg) scaleX(1);
-	}
-
-	.eye-pupil {
-		position: absolute;
-		left: 50%;
-		top: 50%;
-		width: 6rpx;
-		height: 6rpx;
-		border-radius: 50%;
-		background: rgba(150, 137, 118, 0.92);
-		transform: translate(-50%, -50%);
-	}
-
-	.assist-row {
-		margin-top: 28rpx;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 20rpx;
-	}
-
-	.remember-trigger {
-		display: inline-flex;
-		align-items: center;
-		gap: 14rpx;
-	}
-
-	.remember-dot {
-		width: 34rpx;
-		height: 34rpx;
-		padding: 5rpx;
-		border-radius: 50%;
-		border: 2rpx solid rgba(204, 188, 166, 0.86);
-		background: rgba(255, 255, 255, 0.82);
-		box-shadow: inset 0 0 0 2rpx rgba(255, 255, 255, 0.56);
-	}
-
-	.remember-dot-inner {
-		width: 100%;
-		height: 100%;
-		border-radius: 50%;
-		background: transparent;
-		transform: scale(0.6);
-		transition: all 0.2s ease;
-	}
-
-	.remember-dot.active {
-		border-color: rgba(214, 169, 93, 0.88);
-	}
-
-	.remember-dot.active .remember-dot-inner {
-		background: linear-gradient(180deg, #f2cf8a 0%, #dca24d 100%);
-		box-shadow: 0 4rpx 8rpx rgba(212, 164, 88, 0.24);
-		transform: scale(1);
-	}
-
-	.assist-text,
-	.assist-link {
-		font-size: 28rpx;
-		color: #8f8f88;
-	}
-
-	.assist-link {
-		color: #8e9787;
-	}
-
-	.login-btn {
-		margin-top: 40rpx;
-		height: 90rpx;
-		line-height: 90rpx;
-		border: none;
-		border-radius: 999rpx;
-		background: linear-gradient(180deg, #f3cf84 0%, #dca548 100%);
-		color: #fffef9;
-		font-size: 34rpx;
-		font-weight: 700;
-		letter-spacing: 10rpx;
-		box-shadow:
-			0 16rpx 30rpx rgba(213, 161, 81, 0.26),
-			inset 0 2rpx 0 rgba(255, 250, 239, 0.55);
-	}
-
-	.login-btn::after {
-		border: none;
-	}
-
-	.footer-copy {
-		margin-top: 96rpx;
-		font-size: 27rpx;
-		line-height: 1.8;
-		color: #8f7f71;
-		letter-spacing: 1rpx;
-		text-align: center;
 	}
 
 	.heart {
@@ -682,6 +246,310 @@ onUnmounted(() => {
 		pointer-events: none;
 		line-height: 1;
 		animation: heartFloat var(--duration) ease-out forwards;
+	}
+
+	.glow-a {
+		width: 516rpx;
+		height: 516rpx;
+		left: -42rpx;
+		top: -118rpx;
+		background: rgba(244, 190, 175, 0.28);
+		filter: blur(90rpx);
+	}
+
+	.glow-b {
+		width: 430rpx;
+		height: 430rpx;
+		left: -116rpx;
+		top: 318rpx;
+		background: rgba(240, 208, 196, 0.22);
+		filter: blur(80rpx);
+	}
+
+	.glow-c {
+		width: 388rpx;
+		height: 388rpx;
+		left: 8rpx;
+		top: 700rpx;
+		background: rgba(232, 196, 160, 0.18);
+		filter: blur(70rpx);
+	}
+
+	.glow-d {
+		width: 324rpx;
+		height: 324rpx;
+		left: 20rpx;
+		top: 484rpx;
+		background: rgba(242, 200, 184, 0.16);
+		filter: blur(80rpx);
+	}
+
+	.intro-copy {
+		margin-top: 2rpx;
+		font-size: 22rpx;
+		line-height: 1.5;
+		letter-spacing: 7rpx;
+		color: #b8896e;
+		opacity: 0.75;
+	}
+
+	.hero-stage {
+		position: relative;
+		width: 320rpx;
+		height: 320rpx;
+		margin-top: 18rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.hero-ring {
+		position: absolute;
+		border-radius: 50%;
+		pointer-events: none;
+	}
+
+	.hero-ring-outer {
+		inset: 12rpx;
+		border: 2rpx dashed rgba(229, 192, 177, 0.72);
+		opacity: 0.58;
+	}
+
+	.hero-ring-inner {
+		inset: 42rpx;
+		background: #fbf0e9;
+		box-shadow:
+			inset 0 0 0 2rpx rgba(236, 196, 179, 0.72),
+			0 18rpx 40rpx rgba(216, 171, 151, 0.12);
+	}
+
+	.hero-float {
+		position: relative;
+		z-index: 3;
+		width: 236rpx;
+		height: 236rpx;
+		border-radius: 50%;
+		overflow: hidden;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: #fbf0e9;
+		animation: heroFloat 4.2s ease-in-out infinite;
+		filter: drop-shadow(0 18rpx 28rpx rgba(203, 145, 123, 0.16));
+	}
+
+	.hero-illustration {
+		width: 236rpx;
+		height: 236rpx;
+		display: block;
+	}
+
+	.brand-block {
+		margin-top: 10rpx;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.brand-title {
+		font-size: 84rpx;
+		line-height: 1.1;
+		letter-spacing: 8rpx;
+		color: #6b3f32;
+		font-family: Georgia, 'Times New Roman', serif;
+		font-weight: 500;
+	}
+
+	.brand-subline {
+		margin-top: 12rpx;
+		display: flex;
+		align-items: center;
+		gap: 24rpx;
+	}
+
+	.brand-line {
+		width: 56rpx;
+		height: 2rpx;
+		background: linear-gradient(90deg, rgba(201, 168, 122, 0), #c9a87a, rgba(201, 168, 122, 0));
+	}
+
+	.brand-roman {
+		font-size: 18rpx;
+		line-height: 1;
+		letter-spacing: 5rpx;
+		color: #c9a87a;
+	}
+
+	.brand-desc {
+		margin-top: 18rpx;
+		font-size: 24rpx;
+		line-height: 1.5;
+		letter-spacing: 4rpx;
+		color: #b8896e;
+		opacity: 0.82;
+	}
+
+	.login-card {
+		position: relative;
+		width: 100%;
+		margin-top: 54rpx;
+		padding: 42rpx 32rpx 34rpx;
+		border-radius: 56rpx;
+		background: rgba(255, 250, 246, 0.82);
+		border: 2rpx solid rgba(220, 160, 130, 0.15);
+		box-shadow:
+			0 20rpx 96rpx rgba(180, 90, 70, 0.1),
+			0 4rpx 20rpx rgba(180, 90, 70, 0.06),
+			inset 0 2rpx 0 rgba(255, 255, 255, 0.9);
+		backdrop-filter: blur(10rpx);
+	}
+
+	.field-group + .field-group {
+		margin-top: 28rpx;
+	}
+
+	.field-group-password {
+		margin-top: 34rpx;
+	}
+
+	.field-label {
+		margin-bottom: 16rpx;
+		font-size: 20rpx;
+		line-height: 1.5;
+		letter-spacing: 6rpx;
+		color: #a07860;
+		font-weight: 500;
+	}
+
+	.field-box {
+		height: 98rpx;
+		padding: 0 30rpx;
+		display: flex;
+		align-items: center;
+		border-radius: 32rpx;
+		background: rgba(252, 236, 224, 0.55);
+		border: 2rpx solid rgba(210, 150, 120, 0.18);
+	}
+
+	.field-box-password {
+		position: relative;
+		padding-right: 82rpx;
+	}
+
+	.field-input {
+		flex: 1;
+		height: 100%;
+		font-size: 30rpx;
+		color: #5c3d35;
+	}
+
+	.field-input-password {
+		padding-right: 12rpx;
+	}
+
+	.field-placeholder {
+		color: rgba(92, 61, 53, 0.5);
+		font-size: 30rpx;
+	}
+
+	.password-toggle {
+		position: absolute;
+		right: 16rpx;
+		top: 50%;
+		width: 54rpx;
+		height: 54rpx;
+		transform: translateY(-50%);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+	}
+
+	.password-eye-icon {
+		position: relative;
+		z-index: 1;
+		width: 26rpx;
+		height: 26rpx;
+		display: block;
+		opacity: 0.72;
+	}
+
+	.password-toggle-line {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		width: 30rpx;
+		height: 2.5rpx;
+		border-radius: 999rpx;
+		background: rgba(184, 137, 110, 0.82);
+		transform: translate(-50%, -50%) rotate(-28deg) scaleX(0);
+		transform-origin: center;
+		transition: transform 0.18s ease, opacity 0.18s ease;
+		opacity: 0;
+	}
+
+	.password-toggle-line.active {
+		transform: translate(-50%, -50%) rotate(-28deg) scaleX(1);
+		opacity: 1;
+	}
+
+	.login-btn {
+		margin-top: 40rpx;
+		height: 104rpx;
+		line-height: 104rpx;
+		border: none;
+		border-radius: 36rpx;
+		background: linear-gradient(172deg, #e8c0b8 3.67%, #deb0a8 96.33%);
+		color: #fff8f4;
+		font-size: 30rpx;
+		letter-spacing: 8rpx;
+		font-weight: 500;
+	}
+
+	.login-btn::after {
+		border: none;
+	}
+
+	.login-note {
+		margin-top: 28rpx;
+		font-size: 20rpx;
+		line-height: 1.5;
+		letter-spacing: 2rpx;
+		color: #b8896e;
+		opacity: 0.5;
+		text-align: center;
+	}
+
+	.bottom-ornament {
+		margin-top: auto;
+		margin-left: -288rpx;
+		margin-bottom: 10rpx;
+		display: flex;
+		align-items: center;
+		gap: 8rpx;
+		opacity: 0.78;
+	}
+
+	.ornament-line {
+		width: 50rpx;
+		height: 2rpx;
+		background: linear-gradient(90deg, rgba(201, 168, 122, 0), rgba(201, 168, 122, 0.86), rgba(201, 168, 122, 0));
+	}
+
+	.ornament-dot {
+		border-radius: 50%;
+		background: #c9a87a;
+	}
+
+	.ornament-dot-small {
+		width: 5rpx;
+		height: 5rpx;
+		opacity: 0.56;
+	}
+
+	.ornament-dot-large {
+		width: 8rpx;
+		height: 8rpx;
 	}
 
 	@keyframes heartFloat {
@@ -700,16 +568,14 @@ onUnmounted(() => {
 		}
 	}
 
-	@keyframes sparklePulse {
+	@keyframes heroFloat {
 		0%,
 		100% {
-			opacity: 0.35;
-			transform: scale(0.88);
+			transform: translateY(0);
 		}
 
 		50% {
-			opacity: 0.92;
-			transform: scale(1.08);
+			transform: translateY(-14rpx);
 		}
 	}
 </style>

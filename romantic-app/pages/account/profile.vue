@@ -8,11 +8,11 @@
 			<view class="app-account-stack">
 				<AccountIntroCard
 					eyebrow="个人档案"
-					title="把关于你的信息整理得更完整"
-					description="这里保存你的真实姓名、所在城市、联系邮箱和一句简短签名，只会同步到当前账号自己的资料档案。"
+					title="个人资料"
+					description="管理当前账号的个人资料"
 					:tags="introTags"
 				/>
-				<AccountPanel title="基础资料" description="这些资料会用于个人资料展示与账号内页摘要，不会被另一方账号覆盖。">
+				<AccountPanel title="基础资料" description="用于个人资料展示">
 				<AccountField label="当前头像">
 					<view class="profile-avatar-entry app-field" @click="goAvatarSettings">
 						<view class="profile-avatar-copy">
@@ -27,7 +27,7 @@
 					</view>
 				</AccountField>
 				<AccountField label="真实姓名">
-					<input v-model="form.nickname" class="input app-field" placeholder="输入你的真实姓名" placeholder-class="app-account-input-placeholder" />
+					<input v-model="form.nickname" class="input app-field" placeholder="请输入姓名" placeholder-class="app-account-input-placeholder" />
 				</AccountField>
 				<view class="app-account-form-row">
 					<view class="app-account-form-col">
@@ -39,18 +39,18 @@
 					</view>
 					<view class="app-account-form-col">
 						<AccountField label="邮箱">
-							<input v-model="form.email" class="input app-field" placeholder="输入常用联系邮箱" placeholder-class="app-account-input-placeholder" />
+							<input v-model="form.email" class="input app-field" placeholder="请输入邮箱" placeholder-class="app-account-input-placeholder" />
 						</AccountField>
 					</view>
 				</view>
 				<AccountField label="个性签名">
-					<textarea v-model="form.bio" maxlength="60" class="textarea app-textarea" placeholder="留下一句今天想写给自己的话" placeholder-class="app-account-input-placeholder" />
+					<textarea v-model="form.bio" maxlength="60" class="textarea app-textarea" placeholder="请输入个性签名" placeholder-class="app-account-input-placeholder" />
 				</AccountField>
 			</AccountPanel>
 				<view class="app-account-action-bar">
 					<view class="app-account-action-note">
-						<view class="app-account-action-note-title">保存后会同步当前账号资料</view>
-						<view class="app-account-action-note-desc">如果你同时修改了城市或邮箱，设置页和资料摘要也会一起更新显示。</view>
+						<view class="app-account-action-note-title">保存当前账号资料</view>
+						<view class="app-account-action-note-desc">城市、邮箱和签名会同步更新</view>
 					</view>
 					<button class="save-btn app-primary-btn app-primary-btn-shadow app-account-save-btn" @click="handleSave">保存资料</button>
 				</view>

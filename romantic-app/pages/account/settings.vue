@@ -27,15 +27,15 @@
         <view class="hero-days">{{ togetherDaysText }}</view>
         <view class="hero-desc">{{ coupleMoodLine }}</view>
         <view class="hero-bottom-line"></view>
-        <view class="hero-hint">头像和关系信息都可以在下面继续完善</view>
+        <view class="hero-hint">可在下方管理资料与关系信息</view>
       </view>
 
       <view class="hero-intro app-fade-up app-delay-1">
-        <view class="hero-intro-title">把“我”和“我们”都放在同一个舒服的位置</view>
-        <view class="hero-intro-desc">这里主要负责账号资料、关系设定和安全管理，不抢首页的信息舞台，但保留一点专属于两个人的感觉。</view>
+        <view class="hero-intro-title">账号与关系设置</view>
+        <view class="hero-intro-desc">管理个人资料、关系信息、账号安全和本地数据</view>
       </view>
 
-      <AccountPanel title="资料与外观" description="先整理当前账号自己的资料与头像，让首页和个人卡片展示更自然。">
+      <AccountPanel title="资料与外观" description="管理个人资料和头像">
         <view class="menu-list menu-list-tight app-fade-up app-delay-2">
           <view class="menu-card app-card-soft" hover-class="menu-card-active" hover-stay-time="70" @click="goPage('/pages/account/profile')">
             <view class="menu-accent accent-profile"></view>
@@ -78,7 +78,7 @@
         </view>
       </AccountPanel>
 
-      <AccountPanel title="关系与安全" description="这里同时管理共享的关系资料，以及只属于当前账号自己的登录安全设置。">
+      <AccountPanel title="关系与安全" description="管理关系信息和账号安全">
         <view class="menu-list menu-list-tight app-fade-up app-delay-3">
           <view class="menu-card app-card-soft" hover-class="menu-card-active" hover-stay-time="70" @click="goPage('/pages/account/relationship')">
             <view class="menu-accent accent-relationship"></view>
@@ -122,7 +122,7 @@
         </view>
       </AccountPanel>
 
-      <AccountPanel title="数据管理" description="谨慎处理当前账号资料的重置与同步操作，避免误覆盖本地暂存内容。">
+      <AccountPanel title="数据管理" description="管理资料同步与重置">
         <view class="menu-list menu-list-tight app-fade-up app-delay-4">
           <view class="menu-card app-card-soft" hover-class="menu-card-active" hover-stay-time="70" @click="goPage('/pages/account/data')">
             <view class="menu-accent accent-data"></view>
@@ -198,7 +198,7 @@ const partnerCallDisplay = computed(() => partnerProfile.value?.loverNickname ||
 const coupleTitle = computed(() => `${loverDisplay.value} × ${partnerCallDisplay.value}`)
 const togetherDaysText = computed(() => {
   const startDate = parseDateOnly(profile.value.anniversaryDate)
-  if (!startDate) return '把我们的日子慢慢写长'
+  if (!startDate) return '纪念日待设置'
 
   const today = startOfDay(new Date())
   const diffDays = Math.floor((today.getTime() - startDate.getTime()) / DAY_MS)
@@ -208,7 +208,7 @@ const togetherDaysText = computed(() => {
 const coupleMoodLine = computed(() => {
   const bio = String(profile.value.bio || '').trim()
   if (bio && bio.length <= 18) return bio
-  return '今天也在认真喜欢对方'
+  return '资料待完善'
 })
 const passwordDots = computed(() => '•'.repeat(Math.max((profile.value.password || '').length, 4)))
 const profileSummaryTag = computed(() => profile.value.city || '未设置')

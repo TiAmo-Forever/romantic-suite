@@ -103,14 +103,14 @@ const TEXT = {
   pageTitle: '恋爱纪念日',
   eyebrow: '重要日子',
   heroBadge: '恋爱纪念日',
-  heroTitle: '把重要的日子认真收藏起来',
-  heroDesc: '支持过去和未来的日期，既能记录回忆，也能提前期待。',
+  heroTitle: '纪念日列表',
+  heroDesc: '查看和管理重要日期',
   createButton: '新增纪念日',
   defaultType: '纪念日',
-  cardFallback: '点开看看这一天被认真记下了什么。',
-  locationFallback: '把这一刻留给你们的回忆。',
+  cardFallback: '暂无说明',
+  locationFallback: '未设置地点',
   emptyTitle: '还没有纪念日',
-  emptyDesc: '先添加一个重要的日子；置顶后，它也会展示在首页摘要里。',
+  emptyDesc: '暂无纪念日',
   loadError: '纪念日加载失败',
   creatorPrefix: '由 ',
   creatorSuffix: ' 创建',
@@ -198,7 +198,7 @@ function formatStatus(item) {
 </script>
 
 <style scoped>
-.anniversary-page { background: var(--app-page-gradient-main); }
+.anniversary-page { padding-top: 0; background: var(--app-page-gradient-main); }
 .hero-card { padding: 36rpx 30rpx; border-radius: 32rpx; background: radial-gradient(circle at top right, rgba(255,255,255,0.24), transparent 30%), var(--app-gradient-hero); box-shadow: var(--app-shadow-card); }
 .hero-badge { display: inline-flex; }
 .hero-title { margin-top: 18rpx; font-size: 40rpx; line-height: 1.4; font-weight: 700; color: #fff; }

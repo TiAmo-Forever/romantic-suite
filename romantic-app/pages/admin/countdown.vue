@@ -16,7 +16,7 @@
       <view class="hero-badge app-pill app-pill-glass">{{ heroBadge }}</view>
       <view class="hero-date">{{ detail.nextMeetingAt || '待设置' }}</view>
       <view class="hero-title">{{ heroTitle }}</view>
-      <view class="hero-desc">{{ detail.note || '这次见面的安排还没有补充更多文字。' }}</view>
+      <view class="hero-desc">{{ detail.note || '暂无说明' }}</view>
     </view>
 
     <view class="countdown-card app-card-soft app-fade-up app-delay-1">
@@ -29,7 +29,7 @@
       <view class="detail-card app-card-soft">
         <view class="detail-label">上次见面</view>
         <view class="detail-value">{{ detail.lastMeetingAt || '待设置' }}</view>
-        <view class="detail-sub">已经想念了 {{ detail.daysSinceLastMeeting || 0 }} 天</view>
+        <view class="detail-sub">相隔 {{ detail.daysSinceLastMeeting || 0 }} 天</view>
       </view>
       <view class="detail-card app-card-soft">
         <view class="detail-label">当前进度</view>
@@ -90,9 +90,9 @@ const heroBadge = computed(() => {
     case 'today':
       return '今天见面'
     case 'soon':
-      return '很快见面'
+      return '即将见面'
     case 'past':
-      return '需要更新'
+      return '已结束'
     default:
       return '见面计划'
   }
@@ -103,23 +103,23 @@ const heroTitle = computed(() => {
     return '今天就是见面的日子'
   }
   if (detail.timeStatus === 'past') {
-    return '上一次计划已经过去了'
+    return '该计划已结束'
   }
-  return `${detail.loverName || 'TA'} 的见面安排`
+  return `${detail.loverName || 'TA'}见面安排`
 })
 
 const countdownCopy = computed(() => {
   const days = Number(detail.daysUntilNextMeeting || 0)
   if (!detail.nextMeetingAt) {
-    return '还没有公开的见面时间。'
+    return '暂无见面时间'
   }
   if (days < 0) {
-    return '当前显示的是一条已经过去的见面安排。'
+    return '该见面安排已结束'
   }
   if (days === 0) {
-    return '今天就能见到啦。'
+    return '今天见面'
   }
-  return `距离这次见面还有 ${days} 天。`
+  return `还有 ${days} 天`
 })
 
 const progressCopy = computed(() => {
@@ -129,7 +129,7 @@ const progressCopy = computed(() => {
   if (detail.timeStatus === 'today') {
     return '今天见面'
   }
-  return '按上次见面到下次见面的自然日进度计算'
+  return '按自然日计算'
 })
 
 async function loadDetail() {
@@ -153,7 +153,7 @@ onShow(() => {
 
 <style scoped>
   .admin-countdown-page { background: var(--app-page-gradient-main); }
-  .admin-topbar { position: sticky; top: 0; z-index: 10; background: rgba(255, 255, 255, 0.58); backdrop-filter: blur(12px); }
+  .admin-topbar { position: sticky; top: var(--app-sticky-top); z-index: 10; background: rgba(255, 255, 255, 0.58); backdrop-filter: blur(12px); }
   .top-nav-icon { width: 18rpx; height: 18rpx; border-left: 4rpx solid currentColor; border-bottom: 4rpx solid currentColor; border-radius: 2rpx; box-sizing: border-box; transform: rotate(45deg); }
   .top-nav-placeholder { width: 88rpx; }
   .hero-card { padding: 36rpx 30rpx; border-radius: 32rpx; background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.24), transparent 30%), var(--app-gradient-hero); box-shadow: var(--app-shadow-card); color: #fff; }

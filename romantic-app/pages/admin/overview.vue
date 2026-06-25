@@ -6,8 +6,8 @@
 
     <view class="admin-hero app-fade-up">
       <view class="admin-kicker">爱意成笺</view>
-      <view class="admin-title">把重要的信息安静地放在这里</view>
-      <view class="admin-desc">可以先看看两个人的基础资料、见面安排和重要日子。</view>
+      <view class="admin-title">基础信息总览</view>
+      <view class="admin-desc">基础资料、见面倒计时、纪念日信息</view>
       <view class="admin-chip-row">
         <view class="admin-chip">基础资料</view>
         <view class="admin-chip">见面倒计时</view>
@@ -18,7 +18,7 @@
     <view class="admin-panel app-card-soft app-fade-up app-delay-1" hover-class="surface-press" hover-stay-time="70" @click="openCouplePage">
       <view class="panel-head">
         <view class="panel-title">情侣基础信息</view>
-        <view class="panel-tag">查看详情</view>
+        <view class="panel-tag">详情</view>
       </view>
       <view class="profile-grid">
         <view v-for="item in profileList" :key="item.username || item.nickname" class="profile-card">
@@ -42,7 +42,7 @@
     <view class="admin-panel app-card-soft app-fade-up app-delay-2" hover-class="surface-press" hover-stay-time="70" @click="openCountdownPage">
       <view class="panel-head">
         <view class="panel-title">见面倒计时</view>
-        <view class="panel-tag">查看详情</view>
+        <view class="panel-tag">详情</view>
       </view>
       <view class="countdown-days">{{ countdownValue }}</view>
       <view class="countdown-copy">{{ countdownCopy }}</view>
@@ -65,9 +65,9 @@
     <view class="admin-panel app-card-soft app-fade-up app-delay-3" hover-class="surface-press" hover-stay-time="70" @click="openAnniversaryPage">
       <view class="panel-head">
         <view class="panel-title">纪念日摘要</view>
-        <view class="panel-tag">查看详情</view>
+        <view class="panel-tag">详情</view>
       </view>
-      <view class="anniversary-title">{{ overview.anniversary?.title || '还没有可展示的纪念日' }}</view>
+      <view class="anniversary-title">{{ overview.anniversary?.title || '暂无纪念日' }}</view>
       <view class="anniversary-date">{{ overview.anniversary?.eventDate || '待设置' }}</view>
       <view class="anniversary-offset">{{ anniversaryOffsetText }}</view>
     </view>
@@ -107,31 +107,31 @@ const countdownValue = computed(() => {
 
 const countdownCopy = computed(() => {
   if (!overview.countdown?.nextMeetingAt) {
-    return '还没有公开的见面安排。'
+    return '暂无见面安排'
   }
   const raw = Number(overview.countdown?.daysUntilNextMeeting || 0)
   if (raw < 0) {
-    return '当前展示的是一条已经过去的见面安排。'
+    return '该见面安排已结束'
   }
   if (raw === 0) {
-    return '今天就是见面的日子。'
+    return '今天见面'
   }
-  return `距离这次见面还有 ${raw} 天。`
+  return `距下次见面 ${raw} 天`
 })
 
 const anniversaryOffsetText = computed(() => {
   const title = overview.anniversary?.title
   if (!title) {
-    return '这里还没有可以展示的重要日子。'
+    return '暂无纪念日'
   }
   const offset = Number(overview.anniversary?.dayOffset || 0)
   if (offset === 0) {
-    return '今天就是这个纪念日。'
+    return '今天'
   }
   if (offset > 0) {
-    return `距离这一天还有 ${offset} 天。`
+    return `还有 ${offset} 天`
   }
-  return `这一天已经过去 ${Math.abs(offset)} 天。`
+  return `已过 ${Math.abs(offset)} 天`
 })
 
 function resolveAvatarText(name) {

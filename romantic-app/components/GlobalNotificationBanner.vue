@@ -175,7 +175,7 @@ onUnmounted(() => {
 <style scoped>
   .global-notification-banner {
     position: fixed;
-    top: calc(env(safe-area-inset-top) + 26rpx);
+    top: var(--app-banner-top);
     left: 24rpx;
     right: 24rpx;
     min-height: 150rpx;

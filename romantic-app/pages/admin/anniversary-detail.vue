@@ -16,7 +16,7 @@
       <view class="hero-chip app-pill app-pill-glass">{{ statusText }}</view>
       <view class="hero-title">{{ detail.title || '纪念日' }}</view>
       <view class="hero-date">{{ detail.eventDate || '待设置' }}</view>
-      <view class="hero-desc">{{ detail.description || '这一天还没有留下更多文字。' }}</view>
+      <view class="hero-desc">{{ detail.description || '暂无说明' }}</view>
     </view>
 
     <view class="detail-card app-card-soft app-fade-up app-delay-1">
@@ -29,11 +29,11 @@
         <view class="detail-value">{{ resolveType(detail.type) }}</view>
       </view>
       <view class="detail-row">
-        <view class="detail-label">记录人</view>
-        <view class="detail-value">{{ detail.creatorNickname || detail.creatorUsername || '未记录' }}</view>
+        <view class="detail-label">创建人</view>
+        <view class="detail-value">{{ detail.creatorNickname || detail.creatorUsername || '未设置' }}</view>
       </view>
       <view class="detail-row">
-        <view class="detail-label">首页展示</view>
+        <view class="detail-label">首页置顶</view>
         <view class="detail-value">{{ detail.pinned ? '是' : '否' }}</view>
       </view>
     </view>
@@ -104,7 +104,7 @@ onShow(() => {
 
 <style scoped>
   .admin-anniversary-detail-page { background: var(--app-page-gradient-main); }
-  .admin-topbar { position: sticky; top: 0; z-index: 10; background: rgba(255, 255, 255, 0.58); backdrop-filter: blur(12px); }
+  .admin-topbar { position: sticky; top: var(--app-sticky-top); z-index: 10; background: rgba(255, 255, 255, 0.58); backdrop-filter: blur(12px); }
   .top-nav-icon { width: 18rpx; height: 18rpx; border-left: 4rpx solid currentColor; border-bottom: 4rpx solid currentColor; border-radius: 2rpx; box-sizing: border-box; transform: rotate(45deg); }
   .top-nav-placeholder { width: 88rpx; }
   .hero-card { padding: 36rpx 30rpx; border-radius: 32rpx; background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.24), transparent 30%), var(--app-gradient-hero); box-shadow: var(--app-shadow-card); color: #fff; }

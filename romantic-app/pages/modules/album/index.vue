@@ -290,6 +290,7 @@ function footerMetaText(item) {
 }
 
 .album-page {
+  padding-top: 0;
   background:
     radial-gradient(circle at 12% 10%, rgba(255, 208, 225, 0.42), transparent 26%),
     radial-gradient(circle at 88% 18%, rgba(255, 234, 197, 0.38), transparent 22%),
@@ -299,17 +300,17 @@ function footerMetaText(item) {
 .album-hero {
   position: relative;
   overflow: hidden;
-  padding: 38rpx 34rpx 34rpx;
+  padding: 28rpx 28rpx 26rpx;
   border-radius: 34rpx;
   background: linear-gradient(135deg, rgba(255, 248, 251, 0.98), rgba(255, 240, 245, 0.96));
   box-shadow: 0 26rpx 52rpx rgba(227, 152, 181, 0.14);
-  min-height: 320rpx;
+  min-height: 252rpx;
 }
 
 .album-hero-content {
   position: relative;
   z-index: 1;
-  max-width: 62%;
+  max-width: 58%;
 }
 
 .album-kicker {
@@ -321,42 +322,42 @@ function footerMetaText(item) {
 
 .album-title {
   margin-top: 14rpx;
-  font-size: 48rpx;
+  font-size: 40rpx;
   line-height: 1.14;
   color: #4f63d8;
   font-weight: 800;
 }
 
 .album-meta {
-  margin-top: 14rpx;
-  font-size: 24rpx;
+  margin-top: 10rpx;
+  font-size: 22rpx;
   color: #b28594;
 }
 
 .album-summary {
-  margin-top: 14rpx;
-  font-size: 25rpx;
-  line-height: 1.7;
+  margin-top: 10rpx;
+  font-size: 23rpx;
+  line-height: 1.6;
   color: #926d79;
 }
 
 .album-create-btn {
   width: 220rpx;
-  margin: 26rpx 0 0;
+  margin: 18rpx 0 0;
 }
 
 .album-hero-stack {
   position: absolute;
-  right: 36rpx;
-  top: 38rpx;
-  width: 208rpx;
-  height: 224rpx;
+  right: 26rpx;
+  top: 28rpx;
+  width: 176rpx;
+  height: 192rpx;
 }
 
 .hero-photo {
   position: absolute;
-  width: 168rpx;
-  height: 212rpx;
+  width: 146rpx;
+  height: 182rpx;
   border-radius: 28rpx;
   box-shadow: 0 18rpx 40rpx rgba(220, 148, 176, 0.18);
   overflow: hidden;
@@ -364,13 +365,13 @@ function footerMetaText(item) {
 
 .hero-photo-back {
   right: 0;
-  top: 18rpx;
+  top: 14rpx;
   transform: rotate(10deg);
   background: linear-gradient(135deg, #ffd6e4, #ffe7ef);
 }
 
 .hero-photo-front {
-  left: 10rpx;
+  left: 8rpx;
   top: 0;
   transform: rotate(-8deg);
   background: linear-gradient(135deg, #ffe2ec, #fff5f8);
@@ -402,7 +403,7 @@ function footerMetaText(item) {
 .filter-row {
   display: flex;
   gap: 16rpx;
-  margin-top: 26rpx;
+  margin-top: 18rpx;
   flex-wrap: wrap;
 }
 
@@ -423,9 +424,9 @@ function footerMetaText(item) {
 }
 
 .memory-group-list {
-  margin-top: 28rpx;
+  margin-top: 20rpx;
   display: grid;
-  gap: 24rpx;
+  gap: 20rpx;
 }
 
 .memory-group {

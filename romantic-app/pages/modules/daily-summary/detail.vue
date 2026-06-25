@@ -266,15 +266,15 @@ const TEXT = {
   historyButton: '历史查看',
   historyTitle: '历史查看',
   recordBookTitle: '当天记录册',
-  recordBookDesc: '左右翻看这一天里的每一条小计，把一整天慢慢读完。',
+  recordBookDesc: '查看当天全部小计',
   entryContentLabel: '今天记下',
   entryMediaLabel: '贴图',
   entrySummaryLabel: '互动摘要',
-  emptyUpdated: '今天正在等待被认真写下来',
+  emptyUpdated: '今日暂无更新',
   updatedPrefix: '最后更新：',
   commentAction: '评论',
   commentDrawerTitle: '今天的留言',
-  commentOverviewTitle: '先把内容和回应分开来看',
+  commentOverviewTitle: '内容与留言',
   commentPlaceholder: '写下一句想留在今天的话',
   commentReplyPrefix: '回复 ',
   commentReplyDivider: '：',
@@ -294,11 +294,11 @@ const TEXT = {
   writeCommentAction: '写一句留言',
   imageWord: '图片',
   videoWord: '视频',
-  emptyBoardDesc: '今天还没有任何一条小计，先留下第一段吧。',
-  emptyEntryContent: '今天还没有任何一条小计。',
-  emptyEntryInteraction: '这条小计还没有评论和爱心。',
-  emptyHistory: '写下第一天之后，这里就会慢慢有历史了。',
-  emptyHistoryPreview: '这一天暂时还没有预览内容。',
+  emptyBoardDesc: '今天暂无小计',
+  emptyEntryContent: '暂无内容',
+  emptyEntryInteraction: '暂无互动',
+  emptyHistory: '暂无历史记录',
+  emptyHistoryPreview: '暂无预览内容',
   deleteOwnCommentTitle: '删除我的评论',
   deleteAction: '删除',
   cancelAction: '取消',
@@ -345,15 +345,15 @@ const updaterLabel = computed(() => {
   return `${TEXT.updatedPrefix}${summary.updaterUsername === currentUsername.value ? '我写的' : 'TA写的'}`
 })
 const heroTitle = computed(() => {
-  if (!summary.hasRecord) return '今天也值得认真留下一页'
+  if (!summary.hasRecord) return '今日小计'
   return `${moodMeta.value.label}的一天，被写成了 ${summary.entryCount} 条小计`
 })
 const heroDesc = computed(() => {
-  if (!summary.hasRecord) return '从一条今天的小计开始，慢慢把普通的一天也收藏起来。'
+  if (!summary.hasRecord) return '暂无今日小计'
   if (summary.entryCount > 1) {
-    return '把这一天拆成几页来写，回看时会更像慢慢翻一本当天的手账。'
+    return '当天共记录多条小计'
   }
-  return '先把今天的情绪和片段收好，具体内容留到下面那一页再慢慢读。'
+  return '查看今日小计内容'
 })
 const entryCountText = computed(() => (summary.hasRecord ? `今天写下了 ${summary.entryCount} 条小计` : '今天还没有小计'))
 const activeEntry = computed(() => summary.entryList[activeEntryIndex.value] || null)
@@ -362,14 +362,14 @@ const activeEntrySummary = computed(() => {
   return `${activeEntry.value.moodMeta.label} · ${formatCommentTime(activeEntry.value.updatedAt || activeEntry.value.createdAt)}`
 })
 const historyList = computed(() => Array.isArray(summary.historyList) ? summary.historyList : [])
-const historyDrawerSubtitle = computed(() => `共 ${historyList.value.length} 天可以回看`)
+const historyDrawerSubtitle = computed(() => `共 ${historyList.value.length} 天记录`)
 const activeEntryCommentStats = computed(() => {
   if (!activeEntry.value) return '0 条留言'
   const commentCount = Array.isArray(activeEntry.value.commentList) ? activeEntry.value.commentList.length : 0
   return `${commentCount} 条留言`
 })
 const commentDrawerSubtitle = computed(() => {
-  if (!activeEntry.value) return '把今天这一页的回应单独收在这里。'
+  if (!activeEntry.value) return '暂无留言'
   const likeCount = Array.isArray(activeEntry.value.likeUsers) ? activeEntry.value.likeUsers.length : 0
   const commentCount = Array.isArray(activeEntry.value.commentList) ? activeEntry.value.commentList.length : 0
   return `${likeCount} 个爱心 · ${commentCount} 条留言`
@@ -555,19 +555,19 @@ function getEntryLikeUserSummary(entry) {
 }
 
 function getEntryInteractionSummary(entry) {
-  if (!entry) return '这一天的回应会单独收在这里。'
+  if (!entry) return '暂无留言'
   const likeCount = Array.isArray(entry.likeUsers) ? entry.likeUsers.length : 0
   const commentCount = Array.isArray(entry.commentList) ? entry.commentList.length : 0
   if (!likeCount && !commentCount) {
-    return '先把今天的内容写下来，回应和爱心就会慢慢聚过来。'
+    return '发布内容后可继续互动'
   }
   if (likeCount && commentCount) {
     return `${likeCount} 个爱心和 ${commentCount} 条留言，已经把这页日常接住了。`
   }
   if (likeCount) {
-    return `${likeCount} 个爱心已经先落在这页，留言区也随时可以继续写。`
+    return `${likeCount} 次点赞 · 可继续留言`
   }
-  return `${commentCount} 条留言正在这里慢慢延长今天的对话。`
+  return `${commentCount} 条留言`
 }
 
 function getCommentDisplayName(comment) {

@@ -116,7 +116,7 @@ const TEXT = {
   panelTitle: '地点填写',
   panelDesc: '支持直接手动输入，也支持从左到右选择省、市、区。选好后会尽量少打断当前页面的编辑流程。',
   inputLabel: '地点名称',
-  inputHint: '可以直接填写，也可以输入关键字后从下方匹配结果里选择已有地区。',
+  inputHint: '支持手动填写和地区检索',
   inputPlaceholder: '例如：杭州市西湖区、上海迪士尼、广州南站',
   selectionTitle: '联动选择',
   selectionDesc: '从左到右依次选择，越往后越精确。',

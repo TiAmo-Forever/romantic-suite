@@ -180,7 +180,7 @@ const countdownPlan = reactive({
 
 const anniversaryState = reactive({
   days: 0,
-  label: '把纪念感好好留下来',
+  label: '纪念日',
   meta: '日期待设置'
 })
 
@@ -191,8 +191,8 @@ const improvementState = reactive({
 
 const memoState = reactive({
   mood: 'gentle',
-  content: '记录今日的心情与点滴，让每一天都有被认真收藏。',
-  meta: '今天 · 等你们写下这一页',
+  content: '暂无今日小计',
+  meta: '今天 · 暂无记录',
   hasRecord: false,
 })
 
@@ -201,7 +201,7 @@ const countdownSummary = computed(() => {
   if (!nextDate) {
     return {
       days: '00',
-      caption: '把下一次见面的日子定下来吧'
+      caption: '请设置下次见面日期'
     }
   }
 
@@ -211,16 +211,16 @@ const countdownSummary = computed(() => {
   return {
     days: String(days).padStart(2, '0'),
     caption: days === 0
-      ? '今天就能见到啦'
+      ? '今天见面'
       : days <= 7
-        ? '很快就能见到啦'
-        : (countdownPlan.note || '一起把期待慢慢攒满')
+        ? '即将见面'
+        : (countdownPlan.note || '见面安排待补充')
   }
 })
 
 const anniversarySummary = computed(() => ({
   days: String(Math.max(anniversaryState.days, 0)),
-  label: anniversaryState.label || '把纪念感好好留下来',
+  label: anniversaryState.label || '纪念日',
   meta: anniversaryState.meta || '日期待设置'
 }))
 
@@ -302,12 +302,12 @@ async function loadHomeSummary() {
     if (anniversary) {
       const eventDate = parseDateTime(anniversary.eventDate || '')
       anniversaryState.days = Math.abs(Number(anniversary.dayOffset || 0))
-      anniversaryState.label = String(anniversary.title || anniversary.name || '把纪念感好好留下来').trim()
+      anniversaryState.label = String(anniversary.title || anniversary.name || '纪念日').trim()
       anniversaryState.meta = formatDate(eventDate)
     } else {
       anniversaryState.days = 0
-      anniversaryState.label = '还没有置顶纪念日'
-      anniversaryState.meta = '去纪念日里置顶一个重要的日子'
+      anniversaryState.label = '暂无置顶纪念日'
+      anniversaryState.meta = '请在纪念日中置顶'
     }
 
     const list = Array.isArray(notes) ? notes : []
@@ -317,15 +317,15 @@ async function loadHomeSummary() {
     memoState.mood = dailySummary?.mood || 'gentle'
     memoState.hasRecord = Boolean(dailySummary?.hasRecord)
     memoState.content = dailySummary?.hasRecord
-      ? (String(dailySummary.content || '').trim() || '今天的小计已经写下来了。')
-      : '今天也值得留下一个温柔的小计，让普通的一天也有被认真看见的地方。'
+      ? (String(dailySummary.content || '').trim() || '今日小计已更新')
+      : '暂无今日小计'
     memoState.meta = dailySummary?.hasRecord
-      ? `今天 · ${dailySummary.updaterUsername === getCurrentUsername() ? '我' : 'TA'}刚刚更新过`
-      : '今天 · 等你们写下这一页'
+      ? `今天 · ${dailySummary.updaterUsername === getCurrentUsername() ? '我' : 'TA'}已更新`
+      : '今天 · 暂无记录'
   } catch (error) {
     memoState.mood = 'gentle'
     memoState.hasRecord = false
-    memoState.content = '把今天的心情记下来，下一次回头看也会觉得很温柔。'
+    memoState.content = '首页摘要加载失败'
     memoState.meta = '离线展示'
   }
 }

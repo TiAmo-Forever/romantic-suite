@@ -8,15 +8,15 @@
 			<view class="app-account-stack">
 				<AccountIntroCard
 					eyebrow="共享信息"
-					title="把你们之间的重要设定留在这里"
-					description="这里维护的是你们共同会看到的关系资料，包括称呼、常用见面地点和纪念日，保存后会影响共享内容展示。"
+					title="关系信息"
+					description="管理双方共享的关系资料"
 					:tags="introTags"
 				/>
-			<AccountPanel title="关系设定" description="这部分属于共享资料，两个人查看到的是同一份关系信息。">
+			<AccountPanel title="关系设定" description="保存后同步到共享资料">
 				<view class="app-account-form-row">
 					<view class="app-account-form-col">
 						<AccountField label="对方对你的称呼">
-							<input v-model="form.loverNickname" class="input app-field" placeholder="输入一个你喜欢被叫到的称呼" placeholder-class="app-account-input-placeholder" />
+							<input v-model="form.loverNickname" class="input app-field" placeholder="请输入称呼" placeholder-class="app-account-input-placeholder" />
 						</AccountField>
 					</view>
 					<view class="app-account-form-col">
@@ -33,14 +33,14 @@
 				</view>
 				<AccountField label="恋爱纪念日">
 					<picker class="picker app-field" mode="date" :value="form.anniversaryDate" @change="handleAnniversaryChange">
-						<view class="picker-value">{{ form.anniversaryDate || '选择你们想认真记住的那一天' }}</view>
+						<view class="picker-value">{{ form.anniversaryDate || '请选择纪念日' }}</view>
 					</picker>
 				</AccountField>
 			</AccountPanel>
 				<view class="app-account-action-bar">
 					<view class="app-account-action-note">
-						<view class="app-account-action-note-title">保存后会同步到共享资料</view>
-						<view class="app-account-action-note-desc">纪念日、默认见面地点和称呼会影响首页摘要、倒计时和关系资料展示。</view>
+						<view class="app-account-action-note-title">保存共享资料</view>
+						<view class="app-account-action-note-desc">纪念日、地点和称呼会同步更新</view>
 					</view>
 					<button class="save-btn app-primary-btn app-primary-btn-shadow app-account-save-btn" @click="handleSave">保存并同步</button>
 				</view>

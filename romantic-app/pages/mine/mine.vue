@@ -157,9 +157,9 @@ import BottomTab from '@/pages/components/BottomTab.vue'
 const TEXT = {
   pageTitle: '我的设置',
   defaultName: '浪漫用户',
-  defaultIntro: '把资料、偏好和关系慢慢整理成舒服的样子。',
+  defaultIntro: '个人资料与关系设置',
   cityFallback: '城市未设置',
-  loverFallback: '正在想念 TA',
+  loverFallback: 'TA',
   profileTitle: '我的资料',
   profileKicker: '预览',
   profileAction: '编辑详情',
@@ -167,13 +167,13 @@ const TEXT = {
   relationshipAction: '查看契约',
   securityTitle: '账号安全',
   dataTitle: '数据管理',
-  dataDesc: '备份、导出和同步我们的小记忆',
+  dataDesc: '备份、导出、同步',
   messageTitle: '通知提醒',
   themeTitle: '主题外观',
-  messageEmptyDesc: '最近还没有新的提醒，关于 TA 的瞬间会慢慢收在这里。',
+  messageEmptyDesc: '暂无提醒',
   readAll: '已查看',
   logoutTitle: '退出当前登录',
-  footerCopy: '将您的个人资料、偏好和关系调整到最舒适的状态。'
+  footerCopy: '管理个人资料、关系信息与账号设置'
 }
 
 const { themeStyle } = useThemePage()
@@ -215,7 +215,7 @@ const partnerCallDisplay = computed(() => partnerProfile.value?.loverNickname ||
 const coupleTitle = computed(() => `${loverDisplay.value} × ${partnerCallDisplay.value}`)
 const togetherDaysText = computed(() => {
   const startDate = parseDateOnly(profile.value.anniversaryDate)
-  if (!startDate) return '把我们的日子慢慢写长'
+  if (!startDate) return '纪念日待设置'
 
   const today = startOfDay(new Date())
   const diffDays = Math.floor((today.getTime() - startDate.getTime()) / DAY_MS)
@@ -225,7 +225,7 @@ const togetherDaysText = computed(() => {
 const coupleMoodLine = computed(() => {
   const bio = String(profile.value.bio || '').trim()
   if (bio && bio.length <= 20) return bio
-  return '今天也在认真喜欢对方'
+  return '资料待完善'
 })
 const anniversaryDisplay = computed(() => profile.value.anniversaryDate || '纪念日未设置')
 const relationshipTag = computed(() => profile.value.loverNickname || '点滴')
@@ -233,7 +233,7 @@ const profileSummary = computed(() => {
   const parts = []
   if (profile.value.city) parts.push(`坐标：${profile.value.city}`)
   if (profile.value.bio) parts.push(profile.value.bio)
-  return parts.join(' · ') || '坐标未设置 · 等你补上一点关于自己的介绍'
+  return parts.join(' · ') || '城市未设置'
 })
 const relationshipSummary = computed(() => {
   const parts = []

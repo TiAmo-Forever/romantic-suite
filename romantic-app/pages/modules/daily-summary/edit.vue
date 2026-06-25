@@ -16,7 +16,7 @@
         </view>
       </view>
 
-      <AccountPanel title="今天的氛围" description="先挑一个最贴近今天的感觉，再把这一天写下来。">
+      <AccountPanel title="今天的氛围" description="选择今日状态">
         <view class="mood-grid">
           <view
             v-for="item in moodOptions"
@@ -30,18 +30,18 @@
         </view>
       </AccountPanel>
 
-      <AccountPanel title="今天的一句话" description="这不是正式日记，只要留下今天最想记住的一小段就好。">
+      <AccountPanel title="今天的一句话" description="记录今日内容">
         <textarea
           v-model="form.content"
           maxlength="1000"
           class="app-textarea daily-textarea"
-          placeholder="写下今天最想认真留住的一句话……"
+          placeholder="请输入今日内容"
           placeholder-class="app-account-input-placeholder"
         />
         <view class="content-meta">{{ form.content.length }}/1000</view>
       </AccountPanel>
 
-      <AccountPanel title="图片与视频" description="可以给今天的小计补上一张照片，或者一段短短的视频。">
+      <AccountPanel title="图片与视频" description="上传图片或视频">
         <view class="media-toolbar">
           <view class="media-entry-btn media-entry-photo" @click="chooseImages">
             <view class="media-entry-dot"></view>
@@ -113,8 +113,8 @@ const TEXT = {
   eyebrow: '共享日常',
   createTitle: '记录今天',
   editTitle: '编辑今天的小计',
-  createIntro: '把今天想认真留下的一段话写下来。',
-  editIntro: '这条小计已经在今天这一页里，随时都可以再修一修。',
+  createIntro: '新增今日小计',
+  editIntro: '编辑今日小计',
   sharedWord: '双方都可补充',
   addImage: '添加图片',
   addVideo: '添加视频',
@@ -122,7 +122,7 @@ const TEXT = {
   videoWord: '视频',
   saveButton: '保存今天的小计',
   savingButton: '保存中',
-  emptyMedia: '暂时还没有媒体内容。',
+  emptyMedia: '暂无媒体内容',
   remove: '×',
   imageLimit: '图片最多 9 张',
   videoLimit: '视频最多 1 个',

@@ -219,7 +219,7 @@ function openDetail(id) {
 </script>
 
 <style scoped>
-.improvement-page { background: var(--app-page-gradient-main); }
+.improvement-page { padding-top: 0; background: var(--app-page-gradient-main); }
 .hero-card { padding: 34rpx 30rpx; border-radius: 34rpx; background: linear-gradient(135deg, #ff9ab4, #ffc9d6 56%, #ffe7ed); box-shadow: var(--app-shadow-card); }
 .hero-chip { display: inline-flex; padding: 10rpx 18rpx; border-radius: 999rpx; background: rgba(255,255,255,0.28); color: #fff; font-size: 22rpx; font-weight: 700; }
 .hero-title { margin-top: 18rpx; font-size: 38rpx; line-height: 1.45; font-weight: 800; color: #fff; }

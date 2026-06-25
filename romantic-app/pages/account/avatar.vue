@@ -138,7 +138,7 @@ const TEXT = {
   uploadTitle: '从相册选择照片',
   uploadDesc: '上传并裁剪一张更贴近现在的照片，保存后会同步到当前账号资料里',
   uploadActiveTitle: '当前正在使用上传头像',
-  uploadActiveDesc: '点击可以重新选择照片，也可以保留当前照片继续保存',
+  uploadActiveDesc: '可重新选择照片或直接保存当前头像',
   saveSuccess: '头像已保存',
   saveError: '头像保存失败'
 }

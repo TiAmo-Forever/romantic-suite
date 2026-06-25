@@ -25,7 +25,7 @@
 				<view class="hero-date">{{ nextMeetingDateText }}</view>
 				<view class="hero-meta-row">
 					<view class="hero-chip hero-chip-strong app-pill app-pill-glass">{{ nextMeetingClockText }}</view>
-					<view class="hero-chip app-pill app-pill-glass">📍 {{ meetingPlan.place || '还没有设置地点' }}</view>
+					<view class="hero-chip app-pill app-pill-glass">📍 {{ meetingPlan.place || '地点待设置' }}</view>
 				</view>
 				<view class="hero-title">{{ heroTitle }}</view>
 				<view class="hero-desc">{{ heroDesc }}</view>
@@ -50,7 +50,7 @@
 					<view class="info-icon">💖</view>
 					<view class="info-label">上次见面</view>
 					<view class="info-value">{{ lastMeetingText }}</view>
-					<view class="info-sub">已经想念了 {{ daysSinceLast }} 天</view>
+					<view class="info-sub">相隔 {{ daysSinceLast }} 天</view>
 				</view>
 				<view class="info-card app-card">
 					<view class="info-icon">✨</view>
@@ -67,13 +67,13 @@
 				<view class="section-row">
 					<view>
 						<view class="app-section-kicker">见面计划</view>
-						<view class="app-section-title">把这次期待慢慢写下来</view>
+						<view class="app-section-title">见面安排</view>
 					</view>
 					<view class="section-tip">{{ meetingPlan.isAllDay ? '全天安排' : nextMeetingClockText }}</view>
 				</view>
-				<view class="plan-summary-note">{{ meetingPlan.note || '还没有补充这次见面的安排，可以先写下想去的地方和想一起做的小事。' }}</view>
+				<view class="plan-summary-note">{{ meetingPlan.note || '暂无安排说明' }}</view>
 				<view class="plan-summary-meta">
-					<view class="plan-meta-chip app-pill app-pill-soft">📍 {{ meetingPlan.place || '还没有设置地点' }}</view>
+					<view class="plan-meta-chip app-pill app-pill-soft">📍 {{ meetingPlan.place || '地点待设置' }}</view>
 					<view class="plan-meta-chip app-pill app-pill-soft">💌 {{ meetingPlan.loverName || '宝贝' }}</view>
 				</view>
 			</view>
@@ -98,11 +98,11 @@
 				<view class="sheet-head">
 					<view>
 						<view class="app-section-kicker">见面计划编辑</view>
-						<view class="app-section-title">把新的安排悄悄更新一下</view>
+						<view class="app-section-title">编辑见面安排</view>
 					</view>
 					<view class="sheet-close" @click.stop="closeEditorSheet">取消</view>
 				</view>
-				<view class="editor-desc">修改见面时间、地点和这次想一起完成的小计划。</view>
+				<view class="editor-desc">修改见面时间、地点和安排说明</view>
 
 				<view class="form-item">
 					<view class="label">称呼</view>
@@ -193,8 +193,8 @@ const meetingStatus = computed(() => {
 const nextMeetingDateText = computed(() => formatDateText(nextMeetingDate.value))
 const nextMeetingClockText = computed(() => formatTimeText(nextMeetingDate.value, meetingPlan.isAllDay))
 const lastMeetingText = computed(() => formatDateText(lastMeetingDate.value))
-const heroBadge = computed(() => ({ waiting: '满心期待', soon: '很快就见面', today: '今天就相见', passed: '该约下一次啦', unknown: '等待设定' }[meetingStatus.value]))
-const heroTitle = computed(() => meetingStatus.value === 'today' ? '今天见面' : meetingStatus.value === 'passed' ? '请设置下一次见面' : `${meetingPlan.loverName || 'TA'} 的见面计划`)
+const heroBadge = computed(() => ({ waiting: '待进行', soon: '即将见面', today: '今天见面', passed: '已结束', unknown: '待设置' }[meetingStatus.value]))
+const heroTitle = computed(() => meetingStatus.value === 'today' ? '今天见面' : meetingStatus.value === 'passed' ? '请设置下次见面' : `${meetingPlan.loverName || 'TA'}的见面安排`)
 const heroDesc = computed(() => meetingPlan.note || '请填写见面计划')
 const countdownItems = computed(() => [{ label: '天', value: countdown.days }, { label: '时', value: countdown.hours }, { label: '分', value: countdown.minutes }, { label: '秒', value: countdown.seconds }])
 const daysSinceLast = computed(() => {
@@ -334,7 +334,7 @@ onUnmounted(() => {
 <style scoped>
 	.countdown-page { position: relative; background: var(--app-page-gradient-main); overflow-x: hidden; }
 	.bg { position: absolute; inset: 0; background: radial-gradient(circle at 12% 10%, var(--app-page-glow-strong), transparent 26%), radial-gradient(circle at 86% 18%, var(--app-page-glow-mid), transparent 24%), radial-gradient(circle at 52% 85%, var(--app-page-glow-soft), transparent 30%); }
-	.top-bar { position: sticky; top: 0; z-index: 30; padding: 24rpx 28rpx; background: rgba(255, 255, 255, 0.58); backdrop-filter: blur(12px); }
+	.top-bar { position: sticky; top: 0; z-index: 30; padding: var(--app-account-topbar-padding-top) 28rpx 24rpx; background: rgba(255, 255, 255, 0.58); backdrop-filter: blur(12px); }
 	.top-nav-icon { width: 18rpx; height: 18rpx; border-left: 4rpx solid currentColor; border-bottom: 4rpx solid currentColor; border-radius: 2rpx; box-sizing: border-box; transform: rotate(45deg); flex-shrink: 0; }
 	.top-ghost-btn { font-size: 24rpx; border: 2rpx solid rgba(255, 126, 166, 0.16); color: #c06f88; background: rgba(255, 255, 255, 0.7); }
 	.top-menu-trigger { min-width: 74rpx; justify-content: center; letter-spacing: 4rpx; }
@@ -384,7 +384,7 @@ onUnmounted(() => {
 	.location-picker { justify-content: space-between; }
 	.floating-layer { position: fixed; inset: 0; z-index: 40; }
 	.floating-mask { position: absolute; inset: 0; background: rgba(75, 49, 60, 0.16); backdrop-filter: blur(6px); }
-	.top-action-menu { position: absolute; top: calc(108rpx + env(safe-area-inset-top)); right: 28rpx; width: 220rpx; padding: 10rpx 0; border-radius: 24rpx; box-shadow: 0 18rpx 42rpx rgba(116, 76, 91, 0.2); }
+	.top-action-menu { position: absolute; top: var(--app-overlay-top-offset); right: 28rpx; width: 220rpx; padding: 10rpx 0; border-radius: 24rpx; box-shadow: 0 18rpx 42rpx rgba(116, 76, 91, 0.2); }
 	.menu-action-item { padding: 22rpx 26rpx; font-size: 26rpx; color: #735560; }
 	.menu-action-item + .menu-action-item { border-top: 1rpx solid rgba(214, 183, 195, 0.34); }
 	.menu-action-item-danger { color: #c25e78; }

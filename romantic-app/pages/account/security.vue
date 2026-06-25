@@ -6,20 +6,20 @@
 			<view class="app-account-stack">
 				<AccountIntroCard
 					eyebrow="私有安全"
-					title="把登录密码留给自己保管"
-					description="密码只属于当前账号本人，修改后会立即影响下次登录，不会和共享资料一起展示给另一方。"
+					title="登录密码"
+					description="修改当前账号登录密码"
 					:tags="['仅当前账号可见', '下次登录立即生效']"
 				/>
-				<AccountPanel title="登录密码" description="建议使用自己容易记住、但不容易被猜到的密码，当前系统至少要求 4 位。">
+				<AccountPanel title="登录密码" description="密码长度不少于 4 位">
 					<view class="app-account-form-row">
-						<view class="app-account-form-col"><AccountField label="新密码"><input v-model="form.nextPassword" password class="input app-field" placeholder="输入新的登录密码" placeholder-class="app-account-input-placeholder" /></AccountField></view>
-						<view class="app-account-form-col"><AccountField label="确认密码"><input v-model="form.confirmPassword" password class="input app-field" placeholder="再次确认新的登录密码" placeholder-class="app-account-input-placeholder" /></AccountField></view>
+						<view class="app-account-form-col"><AccountField label="新密码"><input v-model="form.nextPassword" password class="input app-field" placeholder="请输入新密码" placeholder-class="app-account-input-placeholder" /></AccountField></view>
+						<view class="app-account-form-col"><AccountField label="确认密码"><input v-model="form.confirmPassword" password class="input app-field" placeholder="请再次输入新密码" placeholder-class="app-account-input-placeholder" /></AccountField></view>
 					</view>
 				</AccountPanel>
 				<view class="app-account-action-bar">
 					<view class="app-account-action-note">
-						<view class="app-account-action-note-title">修改后请记住新的登录密码</view>
-						<view class="app-account-action-note-desc">如果两次输入不一致，系统不会保存；保存成功后请按新的密码登录。</view>
+						<view class="app-account-action-note-title">保存后使用新密码登录</view>
+						<view class="app-account-action-note-desc">两次输入需保持一致</view>
 					</view>
 					<button class="save-btn app-primary-btn app-primary-btn-shadow app-account-save-btn" @click="handleSave">保存密码</button>
 				</view>

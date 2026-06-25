@@ -1,0 +1,14 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 79.98 15.9797" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="GoldOrnament" clip-path="url(#clip0_0_12)">
+<path id="Vector" opacity="0.45" d="M0.0407498 7.98985H28.0052" stroke="var(--stroke-0, #C9A87A)" stroke-width="0.798985"/>
+<path id="Vector_2" opacity="0.4" d="M33.9976 9.98731C35.1008 9.98731 35.9951 9.09302 35.9951 7.98985C35.9951 6.88668 35.1008 5.99239 33.9976 5.99239C32.8944 5.99239 32.0001 6.88668 32.0001 7.98985C32.0001 9.09302 32.8944 9.98731 33.9976 9.98731Z" fill="var(--fill-0, #C9A87A)"/>
+<path id="Vector_3" opacity="0.55" d="M39.99 3.99493L41.4881 7.98985L42.9862 3.99493L41.4881 11.9848L39.99 3.99493Z" fill="var(--fill-0, #C9A87A)"/>
+<path id="Vector_4" opacity="0.4" d="M45.9824 9.98731C47.0856 9.98731 47.9798 9.09302 47.9798 7.98985C47.9798 6.88668 47.0856 5.99239 45.9824 5.99239C44.8792 5.99239 43.9849 6.88668 43.9849 7.98985C43.9849 9.09302 44.8792 9.98731 45.9824 9.98731Z" fill="var(--fill-0, #C9A87A)"/>
+<path id="Vector_5" opacity="0.45" d="M51.9748 7.98985H79.9392" stroke="var(--stroke-0, #C9A87A)" stroke-width="0.798985"/>
+</g>
+<defs>
+<clipPath id="clip0_0_12">
+<rect width="79.98" height="15.9797" fill="white"/>
+</clipPath>
+</defs>
+</svg>

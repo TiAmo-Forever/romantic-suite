@@ -35,7 +35,7 @@ onLoad((options) => { title.value = decodeURIComponent(options.title || '敬请�
 </script>
 
 <style scoped>
-	.coming-page { min-height: 100vh; position: relative; padding: 24rpx 24rpx 40rpx; background: radial-gradient(circle at 12% 12%, var(--app-page-glow-strong), transparent 28%), var(--app-page-gradient-main); overflow: hidden; }
+	.coming-page { min-height: 100vh; position: relative; padding: var(--app-shell-padding-top) 24rpx 40rpx; background: radial-gradient(circle at 12% 12%, var(--app-page-glow-strong), transparent 28%), var(--app-page-gradient-main); overflow: hidden; }
 	.bg-orb { position: absolute; border-radius: 50%; filter: blur(8rpx); }
 	.orb-a { width: 220rpx; height: 220rpx; right: -60rpx; top: 160rpx; background: var(--app-page-orb-a); }
 	.orb-b { width: 180rpx; height: 180rpx; left: -40rpx; bottom: 120rpx; background: var(--app-page-orb-b); }
