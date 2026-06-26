@@ -55,7 +55,7 @@
           <view v-if="detail.mediaList?.length" class="detail-chip">{{ detail.mediaList.length }} {{ TEXT.mediaUnit }}</view>
         </view>
 
-        <view class="detail-desc">{{ detail.description || TEXT.emptyDesc }}</view>
+        <view class="detail-desc" @longpress.stop="copyText(detail.description || TEXT.emptyDesc)">{{ detail.description || TEXT.emptyDesc }}</view>
 
         <view class="interaction-row">
           <view class="interaction-time">{{ detail.eventDate }}</view>
@@ -95,7 +95,7 @@
               <text class="interaction-feed-name">{{ getCommentDisplayName(item) }}</text>
               <text class="interaction-comment-time">{{ formatCommentTime(item.createdAt || item.updatedAt) }}</text>
             </view>
-            <text class="interaction-comment-content">{{ item.content }}</text>
+            <text class="interaction-comment-content" selectable @longpress.stop="copyText(item.content)">{{ item.content }}</text>
           </view>
         </view>
       </AccountPanel>
@@ -227,6 +227,7 @@ const TEXT = {
   commentDeleted: '评论已删除',
   commentDeleteFailed: '删除评论失败',
   commentCopied: '评论内容已复制',
+  copySuccess: '内容已复制',
   commentFallbackUser: '未命名',
   creatorPrefix: '由 ',
   creatorSuffix: ' 创建',
@@ -549,12 +550,17 @@ function handleCopySelectedComment() {
     closeCommentPopover()
     return
   }
+  copyText(content, TEXT.commentCopied)
+}
 
+function copyText(value, successTitle = TEXT.copySuccess) {
+  const content = String(value || '').trim()
+  if (!content) return
   uni.setClipboardData({
     data: content,
     success: () => {
       closeCommentPopover()
-      uni.showToast({ title: TEXT.commentCopied, icon: 'none' })
+      uni.showToast({ title: successTitle, icon: 'success' })
     }
   })
 }

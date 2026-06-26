@@ -31,7 +31,7 @@
         <view class="ribbon ribbon-pink">共同安排</view>
         <view class="section-card-inner">
           <view class="intro-title">把想完成的事，慢慢排进你们的日常。</view>
-          <view class="intro-desc">先定计划，再跟着节奏推进，反馈也能随手补上。</view>
+          <view class="intro-desc" @longpress.stop="copyText('先定计划，再跟着节奏推进，反馈也能随手补上。')">先定计划，再跟着节奏推进，反馈也能随手补上。</view>
 
           <view class="intro-bottom">
             <view class="stat-row">
@@ -56,7 +56,7 @@
       <view class="section-card list-card">
         <view class="ribbon ribbon-green">计划列表</view>
         <view class="section-card-inner">
-          <view class="list-intro">先把最想一起完成的一件事排进去。</view>
+          <view class="list-intro" @longpress.stop="copyText('先把最想一起完成的一件事排进去。')">先把最想一起完成的一件事排进去。</view>
 
           <scroll-view class="filter-scroll" scroll-x enable-flex show-scrollbar="false">
             <view class="filter-row">
@@ -110,7 +110,7 @@
                 </view>
 
                 <view class="plan-item-title">{{ item.title || '未命名计划' }}</view>
-                <view class="plan-item-desc">{{ item.description || '先把目标写下来，后面再慢慢补细节。' }}</view>
+                <view class="plan-item-desc" @longpress.stop="copyText(item.description || '先把目标写下来，后面再慢慢补细节。')">{{ item.description || '先把目标写下来，后面再慢慢补细节。' }}</view>
 
                 <view class="plan-highlight-row">
                   <view class="plan-highlight-card">
@@ -129,7 +129,7 @@
 
                 <view v-if="resolveLatestFeedback(item)" class="plan-feedback-preview">
                   <view class="plan-feedback-preview-label">最近反馈</view>
-                  <view class="plan-feedback-preview-text">{{ resolveLatestFeedback(item) }}</view>
+                  <view class="plan-feedback-preview-text" @longpress.stop="copyText(resolveLatestFeedback(item))">{{ resolveLatestFeedback(item) }}</view>
                 </view>
 
                 <view class="plan-item-footer">
@@ -170,6 +170,17 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+
+function copyText(value) {
+  const content = String(value || '').trim()
+  if (!content) return
+  uni.setClipboardData({
+    data: content,
+    success: () => {
+      uni.showToast({ title: '内容已复制', icon: 'success' })
+    }
+  })
+}
 import { onShow } from '@dcloudio/uni-app'
 import { fetchRomanticPlanList } from '@/services/romantic-plans.js'
 import { requireAuth } from '@/utils/auth.js'

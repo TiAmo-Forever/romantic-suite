@@ -76,7 +76,7 @@
           </view>
 
           <view class="feedback-time">最近一次更新 · {{ latestFeedback.createdAt }}</view>
-          <view class="feedback-content focus-content">{{ latestFeedback.content }}</view>
+          <view class="feedback-content focus-content" @longpress.stop="copyText(latestFeedback.content)">{{ latestFeedback.content }}</view>
 
           <view v-if="latestFeedback.mediaList?.length" class="feedback-media-wrap">
             <view class="fold-card fold-card-plain" @click="toggleFeedbackMedia(latestFeedback.id)">
@@ -147,7 +147,7 @@
                   </text>
                 </view>
               </view>
-              <text class="interaction-comment-content">{{ comment.content }}</text>
+              <text class="interaction-comment-content" selectable @longpress.stop="copyText(comment.content)">{{ comment.content }}</text>
             </view>
 
             <view v-if="feedbackCommentVisibleId === latestFeedback.id" class="comment-composer feedback-comment-composer" @click.stop>
@@ -208,7 +208,7 @@
               </view>
 
               <view class="feedback-time">{{ item.createdAt }}</view>
-              <view class="feedback-content">{{ item.content }}</view>
+              <view class="feedback-content" @longpress.stop="copyText(item.content)">{{ item.content }}</view>
 
               <view v-if="item.mediaList?.length" class="feedback-media-wrap">
                 <view class="fold-card fold-card-plain" @click="toggleFeedbackMedia(item.id)">
@@ -279,7 +279,7 @@
                       </text>
                     </view>
                   </view>
-                  <text class="interaction-comment-content">{{ comment.content }}</text>
+                  <text class="interaction-comment-content" selectable @longpress.stop="copyText(comment.content)">{{ comment.content }}</text>
                 </view>
 
                 <view v-if="feedbackCommentVisibleId === item.id" class="comment-composer feedback-comment-composer" @click.stop>
@@ -448,6 +448,7 @@ const TEXT = {
   feedbackCommentDeleted: '评论已删除',
   feedbackCommentDeleteFailed: '删除反馈评论失败',
   feedbackLikeFailed: '反馈点赞失败',
+  copySuccess: '内容已复制',
   feedbackCommentDeleteTitle: '删除反馈评论',
   feedbackCommentDeleteContent: '删除后这条评论会立即移除，是否继续？',
   commentFallbackUser: '未命名',
@@ -665,6 +666,17 @@ function closeFeedbackActionMenu() {
 function handleDetailTap() {
   closeRecordMenu()
   closeFeedbackActionMenu()
+}
+
+function copyText(value, successTitle = TEXT.copySuccess) {
+  const content = String(value || '').trim()
+  if (!content) return
+  uni.setClipboardData({
+    data: content,
+    success: () => {
+      uni.showToast({ title: successTitle, icon: 'success' })
+    }
+  })
 }
 
 function handleRecordEdit() {

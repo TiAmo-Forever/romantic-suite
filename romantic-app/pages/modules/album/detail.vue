@@ -53,7 +53,7 @@
           <view v-if="detail.videoCount" class="detail-chip strong">{{ detail.videoCount }} {{ TEXT.videoUnit }}</view>
         </view>
 
-        <view v-if="detail.summary" class="detail-summary">{{ detail.summary }}</view>
+        <view v-if="detail.summary" class="detail-summary" @longpress.stop="copyText(detail.summary)">{{ detail.summary }}</view>
 
         <view v-if="detail.tags.length" class="detail-tags">
           <view v-for="tag in detail.tags" :key="tag" class="detail-tag">{{ tag }}</view>
@@ -97,7 +97,7 @@
               <text class="interaction-feed-name">{{ getCommentDisplayName(item) }}</text>
               <text class="interaction-comment-time">{{ formatCommentTime(item.createdAt || item.updatedAt) }}</text>
             </view>
-            <text class="interaction-comment-content">{{ item.content }}</text>
+            <text class="interaction-comment-content" selectable @longpress.stop="copyText(item.content)">{{ item.content }}</text>
           </view>
         </view>
       </AccountPanel>
@@ -222,6 +222,7 @@ const TEXT = {
   commentDeleted: '评论已删除',
   commentDeleteFailed: '删除评论失败',
   commentCopied: '评论内容已复制',
+  copySuccess: '内容已复制',
   commentFallbackUser: '未命名',
   creatorPrefix: '由 ',
   creatorSuffix: ' 收进相册',
@@ -519,12 +520,17 @@ function handleCopySelectedComment() {
     closeCommentPopover()
     return
   }
+  copyText(content, TEXT.commentCopied)
+}
 
+function copyText(value, successTitle = TEXT.copySuccess) {
+  const content = String(value || '').trim()
+  if (!content) return
   uni.setClipboardData({
     data: content,
     success: () => {
       closeCommentPopover()
-      uni.showToast({ title: TEXT.commentCopied, icon: 'none' })
+      uni.showToast({ title: successTitle, icon: 'success' })
     }
   })
 }

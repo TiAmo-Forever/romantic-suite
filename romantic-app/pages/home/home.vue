@@ -3,134 +3,163 @@
     <GlobalNotificationBanner />
     <view class="home-bg home-bg-a"></view>
     <view class="home-bg home-bg-b"></view>
+    <view class="home-bg home-bg-c"></view>
 
-    <view class="home-top app-fade-up">
-      <view class="home-brand-wrap">
-        <view class="home-brand-kicker">{{ TEXT.brandKicker }}</view>
-        <view class="home-brand">{{ TEXT.brand }}</view>
-        <view class="home-brand-sub">{{ TEXT.brandSub }}</view>
-        <view class="home-brand-line">
-          <view class="home-brand-sep"></view>
-          <view class="home-brand-icon-wrap">
-            <view class="home-brand-leaf home-brand-leaf-left"></view>
-            <view class="home-brand-icon">{{ TEXT.brandIcon }}</view>
-            <view class="home-brand-leaf home-brand-leaf-right"></view>
+    <view class="home-header app-fade-up">
+      <view class="home-header-copy">
+        <view class="home-date">{{ pageDateLabel }}</view>
+        <view class="home-greeting">{{ greetingLabel }}，{{ greetingName }}<text class="home-greeting-emoji">{{ greetingEmoji }}</text></view>
+      </view>
+      <view class="home-notice" hover-class="surface-press" hover-stay-time="60" @click="goNotifications">
+        <view class="home-notice-dot"></view>
+        <view class="home-notice-icon">
+          <view class="bell-top"></view>
+          <view class="bell-body"></view>
+          <view class="bell-bottom"></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="hero-card app-fade-up app-delay-1" hover-class="surface-press" hover-stay-time="70" @click="goAnniversary">
+      <view class="hero-strip"></view>
+      <view class="hero-spark hero-spark-a">✦</view>
+      <view class="hero-spark hero-spark-b">♥</view>
+      <view class="hero-spark hero-spark-c">✦</view>
+      <view class="hero-avatars">
+        <view class="hero-avatar hero-avatar-left">{{ heroLeftName }}</view>
+        <view class="hero-heart">♥</view>
+        <view class="hero-avatar hero-avatar-right">{{ heroRightName }}</view>
+      </view>
+      <view class="hero-copy">我 们 相 爱 已 经</view>
+      <view class="hero-days-row">
+        <view class="hero-days">{{ relationshipDaysText }}</view>
+        <view class="hero-unit">天</view>
+      </view>
+      <view class="hero-meta-row">
+        <view class="hero-line"></view>
+        <view class="hero-meta">{{ relationshipMetaText }}</view>
+        <view class="hero-line"></view>
+      </view>
+    </view>
+
+    <view class="dual-grid app-fade-up app-delay-2">
+      <view class="info-card meet-card" hover-class="surface-press" hover-stay-time="70" @click="goCountdown">
+        <view class="card-kicker"><text class="card-kicker-dot accent-pink"></text>下次见面</view>
+        <view class="meet-days-row">
+          <view class="meet-days">{{ nextMeetingSummary.days }}</view>
+          <view class="meet-unit">天后</view>
+        </view>
+        <view class="meet-date">{{ nextMeetingSummary.dateLabel }}</view>
+        <view class="meet-dots">
+          <view v-for="index in 10" :key="`meet_dot_${index}`" class="meet-dot" :class="{ active: index <= countdownProgressDotCount }"></view>
+        </view>
+      </view>
+
+      <view class="info-card summary-card" hover-class="surface-press" hover-stay-time="70" @click="goMemo">
+        <view class="card-kicker"><text class="card-kicker-dot accent-gold"></text>今日小计</view>
+        <view class="summary-stat">
+          <view class="summary-icon summary-icon-note">
+            <view class="line a"></view>
+            <view class="line b"></view>
           </view>
-          <view class="home-brand-sep"></view>
+          <view class="summary-main"><text class="summary-value">{{ memoMiniSummary.entryCount }}</text><text class="summary-label">条日记</text></view>
         </view>
-      </view>
-      <view class="home-setting" hover-class="home-setting-active" hover-stay-time="60" @click="goSettings">
-        <view class="home-setting-icon"></view>
-      </view>
-    </view>
-
-    <view class="countdown-card app-fade-up app-delay-1" hover-class="surface-press" hover-stay-time="70" @click="goCountdown">
-      <view class="countdown-kicker">{{ TEXT.countdownKicker }}</view>
-      <view class="countdown-main">
-        <text class="countdown-days">{{ countdownSummary.days }}</text>
-        <text class="countdown-unit">{{ TEXT.dayUnit }}</text>
-      </view>
-      <view class="countdown-caption">{{ countdownSummary.caption }}</view>
-    </view>
-
-    <view class="summary-grid app-fade-up app-delay-2">
-      <view class="summary-card app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goAnniversary">
-        <view class="summary-title-row">
-          <view class="summary-title">{{ TEXT.anniversaryTitle }}</view>
+        <view class="summary-stat">
+          <view class="summary-icon summary-icon-photo">
+            <view class="dot"></view>
+            <view class="mountain"></view>
+          </view>
+          <view class="summary-main"><text class="summary-value">{{ memoMiniSummary.imageCount }}</text><text class="summary-label">张照片</text></view>
         </view>
-        <view class="summary-main">
-          <text class="summary-number">{{ anniversarySummary.days }}</text>
-          <text class="summary-unit">{{ TEXT.dayUnit }}</text>
-        </view>
-        <view class="summary-desc">{{ anniversarySummary.label }}</view>
-        <view class="summary-meta">{{ anniversarySummary.meta }}</view>
-        <view class="summary-deco summary-deco-flower"></view>
-      </view>
-
-      <view class="summary-card app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goImprovement">
-        <view class="summary-title-row">
-          <view class="summary-title">{{ TEXT.improvementTitle }}</view>
-        </view>
-        <view class="summary-progress-row">
-          <text class="summary-inline-label">{{ TEXT.improvementPrefix }}</text>
-          <text class="summary-inline-number">{{ improvementSummary.count }}</text>
-          <text class="summary-inline-label">{{ TEXT.improvementSuffix }}</text>
-        </view>
-        <view class="status-badge" :class="improvementSummary.tagClass">{{ improvementSummary.tagText }}</view>
-        <view class="summary-deco summary-deco-wave"></view>
+        <view class="summary-divider"></view>
+        <view class="summary-footer">{{ memoMiniSummary.footer }}</view>
       </view>
     </view>
 
-    <view class="memo-card app-fade-up app-delay-2" hover-class="surface-press" hover-stay-time="70" @click="goMemo">
-      <view class="memo-head">
-        <view class="memo-head-main">
-          <view class="memo-title">{{ TEXT.memoTitle }}</view>
-          <view class="memo-mood-pill" :class="`memo-mood-pill-${memoSummary.mood}`">{{ memoSummary.moodLabel }}</view>
+    <view class="anniversary-section app-fade-up app-delay-3">
+      <view class="section-head">
+        <view class="section-title-wrap">
+          <view class="section-accent"></view>
+          <view class="section-title">即将到来的纪念日</view>
         </view>
-        <view class="memo-add" hover-class="memo-add-active" hover-stay-time="60" @click.stop="goMemoEdit">
-          <text class="memo-add-text">{{ memoSummary.actionText }}</text>
-        </view>
+        <view class="section-link" @click="goAnniversary">全部<text>→</text></view>
       </view>
-      <view class="memo-content">{{ memoSummary.content }}</view>
-      <view class="memo-meta">{{ memoSummary.meta }}</view>
-    </view>
-
-    <view class="entry-grid app-fade-up app-delay-3">
-      <view class="entry-card app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goAlbum">
-        <view class="entry-icon entry-icon-frame">
-          <view class="icon-album">
-            <view class="icon-album-back"></view>
-            <view class="icon-album-front">
-              <view class="icon-album-sun"></view>
-              <view class="icon-album-mountain icon-album-mountain-left"></view>
-              <view class="icon-album-mountain icon-album-mountain-right"></view>
-              <view class="icon-album-flower"></view>
+      <scroll-view class="anniversary-scroll" scroll-x enable-flex :show-scrollbar="false">
+        <view class="anniversary-list">
+          <view v-for="item in upcomingAnniversaryCards" :key="item.id" class="anniversary-card" hover-class="surface-press" hover-stay-time="70" @click="goAnniversary">
+            <view class="anniversary-icon">{{ item.icon }}</view>
+            <view class="anniversary-title">{{ item.title }}</view>
+            <view class="anniversary-days-row">
+              <view class="anniversary-days">{{ item.days }}</view>
+              <view class="anniversary-unit">天后</view>
             </view>
           </view>
-        </view>
-        <view class="entry-label">{{ TEXT.albumTitle }}</view>
-      </view>
-
-      <view class="entry-card app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goAnniversary">
-        <view class="entry-icon entry-icon-frame">
-          <view class="icon-calendar">
-            <view class="icon-calendar-ring icon-calendar-ring-left"></view>
-            <view class="icon-calendar-ring icon-calendar-ring-right"></view>
-            <view class="icon-calendar-top"></view>
-            <view class="icon-calendar-heart"></view>
-            <view class="icon-calendar-dot icon-calendar-dot-a"></view>
-            <view class="icon-calendar-dot icon-calendar-dot-b"></view>
-            <view class="icon-calendar-dot icon-calendar-dot-c"></view>
-            <view class="icon-calendar-dot icon-calendar-dot-d"></view>
+          <view v-if="!upcomingAnniversaryCards.length" class="anniversary-card anniversary-card-empty" hover-class="surface-press" hover-stay-time="70" @click="goAnniversary">
+            <view class="anniversary-icon">✦</view>
+            <view class="anniversary-title">还没有纪念日</view>
+            <view class="anniversary-empty-copy">去补上重要日子</view>
           </view>
         </view>
-        <view class="entry-label">{{ TEXT.anniversaryShort }}</view>
-      </view>
+      </scroll-view>
+    </view>
 
-      <view class="entry-card app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goImprovement">
-        <view class="entry-icon entry-icon-frame">
-          <view class="icon-book">
-            <view class="icon-book-cover icon-book-cover-left"></view>
-            <view class="icon-book-cover icon-book-cover-right"></view>
-            <view class="icon-book-page"></view>
-            <view class="icon-book-line icon-book-line-a"></view>
-            <view class="icon-book-line icon-book-line-b"></view>
-            <view class="icon-book-pen"></view>
+    <view class="memo-focus-card app-fade-up app-delay-4" hover-class="surface-press" hover-stay-time="70" @click="goMemo">
+      <view class="memo-focus-topline"></view>
+      <view class="memo-focus-head">
+        <view class="memo-focus-title-wrap">
+          <view class="memo-focus-icon">
+            <view class="line a"></view>
+            <view class="line b"></view>
           </view>
+          <view class="memo-focus-title">今日小计</view>
         </view>
-        <view class="entry-label">{{ TEXT.improvementShort }}</view>
+        <view class="memo-focus-badge">{{ memoFocusSummary.badge }}</view>
       </view>
-
-      <view class="entry-card entry-card-more app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goPlanet">
-        <view class="entry-icon entry-icon-frame">
-          <view class="icon-grid">
-            <view class="icon-grid-cell"></view>
-            <view class="icon-grid-cell"></view>
-            <view class="icon-grid-cell"></view>
-            <view class="icon-grid-cell"></view>
-          </view>
+      <view class="memo-focus-body">
+        <view class="memo-focus-kicker">{{ memoFocusSummary.kicker }}</view>
+        <view class="memo-focus-content">{{ memoFocusSummary.content }}</view>
+      </view>
+      <view class="memo-focus-foot">
+        <view class="memo-focus-meta">{{ memoFocusSummary.meta }}</view>
+        <view class="memo-focus-action" @click.stop="handleMemoPrimaryAction">
+          <text>{{ memoFocusSummary.actionText }}</text>
+          <view class="memo-focus-arrow"></view>
         </view>
-        <view class="entry-label">{{ TEXT.moreTitle }}</view>
+      </view>
+    </view>
+
+    <view class="quick-section app-fade-up app-delay-4">
+      <view class="quick-kicker">快 速 入 口</view>
+      <view class="quick-grid">
+        <view class="quick-card" hover-class="surface-press" hover-stay-time="70" @click="goMemo">
+          <view class="quick-icon note">
+            <view class="line a"></view>
+            <view class="line b"></view>
+          </view>
+          <view class="quick-label">今日小计</view>
+        </view>
+        <view class="quick-card" hover-class="surface-press" hover-stay-time="70" @click="goAlbum">
+          <view class="quick-icon photo">
+            <view class="dot"></view>
+            <view class="mountain"></view>
+          </view>
+          <view class="quick-label">甜蜜相册</view>
+        </view>
+        <view class="quick-card" hover-class="surface-press" hover-stay-time="70" @click="goAnniversary">
+          <view class="quick-icon calendar">
+            <view class="ring left"></view>
+            <view class="ring right"></view>
+            <view class="heart"></view>
+          </view>
+          <view class="quick-label">纪念日</view>
+        </view>
+        <view class="quick-card" hover-class="surface-press" hover-stay-time="70" @click="goImprovement">
+          <view class="quick-icon book">
+            <view class="line a"></view>
+            <view class="line b"></view>
+          </view>
+          <view class="quick-label">改进簿</view>
+        </view>
       </view>
     </view>
 
@@ -139,119 +168,124 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { getUser, requireAuth } from '@/utils/auth.js'
+import { getProfile } from '@/utils/profile.js'
 import { goPage } from '@/utils/nav.js'
 import { useThemePage } from '@/utils/useThemePage.js'
 import { fetchSharedCountdownPlan } from '@/services/countdown.js'
 import { fetchTodayDailySummary, getDailySummaryMoodMeta } from '@/services/daily-summaries.js'
 import { fetchAnniversaryList } from '@/services/anniversaries.js'
-import { fetchImprovementNoteList } from '@/services/improvement-notes.js'
+import { fetchPartnerProfile, fetchRemoteProfile } from '@/services/profile.js'
 import BottomTab from '@/pages/components/BottomTab.vue'
 
-const TEXT = {
-  brandKicker: '首页主站',
-  brand: '爱意成笺',
-  brandSub: '把喜欢写进每天的小日子',
-  brandIcon: '✉',
-  countdownKicker: '距离下次见面',
-  dayUnit: '天',
-  anniversaryTitle: '恋爱纪念日',
-  anniversaryShort: '纪念日',
-  improvementTitle: '恋爱改进簿',
-  improvementShort: '改进簿',
-  improvementPrefix: '本周待改进',
-  improvementSuffix: '项',
-  memoTitle: '今日小计',
-  albumTitle: '甜蜜相册',
-  moreTitle: '更多功能'
+const WEEK_LABELS = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+const SHORT_WEEK_LABELS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+const ANNIVERSARY_ICON_MAP = {
+  love: '♡',
+  birthday: '✦',
+  meet: '☽',
+  travel: '✦',
+  custom: '♡'
 }
-
 const DAY_MS = 24 * 60 * 60 * 1000
 const { themeStyle } = useThemePage()
 
-const countdownPlan = reactive({
+const profileState = reactive({
+  currentName: '',
+  currentRelationName: '',
+  partnerName: 'TA',
+  partnerRelationName: '',
+  anniversaryDate: ''
+})
+
+const countdownState = reactive({
   nextMeetingAt: '',
   note: '',
   place: '',
   loverName: ''
 })
 
-const anniversaryState = reactive({
+const relationshipState = reactive({
   days: 0,
-  label: '纪念日',
-  meta: '日期待设置'
-})
-
-const improvementState = reactive({
-  pendingCount: 0,
-  activeCount: 0
+  eventDate: '',
+  meta: '请在纪念日中补充确认关系日期'
 })
 
 const memoState = reactive({
   mood: 'gentle',
-  content: '暂无今日小计',
-  meta: '今天 · 暂无记录',
+  content: '今天还没有留下新的记录',
   hasRecord: false,
+  entryCount: 0,
+  imageCount: 0,
+  updatedBy: '',
+  updatedAt: '',
+  summaryDate: ''
 })
 
-const countdownSummary = computed(() => {
-  const nextDate = parseDateTime(countdownPlan.nextMeetingAt)
+const upcomingAnniversaries = ref([])
+
+const pageDateLabel = computed(() => {
+  const now = new Date()
+  return `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${WEEK_LABELS[now.getDay()]}`
+})
+
+const greetingMeta = computed(() => {
+  const hour = new Date().getHours()
+  if (hour < 5) return { label: '夜深了', emoji: '🌙' }
+  if (hour < 9) return { label: '早安', emoji: '☀' }
+  if (hour < 12) return { label: '上午好', emoji: '🌤' }
+  if (hour < 18) return { label: '下午好', emoji: '🌤' }
+  return { label: '晚安', emoji: '🌙' }
+})
+
+const greetingLabel = computed(() => greetingMeta.value.label)
+const greetingEmoji = computed(() => greetingMeta.value.emoji)
+const greetingName = computed(() => profileState.currentName || '你')
+const heroLeftName = computed(() => shortenName(profileState.currentRelationName || profileState.currentName || '我'))
+const heroRightName = computed(() => shortenName(profileState.partnerRelationName || profileState.partnerName || countdownState.loverName || 'TA'))
+const relationshipDaysText = computed(() => String(Math.max(Number(relationshipState.days || 0), 0)))
+const relationshipMetaText = computed(() => relationshipState.eventDate ? `${formatDotDate(parseDateTime(relationshipState.eventDate))} — 今天` : relationshipState.meta)
+
+const nextMeetingSummary = computed(() => {
+  const nextDate = parseDateTime(countdownState.nextMeetingAt)
   if (!nextDate) {
     return {
-      days: '00',
-      caption: '请设置下次见面日期'
+      days: '--',
+      dateLabel: '见面日期待设置'
     }
   }
-
   const today = startOfDay(new Date())
   const target = startOfDay(nextDate)
   const days = Math.max(0, Math.ceil((target.getTime() - today.getTime()) / DAY_MS))
   return {
-    days: String(days).padStart(2, '0'),
-    caption: days === 0
-      ? '今天见面'
-      : days <= 7
-        ? '即将见面'
-        : (countdownPlan.note || '见面安排待补充')
+    days: String(days),
+    dateLabel: `${nextDate.getMonth() + 1}月${nextDate.getDate()}日·${SHORT_WEEK_LABELS[nextDate.getDay()]}`
   }
 })
 
-const anniversarySummary = computed(() => ({
-  days: String(Math.max(anniversaryState.days, 0)),
-  label: anniversaryState.label || '纪念日',
-  meta: anniversaryState.meta || '日期待设置'
+const countdownProgressDotCount = computed(() => {
+  const days = Number(nextMeetingSummary.value.days)
+  if (!Number.isFinite(days)) return 0
+  const safeDays = Math.max(0, Math.min(days, 30))
+  return Math.max(1, Math.min(10, 10 - Math.floor(safeDays / 3)))
+})
+
+const memoMiniSummary = computed(() => ({
+  entryCount: memoState.entryCount,
+  imageCount: memoState.imageCount,
+  footer: memoState.hasRecord ? `${resolveMemoUpdatedBy()}也记录了今天♡` : '等你们写下今天的心情'
 }))
 
-const improvementSummary = computed(() => {
-  if (improvementState.pendingCount > 0) {
-    return {
-      count: improvementState.pendingCount,
-      tagText: '持续跟进中',
-      tagClass: 'status-badge-warn'
-    }
-  }
-  if (improvementState.activeCount > 0) {
-    return {
-      count: improvementState.activeCount,
-      tagText: '本周有进展',
-      tagClass: 'status-badge-soft'
-    }
-  }
-  return {
-    count: 0,
-    tagText: '状态平稳',
-    tagClass: 'status-badge-quiet'
-  }
-})
-const memoSummary = computed(() => ({
-  mood: memoState.mood,
-  moodLabel: getDailySummaryMoodMeta(memoState.mood).label,
-  content: memoState.content,
-  meta: memoState.meta,
-  hasRecord: memoState.hasRecord,
-  actionText: memoState.hasRecord ? '编辑今天' : '去记录'
+const upcomingAnniversaryCards = computed(() => upcomingAnniversaries.value.slice(0, 3))
+
+const memoFocusSummary = computed(() => ({
+  badge: memoState.hasRecord ? `${memoState.entryCount}条记录` : '今天待记录',
+  kicker: memoState.hasRecord ? getDailySummaryMoodMeta(memoState.mood).label : '留下一句今天的话',
+  content: memoState.hasRecord ? memoState.content : '今天还没有新的今日小计，去写下你们的小日常吧',
+  meta: memoState.hasRecord ? formatMemoMeta() : '今天 · 暂无记录',
+  actionText: memoState.hasRecord ? '查看详情' : '立即记录'
 }))
 
 function parseDateTime(value) {
@@ -261,81 +295,157 @@ function parseDateTime(value) {
 }
 
 function startOfDay(date) {
-  if (!date) return null
   return new Date(date.getFullYear(), date.getMonth(), date.getDate())
 }
 
-function formatMonthDay(date) {
-  if (!date) return ''
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${month}-${day}`
+function shortenName(value) {
+  const text = String(value || '').trim()
+  if (!text) return 'TA'
+  return text.slice(0, 2)
 }
 
-function formatDate(date) {
-  if (!date) return '日期待设置'
+function resolveDisplayName(value, fallback) {
+  const text = String(value || '').trim()
+  return text || fallback
+}
+
+function formatDotDate(date) {
+  if (!date) return '未设置'
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-async function loadHomeSummary() {
-  try {
-    const [countdown, dailySummary, anniversaries, notes] = await Promise.all([
-      fetchSharedCountdownPlan(),
-      fetchTodayDailySummary(),
-      fetchAnniversaryList('all'),
-      fetchImprovementNoteList('all')
-    ])
-
-    Object.assign(countdownPlan, {
-      nextMeetingAt: countdown?.nextMeetingAt || '',
-      note: countdown?.note || '',
-      place: countdown?.place || '',
-      loverName: countdown?.loverName || ''
-    })
-
-    const anniversary = Array.isArray(anniversaries)
-      ? anniversaries.find((item) => item?.isPinned)
-      : null
-    if (anniversary) {
-      const eventDate = parseDateTime(anniversary.eventDate || '')
-      anniversaryState.days = Math.abs(Number(anniversary.dayOffset || 0))
-      anniversaryState.label = String(anniversary.title || anniversary.name || '纪念日').trim()
-      anniversaryState.meta = formatDate(eventDate)
-    } else {
-      anniversaryState.days = 0
-      anniversaryState.label = '暂无置顶纪念日'
-      anniversaryState.meta = '请在纪念日中置顶'
-    }
-
-    const list = Array.isArray(notes) ? notes : []
-    improvementState.pendingCount = list.filter((item) => ['pending', 'improving'].includes(String(item.status || '').trim())).length
-    improvementState.activeCount = list.length
-
-    memoState.mood = dailySummary?.mood || 'gentle'
-    memoState.hasRecord = Boolean(dailySummary?.hasRecord)
-    memoState.content = dailySummary?.hasRecord
-      ? (String(dailySummary.content || '').trim() || '今日小计已更新')
-      : '暂无今日小计'
-    memoState.meta = dailySummary?.hasRecord
-      ? `今天 · ${dailySummary.updaterUsername === getCurrentUsername() ? '我' : 'TA'}已更新`
-      : '今天 · 暂无记录'
-  } catch (error) {
-    memoState.mood = 'gentle'
-    memoState.hasRecord = false
-    memoState.content = '首页摘要加载失败'
-    memoState.meta = '离线展示'
-  }
+  return `${year}.${month}.${day}`
 }
 
 function getCurrentUsername() {
   try {
-    return String(getUser()?.username || '')
+    return String(getUser()?.username || '').trim()
   } catch (error) {
     return ''
   }
+}
+
+function resolveMemoUpdatedBy() {
+  const currentUsername = getCurrentUsername()
+  if (memoState.updatedBy && memoState.updatedBy === currentUsername) {
+    return profileState.currentName || '你'
+  }
+  return profileState.partnerName || 'TA'
+}
+
+function formatMemoMeta() {
+  const date = parseDateTime(memoState.updatedAt || memoState.summaryDate)
+  const dateLabel = date ? `${date.getMonth() + 1}月${date.getDate()}日` : '今天'
+  return `${dateLabel} · ${resolveMemoUpdatedBy()}更新`
+}
+
+function buildRelationshipState(list, fallbackDate) {
+  const relationshipItem = (Array.isArray(list) ? list : []).find((item) => item.type === 'love')
+  const eventDate = relationshipItem?.eventDate || fallbackDate || ''
+  const event = parseDateTime(eventDate)
+  if (!event) {
+    relationshipState.days = 0
+    relationshipState.eventDate = ''
+    relationshipState.meta = '请在纪念日中补充确认关系日期'
+    return
+  }
+  const today = startOfDay(new Date())
+  const target = startOfDay(event)
+  relationshipState.days = Math.max(1, Math.floor((today.getTime() - target.getTime()) / DAY_MS) + 1)
+  relationshipState.eventDate = eventDate
+  relationshipState.meta = ''
+}
+
+function buildUpcomingAnniversaries(list) {
+  const cards = (Array.isArray(list) ? list : [])
+    .filter((item) => Number(item.dayOffset) >= 0)
+    .sort((left, right) => Number(left.dayOffset || 0) - Number(right.dayOffset || 0))
+    .slice(0, 3)
+    .map((item, index) => ({
+      id: item.id || `anniversary_${index}`,
+      title: item.title || '纪念日',
+      days: Math.max(Number(item.dayOffset || 0), 0),
+      icon: ANNIVERSARY_ICON_MAP[item.type] || (index % 2 === 0 ? '✦' : '♡')
+    }))
+  upcomingAnniversaries.value = cards
+}
+
+async function loadHomeSummary() {
+  const localProfile = getProfile()
+  profileState.currentName = resolveDisplayName(localProfile.nickname || getUser()?.nickname, '你')
+  profileState.currentRelationName = resolveDisplayName(localProfile.loverNickname, profileState.currentName || '我')
+  profileState.partnerName = resolveDisplayName(countdownState.loverName, 'TA')
+  profileState.partnerRelationName = resolveDisplayName(profileState.partnerName, countdownState.loverName || 'TA')
+  profileState.anniversaryDate = String(localProfile.anniversaryDate || '').trim()
+
+  const [profileResult, countdownResult, memoResult, anniversaryResult, partnerResult] = await Promise.allSettled([
+    fetchRemoteProfile(),
+    fetchSharedCountdownPlan(),
+    fetchTodayDailySummary(),
+    fetchAnniversaryList('all'),
+    fetchPartnerProfile()
+  ])
+
+  if (profileResult.status === 'fulfilled' && profileResult.value) {
+    profileState.currentName = resolveDisplayName(profileResult.value.nickname, profileState.currentName || '你')
+    profileState.currentRelationName = resolveDisplayName(profileResult.value.loverNickname, profileState.currentRelationName || profileState.currentName || '我')
+    profileState.anniversaryDate = String(profileResult.value.anniversaryDate || profileState.anniversaryDate || '').trim()
+  }
+
+  if (countdownResult.status === 'fulfilled' && countdownResult.value) {
+    Object.assign(countdownState, {
+      nextMeetingAt: countdownResult.value.nextMeetingAt || '',
+      note: countdownResult.value.note || '',
+      place: countdownResult.value.place || '',
+      loverName: countdownResult.value.loverName || ''
+    })
+  }
+
+  if (partnerResult.status === 'fulfilled' && partnerResult.value) {
+    profileState.partnerName = resolveDisplayName(partnerResult.value.nickname, profileState.partnerName || 'TA')
+    profileState.partnerRelationName = resolveDisplayName(partnerResult.value.loverNickname, profileState.partnerRelationName || profileState.partnerName || 'TA')
+  } else if (countdownState.loverName) {
+    profileState.partnerName = resolveDisplayName(countdownState.loverName, profileState.partnerName || 'TA')
+    profileState.partnerRelationName = resolveDisplayName(profileState.partnerName, profileState.partnerRelationName || 'TA')
+  }
+
+  if (anniversaryResult.status === 'fulfilled') {
+    buildRelationshipState(anniversaryResult.value, profileState.anniversaryDate)
+    buildUpcomingAnniversaries(anniversaryResult.value)
+  } else {
+    buildRelationshipState([], profileState.anniversaryDate)
+    buildUpcomingAnniversaries([])
+  }
+
+  if (memoResult.status === 'fulfilled' && memoResult.value) {
+    const summary = memoResult.value
+    const entryList = Array.isArray(summary.entryList) ? summary.entryList : []
+    memoState.mood = summary.mood || 'gentle'
+    memoState.content = String(summary.content || '').trim() || '今天还没有留下新的记录'
+    memoState.hasRecord = Boolean(summary.hasRecord)
+    memoState.entryCount = Number(summary.entryCount || entryList.length || 0)
+    memoState.imageCount = entryList.reduce((total, item) => total + (Array.isArray(item.mediaList) ? item.mediaList.filter((media) => media.mediaType === 'image').length : 0), 0)
+    memoState.updatedBy = String(summary.updaterUsername || summary.creatorUsername || '').trim()
+    memoState.updatedAt = String(summary.updatedAt || '').trim()
+    memoState.summaryDate = String(summary.summaryDate || '').trim()
+  } else {
+    memoState.mood = 'gentle'
+    memoState.content = '今天还没有留下新的记录'
+    memoState.hasRecord = false
+    memoState.entryCount = 0
+    memoState.imageCount = 0
+    memoState.updatedBy = ''
+    memoState.updatedAt = ''
+    memoState.summaryDate = ''
+  }
+}
+
+function handleMemoPrimaryAction() {
+  if (memoState.hasRecord) {
+    goMemo()
+    return
+  }
+  goMemoEdit()
 }
 
 function goCountdown() { goPage('/pages/modules/countdown/index') }
@@ -344,8 +454,7 @@ function goAlbum() { goPage('/pages/modules/album/index') }
 function goImprovement() { goPage('/pages/modules/improvement/index') }
 function goMemo() { goPage('/pages/modules/daily-summary/detail') }
 function goMemoEdit() { goPage('/pages/modules/daily-summary/edit') }
-function goPlanet() { goPage('/pages/planet/planet') }
-function goSettings() { goPage('/pages/account/settings') }
+function goNotifications() { goPage('/pages/modules/notifications/index') }
 
 onMounted(() => {
   requireAuth()
@@ -360,717 +469,775 @@ onShow(() => {
 
 <style scoped>
   .home-page {
-    --home-accent: var(--app-color-primary);
-    --home-accent-strong: var(--app-color-primary-strong);
-    --home-accent-soft: var(--app-color-primary-soft);
-    --home-text-main: var(--app-color-text-strong);
-    --home-text-sub: var(--app-color-text);
-    --home-surface: rgba(255, 255, 255, 0.96);
-    --home-surface-soft: var(--app-color-surface-soft);
-    --home-border: rgba(255, 255, 255, 0.72);
-    --home-shadow: var(--app-shadow-card);
-    --home-glow-warm: color-mix(in srgb, var(--app-color-primary-soft) 28%, #ffd9c3 72%);
-    --home-glow-cool: color-mix(in srgb, var(--app-color-primary-soft) 18%, #dfead0 82%);
     position: relative;
     overflow: hidden;
     background:
-      radial-gradient(circle at top, rgba(255, 255, 255, 0.94), rgba(255, 248, 241, 0.92)),
-      var(--app-page-gradient-soft);
+      radial-gradient(circle at top, rgba(255, 255, 255, 0.92), rgba(255, 245, 242, 0.94)),
+      linear-gradient(180deg, #fff5f0 0%, #fff7f5 52%, #fff3ee 100%);
   }
 
   .home-bg {
     position: absolute;
-    border-radius: 50%;
-    filter: blur(10rpx);
-    opacity: 0.6;
+    border-radius: 999rpx;
+    filter: blur(18rpx);
+    opacity: 0.7;
+    pointer-events: none;
   }
 
   .home-bg-a {
     width: 260rpx;
     height: 260rpx;
-    top: 260rpx;
-    right: -80rpx;
-    background: var(--home-glow-warm);
+    top: 220rpx;
+    right: -100rpx;
+    background: rgba(255, 223, 213, 0.9);
   }
 
   .home-bg-b {
     width: 220rpx;
     height: 220rpx;
-    bottom: 250rpx;
-    left: -70rpx;
-    background: var(--home-glow-cool);
+    top: 820rpx;
+    left: -90rpx;
+    background: rgba(255, 234, 226, 0.88);
   }
 
-  .home-top,
-  .countdown-card,
-  .summary-grid,
-  .memo-card,
-  .entry-grid {
+  .home-bg-c {
+    width: 260rpx;
+    height: 260rpx;
+    bottom: 260rpx;
+    right: -80rpx;
+    background: rgba(248, 228, 218, 0.86);
+  }
+
+  .home-header,
+  .hero-card,
+  .dual-grid,
+  .anniversary-section,
+  .memo-focus-card,
+  .quick-section {
     position: relative;
     z-index: 2;
   }
 
-  .home-top {
-    position: relative;
-    margin-top: 8rpx;
-    min-height: 206rpx;
+  .home-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24rpx;
+    margin-top: 6rpx;
+    margin-bottom: 24rpx;
   }
 
-  .home-brand-wrap {
+  .home-date {
+    font-size: 24rpx;
+    letter-spacing: 1rpx;
+    color: #cda692;
+  }
+
+  .home-greeting {
+    margin-top: 12rpx;
+    font-size: 44rpx;
+    line-height: 1.15;
+    font-weight: 600;
+    color: #8f665d;
+  }
+
+  .home-greeting-emoji {
+    margin-left: 10rpx;
+  }
+
+  .home-notice {
+    position: relative;
+    flex-shrink: 0;
+    width: 82rpx;
+    height: 82rpx;
+    border-radius: 28rpx;
+    background: rgba(255, 255, 255, 0.74);
+    box-shadow: 0 12rpx 24rpx rgba(230, 185, 164, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(14px);
+  }
+
+  .home-notice-dot {
+    position: absolute;
+    top: 18rpx;
+    right: 18rpx;
+    width: 12rpx;
+    height: 12rpx;
+    border-radius: 50%;
+    background: #f08d92;
+    box-shadow: 0 0 0 4rpx rgba(255, 255, 255, 0.92);
+  }
+
+  .home-notice-icon {
+    position: relative;
+    width: 34rpx;
+    height: 36rpx;
+  }
+
+  .bell-top {
+    position: absolute;
+    left: 12rpx;
+    top: 2rpx;
+    width: 10rpx;
+    height: 6rpx;
+    border-radius: 999rpx 999rpx 0 0;
+    background: #d9a88f;
+  }
+
+  .bell-body {
+    position: absolute;
+    left: 5rpx;
+    top: 8rpx;
+    width: 24rpx;
+    height: 20rpx;
+    border-radius: 14rpx 14rpx 10rpx 10rpx;
+    background: linear-gradient(180deg, #efc2ad, #dca488);
+  }
+
+  .bell-bottom {
+    position: absolute;
+    left: 10rpx;
+    bottom: 2rpx;
+    width: 14rpx;
+    height: 5rpx;
+    border-radius: 999rpx;
+    background: #d19a82;
+  }
+
+  .hero-card {
+    overflow: hidden;
+    padding: 30rpx 28rpx 36rpx;
+    border-radius: 40rpx;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 251, 249, 0.96) 100%);
+    box-shadow:
+      0 18rpx 42rpx rgba(232, 198, 183, 0.22),
+      inset 0 0 0 2rpx rgba(255, 255, 255, 0.92);
+  }
+
+  .hero-strip {
     position: absolute;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: calc(100% - 120rpx);
-    text-align: center;
+    left: 0;
+    right: 0;
+    height: 18rpx;
+    background: linear-gradient(90deg, #f6c6cb 0%, #f5d7c4 48%, #f2d3c8 100%);
   }
 
-  .home-brand-kicker {
-    font-size: 20rpx;
-    letter-spacing: 6rpx;
-    text-transform: uppercase;
-    color: color-mix(in srgb, var(--home-accent-soft) 56%, #d5c3aa 44%);
+  .hero-spark {
+    position: absolute;
+    color: rgba(234, 187, 174, 0.72);
+    font-size: 22rpx;
   }
 
-  .home-brand {
-    margin-top: 8rpx;
-    font-size: 70rpx;
-    line-height: 1.02;
-    font-weight: 500;
-    letter-spacing: 2rpx;
-    color: var(--home-accent);
-  }
+  .hero-spark-a { top: 60rpx; left: 120rpx; }
+  .hero-spark-b { top: 104rpx; right: 110rpx; }
+  .hero-spark-c { top: 156rpx; left: 88rpx; }
 
-  .home-brand-sub {
-    margin-top: 10rpx;
-    font-size: 24rpx;
-    line-height: 1.6;
-    color: color-mix(in srgb, var(--home-text-sub) 70%, #d1c0b1 30%);
-  }
-
-  .home-brand-line {
-    margin-top: 14rpx;
+  .hero-avatars {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 18rpx;
-    color: color-mix(in srgb, var(--home-accent-soft) 60%, #d9c3a2 40%);
+    margin-top: 28rpx;
   }
 
-  .home-brand-sep {
-    width: 118rpx;
-    height: 2rpx;
-    background: linear-gradient(90deg, rgba(219, 192, 154, 0), rgba(219, 192, 154, 0.8), rgba(219, 192, 154, 0));
-  }
-
-  .home-brand-icon-wrap {
-    display: inline-flex;
-    align-items: center;
-    gap: 10rpx;
-  }
-
-  .home-brand-icon {
-    font-size: 28rpx;
-    line-height: 1;
-  }
-
-  .home-brand-leaf {
-    width: 14rpx;
-    height: 24rpx;
-    border-radius: 14rpx 14rpx 14rpx 2rpx;
-    background: linear-gradient(180deg, #c9d7b5, #a8ba8b);
-    opacity: 0.86;
-  }
-
-  .home-brand-leaf-left { transform: rotate(-36deg); }
-  .home-brand-leaf-right { transform: rotate(36deg) scaleX(-1); }
-
-  .home-setting {
-    position: absolute;
-    top: 10rpx;
-    right: 0;
-    z-index: 3;
-    width: 74rpx;
-    height: 74rpx;
+  .hero-avatar {
+    width: 94rpx;
+    height: 94rpx;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.72);
-    box-shadow: 0 10rpx 24rpx rgba(0, 0, 0, 0.06);
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-
-  .home-setting-active { transform: scale(0.97); }
-
-  .home-setting-icon {
-    width: 24rpx;
-    height: 24rpx;
-    border-radius: 50%;
-    border: 6rpx solid color-mix(in srgb, var(--home-accent-soft) 45%, #d8c3aa 55%);
-    position: relative;
-    box-sizing: border-box;
-  }
-
-  .home-setting-icon::before,
-  .home-setting-icon::after {
-    content: '';
-    position: absolute;
-    inset: -14rpx;
-    border-radius: 50%;
-    border: 4rpx dashed color-mix(in srgb, var(--home-accent-soft) 45%, #d8c3aa 55%);
-    opacity: 0.9;
-  }
-
-  .countdown-card {
-    margin-top: 28rpx;
-    padding: 50rpx 34rpx 46rpx;
-    border-radius: 42rpx;
-    text-align: center;
-    background:
-      radial-gradient(circle at 15% 90%, rgba(255, 224, 210, 0.34), transparent 30%),
-      radial-gradient(circle at 88% 88%, rgba(232, 239, 213, 0.28), transparent 28%),
-      linear-gradient(180deg, var(--home-surface), color-mix(in srgb, var(--home-surface-soft) 55%, #fff9f4 45%));
-    box-shadow:
-      var(--home-shadow),
-      inset 0 0 0 2rpx var(--home-border);
-  }
-
-  .countdown-card::before {
-    content: '';
-    position: absolute;
-    inset: 12rpx;
-    border-radius: 34rpx;
-    border: 2rpx solid rgba(255, 255, 255, 0.86);
-    pointer-events: none;
-  }
-
-  .surface-press {
-    transform: translateY(2rpx) scale(0.986);
-    box-shadow: 0 10rpx 24rpx rgba(0, 0, 0, 0.08);
-  }
-
-  .countdown-kicker {
     font-size: 28rpx;
-    color: var(--home-text-sub);
-    letter-spacing: 2rpx;
+    font-weight: 600;
+    color: #9e7267;
+    background: radial-gradient(circle at 30% 30%, #fffaf8, #f9ece5);
+    box-shadow: inset 0 0 0 2rpx rgba(255, 255, 255, 0.94);
   }
 
-  .countdown-main {
-    margin-top: 22rpx;
+  .hero-avatar-left {
+    background: linear-gradient(180deg, #fff6f1, #fbe7df);
+  }
+
+  .hero-avatar-right {
+    background: linear-gradient(180deg, #fff8f4, #f7e8dd);
+  }
+
+  .hero-heart {
+    width: 40rpx;
+    height: 40rpx;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22rpx;
+    color: #fff;
+    background: linear-gradient(180deg, #ef9ea3, #e48a90);
+    box-shadow: 0 10rpx 18rpx rgba(234, 146, 154, 0.28);
+  }
+
+  .hero-copy {
+    margin-top: 34rpx;
+    text-align: center;
+    font-size: 24rpx;
+    letter-spacing: 10rpx;
+    color: #c39d91;
+  }
+
+  .hero-days-row {
+    margin-top: 24rpx;
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    gap: 10rpx;
-    color: var(--home-accent);
+    gap: 12rpx;
+    color: #9c695f;
   }
 
-  .countdown-days {
-    font-size: 144rpx;
+  .hero-days {
+    font-size: 128rpx;
     line-height: 0.9;
-    font-weight: 500;
-    letter-spacing: 4rpx;
+    font-weight: 600;
+    letter-spacing: 3rpx;
   }
 
-  .countdown-unit {
+  .hero-unit {
     margin-bottom: 18rpx;
-    font-size: 44rpx;
-    line-height: 1;
-    font-weight: 500;
+    font-size: 34rpx;
+    font-weight: 600;
   }
 
-  .countdown-caption {
-    margin-top: 20rpx;
-    font-size: 29rpx;
-    line-height: 1.8;
-    color: var(--home-text-sub);
-  }
-
-  .summary-grid {
+  .hero-meta-row {
     margin-top: 24rpx;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    align-items: center;
     gap: 18rpx;
   }
 
-  .summary-card {
-    position: relative;
-    overflow: hidden;
-    min-height: 246rpx;
-    padding: 24rpx 22rpx;
-    border-radius: 34rpx;
-    background: linear-gradient(180deg, var(--home-surface), color-mix(in srgb, var(--home-surface-soft) 55%, #fff9f4 45%));
-    box-shadow: var(--home-shadow), inset 0 0 0 2rpx var(--home-border);
+  .hero-line {
+    flex: 1;
+    height: 2rpx;
+    background: linear-gradient(90deg, rgba(233, 210, 198, 0), rgba(233, 210, 198, 0.95), rgba(233, 210, 198, 0));
   }
 
-  .summary-title-row {
+  .hero-meta {
+    flex-shrink: 0;
+    font-size: 22rpx;
+    color: #c39d91;
+  }
+
+  .dual-grid {
+    margin-top: 24rpx;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18rpx;
+  }
+
+  .info-card,
+  .anniversary-card,
+  .memo-focus-card,
+  .quick-card {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 249, 246, 0.96));
+    box-shadow:
+      0 16rpx 34rpx rgba(232, 198, 183, 0.18),
+      inset 0 0 0 2rpx rgba(255, 255, 255, 0.9);
+  }
+
+  .info-card {
+    min-height: 260rpx;
+    padding: 24rpx;
+    border-radius: 32rpx;
+  }
+
+  .card-kicker {
+    display: flex;
+    align-items: center;
+    gap: 10rpx;
+    font-size: 24rpx;
+    color: #aa8174;
+  }
+
+  .card-kicker-dot {
+    width: 10rpx;
+    height: 10rpx;
+    border-radius: 50%;
+  }
+
+  .accent-pink { background: #f29ca2; }
+  .accent-gold { background: #dfbc7a; }
+
+  .meet-days-row {
+    margin-top: 26rpx;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 8rpx;
+    color: #9d6b61;
+  }
+
+  .meet-days {
+    font-size: 88rpx;
+    line-height: 0.92;
+    font-weight: 600;
+  }
+
+  .meet-unit {
+    margin-bottom: 14rpx;
+    font-size: 28rpx;
+    font-weight: 600;
+  }
+
+  .meet-date {
+    margin-top: 12rpx;
+    text-align: center;
+    font-size: 24rpx;
+    color: #c39d91;
+  }
+
+  .meet-dots {
+    margin-top: 22rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8rpx;
+  }
+
+  .meet-dot {
+    width: 12rpx;
+    height: 12rpx;
+    border-radius: 50%;
+    background: rgba(241, 208, 196, 0.72);
+  }
+
+  .meet-dot.active {
+    background: linear-gradient(180deg, #f19ca2, #e59097);
+    box-shadow: 0 6rpx 12rpx rgba(234, 146, 154, 0.24);
+  }
+
+  .summary-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .summary-stat {
+    margin-top: 18rpx;
     display: flex;
     align-items: center;
     gap: 14rpx;
   }
 
-  .summary-title-row::before,
-  .summary-title-row::after {
-    content: '';
-    height: 2rpx;
-    flex: 1;
-    background: linear-gradient(90deg, rgba(217, 196, 168, 0), rgba(217, 196, 168, 0.9), rgba(217, 196, 168, 0));
+  .summary-icon,
+  .memo-focus-icon,
+  .quick-icon {
+    position: relative;
+    flex-shrink: 0;
   }
 
-  .summary-title {
-    flex-shrink: 0;
-    font-size: 26rpx;
-    color: var(--home-text-main);
+  .summary-icon-note,
+  .memo-focus-icon,
+  .quick-icon.note,
+  .quick-icon.book {
+    width: 40rpx;
+    height: 40rpx;
+    border-radius: 12rpx;
+    background: linear-gradient(180deg, #f8efe8, #f3e4db);
+  }
+
+  .summary-icon-note .line,
+  .memo-focus-icon .line,
+  .quick-icon.note .line,
+  .quick-icon.book .line {
+    position: absolute;
+    left: 10rpx;
+    right: 10rpx;
+    height: 4rpx;
+    border-radius: 999rpx;
+    background: #c69c8f;
+  }
+
+  .summary-icon-note .line.a,
+  .memo-focus-icon .line.a,
+  .quick-icon.note .line.a,
+  .quick-icon.book .line.a {
+    top: 13rpx;
+  }
+
+  .summary-icon-note .line.b,
+  .memo-focus-icon .line.b,
+  .quick-icon.note .line.b,
+  .quick-icon.book .line.b {
+    top: 22rpx;
+  }
+
+  .summary-icon-photo,
+  .quick-icon.photo {
+    width: 40rpx;
+    height: 40rpx;
+    border-radius: 12rpx;
+    background: linear-gradient(180deg, #f7eee5, #efe1d6);
+    overflow: hidden;
+  }
+
+  .summary-icon-photo .dot,
+  .quick-icon.photo .dot {
+    position: absolute;
+    top: 8rpx;
+    left: 9rpx;
+    width: 8rpx;
+    height: 8rpx;
+    border-radius: 50%;
+    background: #dfbc7a;
+  }
+
+  .summary-icon-photo .mountain,
+  .quick-icon.photo .mountain {
+    position: absolute;
+    left: 7rpx;
+    right: 7rpx;
+    bottom: 8rpx;
+    height: 16rpx;
+    border-radius: 10rpx 10rpx 4rpx 4rpx;
+    background: linear-gradient(180deg, #cfa39a, #b98880);
+    transform: skewX(-16deg);
+  }
+  .summary-main {
+    display: flex;
+    align-items: baseline;
+    gap: 6rpx;
+    color: #9d6b61;
+  }
+
+  .summary-value {
+    font-size: 42rpx;
+    line-height: 1;
     font-weight: 600;
   }
 
-  .summary-main {
-    margin-top: 22rpx;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    gap: 8rpx;
-    color: var(--home-accent);
+  .summary-label {
+    font-size: 24rpx;
+    color: #b38679;
   }
 
-  .summary-number {
-    font-size: 82rpx;
-    line-height: 0.92;
-    font-weight: 500;
+  .summary-divider {
+    margin-top: 18rpx;
+    height: 2rpx;
+    background: linear-gradient(90deg, rgba(235, 211, 198, 0), rgba(235, 211, 198, 0.96), rgba(235, 211, 198, 0));
   }
 
-  .summary-unit {
-    margin-bottom: 12rpx;
-    font-size: 30rpx;
-  }
-
-  .summary-desc {
-    margin-top: 10rpx;
-    text-align: center;
-    font-size: 27rpx;
-    line-height: 1.5;
-    color: var(--home-text-sub);
-  }
-
-  .summary-meta {
-    margin-top: 8rpx;
-    text-align: center;
+  .summary-footer {
+    margin-top: auto;
+    padding-top: 18rpx;
     font-size: 22rpx;
-    line-height: 1.5;
-    color: color-mix(in srgb, var(--home-text-sub) 70%, #cfbeab 30%);
-  }
-
-  .summary-progress-row {
-    margin-top: 48rpx;
-    display: flex;
-    align-items: baseline;
-    justify-content: center;
-    gap: 10rpx;
-    flex-wrap: wrap;
-    color: var(--home-text-sub);
-  }
-
-  .summary-inline-label {
-    font-size: 27rpx;
     line-height: 1.6;
+    color: #bf988b;
   }
 
-  .summary-inline-number {
-    font-size: 72rpx;
-    line-height: 0.92;
-    color: var(--home-accent);
-    font-weight: 500;
+  .anniversary-section {
+    margin-top: 28rpx;
   }
 
-  .status-badge {
-    margin: 16rpx auto 0;
-    min-width: 144rpx;
-    padding: 10rpx 16rpx;
-    border-radius: 999rpx;
-    text-align: center;
-    font-size: 21rpx;
-    font-weight: 700;
-    box-shadow: inset 0 0 0 2rpx rgba(255, 255, 255, 0.45);
-  }
-
-  .status-badge-warn {
-    background: color-mix(in srgb, var(--home-accent-soft) 18%, #fff4ea 82%);
-    color: var(--home-accent-strong);
-  }
-
-  .status-badge-soft {
-    background: color-mix(in srgb, var(--home-accent-soft) 22%, #fff4f6 78%);
-    color: var(--home-accent-strong);
-  }
-
-  .status-badge-quiet {
-    background: #f7f4ee;
-    color: var(--home-text-sub);
-  }
-
-  .summary-deco {
-    position: absolute;
-    pointer-events: none;
-    opacity: 0.8;
-  }
-
-  .summary-deco-flower {
-    right: 22rpx;
-    bottom: 16rpx;
-    width: 100rpx;
-    height: 120rpx;
-    background:
-      radial-gradient(circle at 24% 34%, #f0c6b4 0 10rpx, transparent 11rpx),
-      radial-gradient(circle at 52% 16%, #f5d0c1 0 12rpx, transparent 13rpx),
-      radial-gradient(circle at 78% 36%, #eec1aa 0 10rpx, transparent 11rpx),
-      linear-gradient(180deg, transparent 0 54%, #a5b27b 54% 56%, transparent 56%),
-      linear-gradient(165deg, transparent 0 58%, #a5b27b 58% 60%, transparent 60%);
-  }
-
-  .summary-deco-wave {
-    right: -18rpx;
-    bottom: -8rpx;
-    width: 220rpx;
-    height: 110rpx;
-    background:
-      radial-gradient(circle at 80% 80%, rgba(210, 224, 181, 0.72), transparent 38%),
-      linear-gradient(180deg, transparent 0%, rgba(239, 240, 223, 0.65) 70%, rgba(227, 236, 205, 0.92) 100%);
-    border-top-left-radius: 110rpx;
-  }
-
-  .memo-card {
-    margin-top: 24rpx;
-    padding: 24rpx;
-    border-radius: 34rpx;
-    background: var(--home-surface);
-    box-shadow: var(--home-shadow), inset 0 0 0 2rpx var(--home-border);
-  }
-
-
-  .memo-head {
+  .section-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 20rpx;
   }
 
-  .memo-head-main {
+  .section-title-wrap {
     display: flex;
     align-items: center;
-    gap: 14rpx;
-    flex-wrap: wrap;
-    min-width: 0;
+    gap: 12rpx;
   }
 
-  .memo-title {
-    font-size: 32rpx;
+  .section-accent {
+    width: 8rpx;
+    height: 28rpx;
+    border-radius: 999rpx;
+    background: linear-gradient(180deg, #efabaf, #e2959b);
+  }
+
+  .section-title {
+    font-size: 30rpx;
     font-weight: 600;
-    color: var(--home-text-main);
+    color: #8f665d;
   }
 
-  .memo-mood-pill {
-    display: inline-flex;
+  .section-link {
+    font-size: 24rpx;
+    color: #bf988b;
+  }
+
+  .section-link text {
+    margin-left: 6rpx;
+  }
+
+  .anniversary-scroll {
+    margin-top: 20rpx;
+    width: 100%;
+    overflow: visible;
+  }
+
+  .anniversary-list {
+    display: flex;
+    gap: 16rpx;
+    padding-right: 8rpx;
+  }
+
+  .anniversary-card {
+    width: 196rpx;
+    min-height: 176rpx;
+    padding: 24rpx 22rpx;
+    border-radius: 30rpx;
+    flex-shrink: 0;
+  }
+
+  .anniversary-icon {
+    width: 44rpx;
+    height: 44rpx;
+    border-radius: 14rpx;
+    display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 46rpx;
-    padding: 0 16rpx;
-    border-radius: 999rpx;
     font-size: 22rpx;
+    color: #fff;
+    background: linear-gradient(180deg, #efb6b4, #e2959b);
+    box-shadow: 0 10rpx 18rpx rgba(234, 146, 154, 0.2);
+  }
+
+  .anniversary-title {
+    margin-top: 24rpx;
+    font-size: 28rpx;
+    line-height: 1.4;
+    font-weight: 600;
+    color: #8f665d;
+  }
+
+  .anniversary-days-row {
+    margin-top: 16rpx;
+    display: flex;
+    align-items: flex-end;
+    gap: 6rpx;
+    color: #a56f65;
+  }
+
+  .anniversary-days {
+    font-size: 42rpx;
+    line-height: 1;
     font-weight: 600;
   }
 
-  .memo-mood-pill-gentle { background: #fff1f5; color: #c66e89; }
-  .memo-mood-pill-sweet { background: #fff0e7; color: #cc815d; }
-  .memo-mood-pill-calm { background: #eef7ef; color: #70936a; }
-  .memo-mood-pill-missing { background: #f6efff; color: #8f78ba; }
-  .memo-mood-pill-busy { background: #fff6e5; color: #bf8c45; }
-  .memo-mood-pill-closer { background: #edf6fb; color: #5a8dae; }
-
-  .memo-add {
-    display: inline-flex;
-    align-items: center;
-    padding: 12rpx 20rpx;
-    border-radius: 999rpx;
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 8rpx 20rpx rgba(223, 203, 172, 0.16);
-    color: var(--home-accent);
-  }
-
-  .memo-add-active { transform: scale(0.97); }
-  .memo-add-text { font-size: 27rpx; line-height: 1; font-weight: 600; }
-
-  .memo-content {
-    margin-top: 24rpx;
-    padding-top: 24rpx;
-    border-top: 2rpx solid rgba(233, 223, 205, 0.9);
-    font-size: 30rpx;
-    line-height: 1.8;
-    color: color-mix(in srgb, var(--home-text-sub) 68%, #cbbfb5 32%);
-  }
-
-  .memo-meta {
-    margin-top: 14rpx;
+  .anniversary-unit {
+    margin-bottom: 4rpx;
     font-size: 22rpx;
-    color: var(--home-accent);
   }
 
-  .entry-grid {
-    margin-top: 24rpx;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+  .anniversary-card-empty {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .anniversary-empty-copy {
+    margin-top: 16rpx;
+    font-size: 22rpx;
+    line-height: 1.5;
+    color: #c19a8c;
+  }
+
+  .memo-focus-card {
+    position: relative;
+    margin-top: 28rpx;
+    padding: 0 28rpx 28rpx;
+    border-radius: 36rpx;
+    overflow: hidden;
+  }
+
+  .memo-focus-topline {
+    height: 18rpx;
+    margin: 0 -28rpx;
+    background: linear-gradient(90deg, #f5d2d3, #f6decb, #f0d8cc);
+  }
+
+  .memo-focus-head {
+    margin-top: 28rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 18rpx;
   }
 
-  .entry-card {
-    min-height: 184rpx;
-    padding: 24rpx 22rpx 20rpx;
-    border-radius: 34rpx;
+  .memo-focus-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14rpx;
+  }
+
+  .memo-focus-title {
+    font-size: 32rpx;
+    font-weight: 600;
+    color: #8f665d;
+  }
+
+  .memo-focus-badge {
+    flex-shrink: 0;
+    padding: 10rpx 18rpx;
+    border-radius: 999rpx;
+    font-size: 22rpx;
+    color: #ba897b;
+    background: rgba(247, 233, 225, 0.92);
+  }
+
+  .memo-focus-body {
+    margin-top: 22rpx;
+    padding: 26rpx 24rpx;
+    border-radius: 28rpx;
+    background: linear-gradient(180deg, rgba(255, 250, 247, 0.98), rgba(255, 244, 239, 0.92));
+  }
+
+  .memo-focus-kicker {
+    font-size: 24rpx;
+    color: #c49f91;
+  }
+
+  .memo-focus-content {
+    margin-top: 14rpx;
+    font-size: 30rpx;
+    line-height: 1.8;
+    color: #8f665d;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .memo-focus-foot {
+    margin-top: 22rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18rpx;
+  }
+
+  .memo-focus-meta {
+    min-width: 0;
+    font-size: 22rpx;
+    color: #bf988b;
+  }
+
+  .memo-focus-action {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 10rpx;
+    padding: 16rpx 22rpx;
+    border-radius: 999rpx;
+    color: #fff;
+    background: linear-gradient(180deg, #f2acae, #e5969b);
+    box-shadow: 0 12rpx 22rpx rgba(234, 146, 154, 0.22);
+  }
+
+  .memo-focus-action text {
+    font-size: 24rpx;
+    font-weight: 600;
+  }
+
+  .memo-focus-arrow {
+    width: 14rpx;
+    height: 14rpx;
+    border-top: 3rpx solid rgba(255, 255, 255, 0.96);
+    border-right: 3rpx solid rgba(255, 255, 255, 0.96);
+    transform: rotate(45deg);
+  }
+
+  .quick-section {
+    margin-top: 28rpx;
+  }
+
+  .quick-kicker {
+    text-align: center;
+    font-size: 22rpx;
+    letter-spacing: 10rpx;
+    color: #c39d91;
+  }
+
+  .quick-grid {
+    margin-top: 18rpx;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18rpx;
+  }
+
+  .quick-card {
+    min-height: 174rpx;
+    padding: 24rpx;
+    border-radius: 32rpx;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 14rpx;
-    background:
-      radial-gradient(circle at 25% 92%, rgba(255, 231, 217, 0.3), transparent 26%),
-      radial-gradient(circle at 82% 88%, rgba(228, 236, 208, 0.25), transparent 22%),
-      linear-gradient(180deg, var(--home-surface), color-mix(in srgb, var(--home-surface-soft) 55%, #fff9f4 45%));
-    box-shadow: var(--home-shadow), inset 0 0 0 2rpx var(--home-border);
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    gap: 18rpx;
   }
 
-  .entry-card-more { opacity: 0.92; }
-
-  .entry-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .entry-icon-frame {
-    width: 110rpx;
-    height: 88rpx;
-    position: relative;
-  }
-
-  .entry-label {
-    font-size: 29rpx;
-    line-height: 1.4;
-    font-weight: 600;
-    color: var(--home-text-main);
-  }
-
-  .icon-album {
-    position: relative;
-    width: 96rpx;
-    height: 74rpx;
-  }
-
-  .icon-album-back,
-  .icon-album-front {
-    position: absolute;
-    border-radius: 12rpx;
-    background: #fff9ef;
-    box-shadow: 0 6rpx 18rpx rgba(0, 0, 0, 0.06);
-  }
-
-  .icon-album-back {
-    width: 64rpx;
-    height: 52rpx;
-    right: 6rpx;
-    top: 12rpx;
-    background: rgba(236, 224, 207, 0.7);
-    transform: rotate(8deg);
-  }
-
-  .icon-album-front {
-    width: 72rpx;
-    height: 56rpx;
-    left: 8rpx;
-    top: 6rpx;
-    overflow: hidden;
-  }
-
-  .icon-album-sun {
-    position: absolute;
-    top: 10rpx;
-    left: 12rpx;
-    width: 12rpx;
-    height: 12rpx;
-    border-radius: 50%;
-    background: #f1dcc3;
-  }
-
-  .icon-album-mountain {
-    position: absolute;
-    bottom: 8rpx;
-    border-bottom: 26rpx solid #b7c29b;
-    border-left: 16rpx solid transparent;
-    border-right: 16rpx solid transparent;
-  }
-
-  .icon-album-mountain-left { left: 8rpx; }
-  .icon-album-mountain-right { right: 8rpx; border-bottom-color: #94a56f; }
-
-  .icon-album-flower {
-    position: absolute;
-    right: 2rpx;
-    bottom: 0;
-    width: 22rpx;
-    height: 22rpx;
-    border-radius: 50%;
-    background:
-      radial-gradient(circle at 50% 30%, #fff7ef 0 5rpx, transparent 6rpx),
-      radial-gradient(circle at 30% 60%, #f0d7c7 0 6rpx, transparent 7rpx),
-      radial-gradient(circle at 70% 60%, #f0d7c7 0 6rpx, transparent 7rpx),
-      radial-gradient(circle at 50% 80%, #f0d7c7 0 6rpx, transparent 7rpx);
-  }
-
-  .icon-calendar {
-    position: relative;
-    width: 82rpx;
-    height: 74rpx;
-    border-radius: 16rpx;
-    background: #fffaf3;
-    box-shadow: 0 6rpx 18rpx rgba(0, 0, 0, 0.06);
-    overflow: hidden;
-  }
-
-  .icon-calendar-top {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    height: 22rpx;
-    background: linear-gradient(180deg, #d8b779, #e7c998);
-  }
-
-  .icon-calendar-ring {
-    position: absolute;
-    top: -4rpx;
-    width: 8rpx;
-    height: 18rpx;
-    border-radius: 999rpx;
-    background: #f5efe4;
-    box-shadow: 0 0 0 2rpx rgba(210, 186, 150, 0.45);
-    z-index: 2;
-  }
-
-  .icon-calendar-ring-left { left: 18rpx; }
-  .icon-calendar-ring-right { right: 18rpx; }
-
-  .icon-calendar-heart {
-    position: absolute;
-    top: 28rpx;
-    left: 31rpx;
-    width: 20rpx;
-    height: 18rpx;
-    transform: rotate(-45deg);
-    background: #e7a08f;
-  }
-
-  .icon-calendar-heart::before,
-  .icon-calendar-heart::after {
-    content: '';
-    position: absolute;
-    width: 20rpx;
-    height: 18rpx;
-    border-radius: 50%;
-    background: #e7a08f;
-  }
-
-  .icon-calendar-heart::before { top: -10rpx; left: 0; }
-  .icon-calendar-heart::after { left: 10rpx; top: 0; }
-
-  .icon-calendar-dot {
-    position: absolute;
-    width: 6rpx;
-    height: 6rpx;
-    border-radius: 50%;
-    background: rgba(211, 193, 168, 0.8);
-  }
-
-  .icon-calendar-dot-a { left: 16rpx; bottom: 18rpx; }
-  .icon-calendar-dot-b { left: 28rpx; bottom: 18rpx; }
-  .icon-calendar-dot-c { right: 28rpx; bottom: 18rpx; }
-  .icon-calendar-dot-d { right: 16rpx; bottom: 18rpx; }
-
-  .icon-book {
-    position: relative;
-    width: 92rpx;
-    height: 72rpx;
-  }
-
-  .icon-book-cover {
-    position: absolute;
-    top: 10rpx;
-    width: 36rpx;
+  .quick-icon {
+    width: 48rpx;
     height: 48rpx;
-    border-radius: 8rpx;
   }
 
-  .icon-book-cover-left { left: 10rpx; background: #aebc94; transform: skewY(-8deg); }
-  .icon-book-cover-right { right: 10rpx; background: #f4ead8; transform: skewY(8deg); }
-
-  .icon-book-page {
-    position: absolute;
-    left: 26rpx;
-    right: 26rpx;
-    top: 6rpx;
-    bottom: 10rpx;
-    border-radius: 6rpx;
-    background: #fffaf2;
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  .quick-icon.calendar {
+    border-radius: 14rpx;
+    background: linear-gradient(180deg, #f7eee6, #efe0d5);
   }
 
-  .icon-book-line {
+  .quick-icon.calendar .ring {
     position: absolute;
-    left: 34rpx;
-    right: 36rpx;
-    height: 3rpx;
+    top: -3rpx;
+    width: 8rpx;
+    height: 14rpx;
     border-radius: 999rpx;
-    background: rgba(206, 189, 163, 0.82);
+    background: #cf9b85;
   }
 
-  .icon-book-line-a { top: 24rpx; }
-  .icon-book-line-b { top: 34rpx; }
+  .quick-icon.calendar .ring.left { left: 11rpx; }
+  .quick-icon.calendar .ring.right { right: 11rpx; }
 
-  .icon-book-pen {
+  .quick-icon.calendar .heart {
     position: absolute;
-    right: 6rpx;
-    bottom: 8rpx;
-    width: 34rpx;
-    height: 10rpx;
-    border-radius: 999rpx;
-    background: linear-gradient(90deg, #d4ae67, #c8954f);
-    transform: rotate(-34deg);
+    left: 15rpx;
+    top: 18rpx;
+    width: 18rpx;
+    height: 16rpx;
+    transform: rotate(-45deg);
+    background: #e79da1;
   }
 
-  .icon-book-pen::after {
+  .quick-icon.calendar .heart::before,
+  .quick-icon.calendar .heart::after {
     content: '';
     position: absolute;
-    right: -8rpx;
-    top: 0;
-    border-left: 10rpx solid #d9c4a8;
-    border-top: 5rpx solid transparent;
-    border-bottom: 5rpx solid transparent;
+    width: 18rpx;
+    height: 16rpx;
+    border-radius: 50%;
+    background: #e79da1;
   }
 
-  .icon-grid {
-    width: 68rpx;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10rpx;
+  .quick-icon.calendar .heart::before { top: -9rpx; left: 0; }
+  .quick-icon.calendar .heart::after { top: 0; left: 9rpx; }
+
+  .quick-label {
+    font-size: 28rpx;
+    font-weight: 600;
+    color: #8f665d;
   }
 
-  .icon-grid-cell {
-    width: 28rpx;
-    height: 28rpx;
-    border-radius: 8rpx;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 241, 232, 0.98));
-    box-shadow: inset 0 0 0 2rpx rgba(230, 218, 199, 0.96);
+  .surface-press {
+    transform: translateY(2rpx) scale(0.986);
   }
 
   @media screen and (max-width: 520px) {
-    .countdown-days { font-size: 128rpx; }
+    .hero-days {
+      font-size: 112rpx;
+    }
+
+    .home-greeting {
+      font-size: 40rpx;
+    }
   }
 </style>

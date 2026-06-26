@@ -28,7 +28,7 @@
 					<view class="hero-chip app-pill app-pill-glass">📍 {{ meetingPlan.place || '地点待设置' }}</view>
 				</view>
 				<view class="hero-title">{{ heroTitle }}</view>
-				<view class="hero-desc">{{ heroDesc }}</view>
+				<view class="hero-desc" @longpress.stop="copyText(heroDesc)">{{ heroDesc }}</view>
 			</view>
 
 			<view class="countdown-card app-card app-card-gradient">
@@ -71,7 +71,7 @@
 					</view>
 					<view class="section-tip">{{ meetingPlan.isAllDay ? '全天安排' : nextMeetingClockText }}</view>
 				</view>
-				<view class="plan-summary-note">{{ meetingPlan.note || '暂无安排说明' }}</view>
+				<view class="plan-summary-note" @longpress.stop="copyText(meetingPlan.note || '暂无安排说明')">{{ meetingPlan.note || '暂无安排说明' }}</view>
 				<view class="plan-summary-meta">
 					<view class="plan-meta-chip app-pill app-pill-soft">📍 {{ meetingPlan.place || '地点待设置' }}</view>
 					<view class="plan-meta-chip app-pill app-pill-soft">💌 {{ meetingPlan.loverName || '宝贝' }}</view>
@@ -301,6 +301,16 @@ async function handleReset() {
 	} catch (error) {
 		uni.showToast({ title: error?.message || '恢复默认计划失败', icon: 'none' })
 	}
+}
+function copyText(value) {
+	const content = String(value || '').trim()
+	if (!content) return
+	uni.setClipboardData({
+		data: content,
+		success: () => {
+			uni.showToast({ title: '内容已复制', icon: 'success' })
+		}
+	})
 }
 function goBack() { backPage() }
 

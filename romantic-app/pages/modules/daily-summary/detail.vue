@@ -63,7 +63,7 @@
                 <scroll-view class="daily-entry-scroll" scroll-y enhanced show-scrollbar="false">
                   <view class="daily-entry-paper">
                     <view class="daily-entry-paper-label">{{ TEXT.entryContentLabel }}</view>
-                    <view class="daily-entry-content">{{ entry.content }}</view>
+                    <view class="daily-entry-content" @longpress.stop="copyText(entry.content)">{{ entry.content }}</view>
                   </view>
 
                   <view v-if="entry.mediaList.length" class="daily-media-grid">
@@ -97,7 +97,7 @@
                 <view class="daily-entry-footer">
                   <view class="daily-entry-summary-card">
                     <view class="daily-entry-summary-kicker">{{ TEXT.entrySummaryLabel }}</view>
-                    <view class="daily-entry-summary-text">{{ getEntryInteractionSummary(entry) }}</view>
+                    <view class="daily-entry-summary-text" @longpress.stop="copyText(getEntryInteractionSummary(entry))">{{ getEntryInteractionSummary(entry) }}</view>
                   </view>
                   <view class="daily-entry-footer-actions">
                     <view class="daily-inline-action" @click.stop="handleLikeToggle(entry)">
@@ -151,7 +151,7 @@
                 <view class="history-count">{{ item.entryCount }} 条</view>
               </view>
               <view class="history-author">{{ getHistoryMeta(item) }}</view>
-              <view class="history-preview">{{ item.content || TEXT.emptyHistoryPreview }}</view>
+              <view class="history-preview" @longpress.stop="copyText(item.content || TEXT.emptyHistoryPreview)">{{ item.content || TEXT.emptyHistoryPreview }}</view>
             </view>
           </view>
           <view v-else class="detail-empty">{{ TEXT.emptyHistory }}</view>
@@ -173,7 +173,7 @@
         <scroll-view class="comment-drawer-scroll" scroll-y enable-flex enhanced show-scrollbar="false">
           <view class="comment-overview-card">
             <view class="comment-overview-title">{{ TEXT.commentOverviewTitle }}</view>
-            <view class="comment-overview-copy">{{ getEntryInteractionSummary(activeEntry) }}</view>
+            <view class="comment-overview-copy" @longpress.stop="copyText(getEntryInteractionSummary(activeEntry))">{{ getEntryInteractionSummary(activeEntry) }}</view>
           </view>
 
           <view v-if="activeEntry.likeUsers.length" class="comment-like-strip">
@@ -188,6 +188,7 @@
               class="comment-thread-card"
               :class="{ mine: String(item.commenterUsername || '').trim() === currentUsername }"
               @click.stop="handleCommentTap(activeEntry, item)"
+              @longpress.stop="copyText(item.content)"
             >
               <view class="comment-thread-topline">
                 <view class="comment-thread-name">{{ getCommentDisplayName(item) }}</view>
@@ -286,6 +287,7 @@ const TEXT = {
   commentEmptyError: '请先写下评论内容',
   commentDeleted: '评论已删除',
   commentDeleteFailed: '删除评论失败',
+  copySuccess: '内容已复制',
   likeAction: '点赞',
   unlikeAction: '取消点赞',
   likeFailed: '操作失败，请稍后再试',
@@ -544,6 +546,17 @@ function closeTransientState() {
   closeCommentActionSheet()
   closeCommentDrawer()
   commentForm.content = ''
+}
+
+function copyText(value, successTitle = TEXT.copySuccess) {
+  const content = String(value || '').trim()
+  if (!content) return
+  uni.setClipboardData({
+    data: content,
+    success: () => {
+      uni.showToast({ title: successTitle, icon: 'success' })
+    }
+  })
 }
 
 function hasEntryInteraction(entry) {

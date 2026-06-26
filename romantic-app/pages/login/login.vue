@@ -58,8 +58,40 @@
 					</view>
 				</view>
 
+				<view class="assist-row">
+					<view class="remember-trigger" @click.stop="toggleRememberAccount">
+						<view class="remember-dot" :class="{ active: rememberAccount }">
+							<view class="remember-dot-inner"></view>
+						</view>
+						<text class="assist-text">记住账号密码</text>
+					</view>
+					<view class="assist-link" @click.stop="handleForgotPassword">忘记密码</view>
+				</view>
+
 				<button class="login-btn" :loading="submitting" @click.stop="handleLogin">进 入 我 们 的 空 间</button>
 
+			</view>
+
+			<view v-if="resetDialogVisible" class="reset-dialog-mask" @click="closeResetDialog">
+				<view class="reset-dialog" @click.stop>
+					<view class="reset-dialog-title">重置密码</view>
+					<view class="reset-dialog-desc">输入账号和新密码后立即生效</view>
+
+					<view class="reset-field">
+						<input v-model.trim="resetForm.username" class="reset-input" placeholder="请输入账号" placeholder-class="field-placeholder" />
+					</view>
+					<view class="reset-field">
+						<input v-model="resetForm.password" password class="reset-input" placeholder="请输入新密码" placeholder-class="field-placeholder" />
+					</view>
+					<view class="reset-field">
+						<input v-model="resetForm.confirmPassword" password class="reset-input" placeholder="请再次输入新密码" placeholder-class="field-placeholder" />
+					</view>
+
+					<view class="reset-dialog-actions">
+						<button class="reset-dialog-btn reset-dialog-btn-ghost" @click="closeResetDialog">取消</button>
+						<button class="reset-dialog-btn reset-dialog-btn-primary" :loading="resetSubmitting" @click.stop="handleResetPassword">确认重置</button>
+					</view>
+				</view>
 			</view>
 
 			<view class="bottom-ornament">
@@ -76,9 +108,11 @@
 <script setup>
 import { reactive, ref, onMounted, onUnmounted } from 'vue'
 import { clearLoginState, login } from '@/utils/auth.js'
+import { resetPasswordByServer } from '@/services/auth.js'
 import { openHomePage } from '@/utils/nav.js'
 import { useThemePage } from '@/utils/useThemePage.js'
 
+const REMEMBERED_LOGIN_KEY = 'romantic_remembered_login'
 const loginIllustrationUrl = '/static/login/hero.png'
 const passwordEyeIconUrl = '/static/login/eye.svg'
 const { themeStyle: pageStyle } = useThemePage()
@@ -87,10 +121,18 @@ const form = reactive({
 	username: '',
 	password: ''
 })
+const resetForm = reactive({
+	username: '',
+	password: '',
+	confirmPassword: ''
+})
 
 const hearts = ref([])
+const rememberAccount = ref(false)
 const showPassword = ref(false)
 const submitting = ref(false)
+const resetDialogVisible = ref(false)
+const resetSubmitting = ref(false)
 
 let heartTimer = null
 let heartId = 1
@@ -154,6 +196,94 @@ function togglePassword() {
 	showPassword.value = !showPassword.value
 }
 
+function restoreRememberedUsername() {
+	const rememberedLogin = uni.getStorageSync(REMEMBERED_LOGIN_KEY)
+	if (!rememberedLogin || typeof rememberedLogin !== 'object') {
+		return
+	}
+
+	const username = String(rememberedLogin.username || '').trim()
+	const password = String(rememberedLogin.password || '')
+	if (!username || !password) {
+		uni.removeStorageSync(REMEMBERED_LOGIN_KEY)
+		return
+	}
+
+	form.username = username
+	form.password = password
+	rememberAccount.value = true
+}
+
+function persistRememberedUsername() {
+	if (rememberAccount.value && form.username && form.password) {
+		uni.setStorageSync(REMEMBERED_LOGIN_KEY, {
+			username: form.username,
+			password: form.password
+		})
+		return
+	}
+
+	uni.removeStorageSync(REMEMBERED_LOGIN_KEY)
+}
+
+function toggleRememberAccount() {
+	rememberAccount.value = !rememberAccount.value
+	persistRememberedUsername()
+}
+
+function handleForgotPassword() {
+	resetForm.username = form.username
+	resetForm.password = ''
+	resetForm.confirmPassword = ''
+	resetDialogVisible.value = true
+}
+
+function closeResetDialog() {
+	if (resetSubmitting.value) return
+	resetDialogVisible.value = false
+}
+
+async function handleResetPassword() {
+	if (resetSubmitting.value) {
+		return
+	}
+	if (!resetForm.username) {
+		uni.showToast({ title: '请输入账号', icon: 'none' })
+		return
+	}
+	if (!resetForm.password) {
+		uni.showToast({ title: '请输入新密码', icon: 'none' })
+		return
+	}
+	if (resetForm.password.length < 4) {
+		uni.showToast({ title: '新密码至少 4 位', icon: 'none' })
+		return
+	}
+	if (resetForm.password != resetForm.confirmPassword) {
+		uni.showToast({ title: '两次密码输入不一致', icon: 'none' })
+		return
+	}
+
+	resetSubmitting.value = true
+	try {
+		await resetPasswordByServer({
+			username: resetForm.username,
+			password: resetForm.password
+		})
+		form.username = resetForm.username
+		form.password = resetForm.password
+		if (rememberAccount.value) {
+			persistRememberedUsername()
+		}
+		resetDialogVisible.value = false
+		uni.showToast({ title: '密码重置成功', icon: 'success' })
+	} catch (error) {
+		uni.showToast({ title: error?.message || '密码重置失败', icon: 'none' })
+	} finally {
+		resetSubmitting.value = false
+	}
+}
+
 async function handleLogin() {
 	if (submitting.value) {
 		return
@@ -187,6 +317,8 @@ async function handleLogin() {
 			return
 		}
 
+		persistRememberedUsername()
+
 		uni.showToast({
 			title: '登录成功',
 			icon: 'success'
@@ -203,6 +335,7 @@ async function handleLogin() {
 onMounted(() => {
 	clearLoginState()
 	initSystemInfo()
+	restoreRememberedUsername()
 	burstHearts()
 	heartTimer = setInterval(createHeart, 900)
 })
@@ -412,6 +545,154 @@ onUnmounted(() => {
 		margin-top: 34rpx;
 	}
 
+	.assist-row {
+		width: 100%;
+		margin-top: 18rpx;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 20rpx;
+	}
+
+	.remember-trigger {
+		display: inline-flex;
+		align-items: center;
+		gap: 14rpx;
+	}
+
+	.remember-dot {
+		width: 30rpx;
+		height: 30rpx;
+		padding: 4rpx;
+		border-radius: 50%;
+		border: 2rpx solid rgba(219, 181, 170, 0.92);
+		background: rgba(255, 255, 255, 0.86);
+		box-shadow: inset 0 0 0 2rpx rgba(255, 255, 255, 0.5);
+	}
+
+	.remember-dot-inner {
+		width: 100%;
+		height: 100%;
+		border-radius: 50%;
+		background: transparent;
+		transform: scale(0.58);
+		transition: all 0.22s ease;
+	}
+
+	.remember-dot.active {
+		border-color: rgba(208, 130, 114, 0.96);
+	}
+
+	.remember-dot.active .remember-dot-inner {
+		background: linear-gradient(180deg, #f2ae9d 0%, #d88975 100%);
+		box-shadow: 0 4rpx 10rpx rgba(210, 137, 117, 0.18);
+		transform: scale(1);
+	}
+
+	.assist-text,
+	.assist-link {
+		font-size: 24rpx;
+		line-height: 1.6;
+		color: rgba(154, 123, 116, 0.92);
+	}
+
+	.assist-link {
+		padding: 6rpx 0 6rpx 18rpx;
+	}
+
+	.reset-dialog-mask {
+		position: fixed;
+		inset: 0;
+		z-index: 20;
+		padding: 32rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(80, 52, 46, 0.22);
+		backdrop-filter: blur(8rpx);
+	}
+
+	.reset-dialog {
+		width: 100%;
+		padding: 42rpx 32rpx 32rpx;
+		border-radius: 40rpx;
+		background: rgba(255, 249, 245, 0.98);
+		box-shadow: 0 20rpx 80rpx rgba(126, 78, 66, 0.16);
+	}
+
+	.reset-dialog-title {
+		font-size: 34rpx;
+		line-height: 1.4;
+		font-weight: 600;
+		color: #6b3f32;
+	}
+
+	.reset-dialog-desc {
+		margin-top: 12rpx;
+		font-size: 24rpx;
+		line-height: 1.7;
+		color: #9a7b74;
+	}
+
+	.reset-field {
+		margin-top: 22rpx;
+		height: 92rpx;
+		padding: 0 26rpx;
+		display: flex;
+		align-items: center;
+		border-radius: 28rpx;
+		background: rgba(252, 236, 224, 0.55);
+		border: 2rpx solid rgba(210, 150, 120, 0.18);
+	}
+
+	.reset-input {
+		flex: 1;
+		height: 100%;
+		font-size: 28rpx;
+		color: #5c3d35;
+	}
+
+	.reset-dialog-actions {
+		margin-top: 30rpx;
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 18rpx;
+	}
+
+	.reset-dialog-btn {
+		width: 100%;
+		height: 88rpx;
+		min-height: 88rpx;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		border-radius: 28rpx;
+		font-size: 28rpx;
+		line-height: 1;
+		text-align: center;
+	}
+
+	.reset-dialog-btn-ghost {
+		color: #8f6f67;
+		background: rgba(255, 255, 255, 0.86);
+		border: 2rpx solid rgba(220, 188, 178, 0.55);
+	}
+
+	.reset-dialog-btn-primary {
+		border: none;
+		background: linear-gradient(172deg, #e8c0b8 3.67%, #deb0a8 96.33%);
+		color: #fff8f4;
+	}
+
+	.reset-dialog-btn::after,
+	.reset-dialog-btn-primary::after,
+	.reset-dialog-btn-ghost::after {
+		border: none;
+	}
+
 	.field-label {
 		margin-bottom: 16rpx;
 		font-size: 20rpx;
@@ -494,7 +775,7 @@ onUnmounted(() => {
 	}
 
 	.login-btn {
-		margin-top: 40rpx;
+		margin-top: 28rpx;
 		height: 104rpx;
 		line-height: 104rpx;
 		border: none;

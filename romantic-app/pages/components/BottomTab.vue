@@ -12,20 +12,7 @@
       <view class="tab-item-surface"></view>
       <view class="tab-icon-wrap">
         <view v-if="tab.key === 'mine' && showMineNotificationDot" class="tab-dot"></view>
-        <view v-if="tab.key === 'home'" class="tab-icon tab-icon-home">
-          <view class="icon-home-roof"></view>
-          <view class="icon-home-body"></view>
-          <view class="icon-home-door"></view>
-        </view>
-
-        <view v-else-if="tab.key === 'planet'" class="tab-icon tab-icon-planet">
-          <view class="icon-planet-core"></view>
-          <view class="icon-planet-ring"></view>
-        </view>
-
-        <view v-else class="tab-icon tab-icon-heart">
-          <view class="icon-heart-shape"></view>
-        </view>
+        <view class="tab-icon" :class="`tab-icon-${tab.key}`"></view>
       </view>
       <view class="label">{{ tab.label }}</view>
     </view>
@@ -125,13 +112,13 @@ onUnmounted(() => {
     left: 20rpx;
     right: 20rpx;
     height: 112rpx;
-    padding: 10rpx;
-    border-radius: 999rpx;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 246, 239, 0.88) 100%);
+    padding: 10rpx 18rpx;
+    border-radius: 32rpx;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 248, 242, 0.92) 100%);
     backdrop-filter: blur(18px);
     display: flex;
-    justify-content: space-around;
     align-items: center;
+    justify-content: space-between;
     box-shadow:
       0 18rpx 38rpx rgba(0, 0, 0, 0.08),
       inset 0 0 0 2rpx rgba(255, 255, 255, 0.58);
@@ -140,36 +127,25 @@ onUnmounted(() => {
 
   .tab-item {
     position: relative;
-    overflow: hidden;
     flex: 1;
+    min-width: 0;
+    height: 88rpx;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10rpx;
-    text-align: center;
-    height: 100%;
-    padding: 10rpx 12rpx;
-    border-radius: 999rpx;
-    transition: all 0.25s ease;
-    margin: 0 6rpx;
+    gap: 6rpx;
+    border-radius: 24rpx;
+    transition: transform 0.22s ease;
     touch-action: manipulation;
   }
 
   .tab-item-surface {
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: transparent;
-    transition: inherit;
+    display: none;
   }
 
   .tab-item-press {
     transform: translateY(2rpx) scale(0.985);
-  }
-
-  .tab-item.active .tab-item-surface {
-    background: var(--app-gradient-primary);
-    box-shadow: 0 10rpx 24rpx rgba(255, 126, 166, 0.24);
   }
 
   .tab-icon-wrap,
@@ -179,142 +155,74 @@ onUnmounted(() => {
   }
 
   .tab-icon-wrap {
-    width: 54rpx;
-    height: 54rpx;
+    width: 48rpx;
+    height: 48rpx;
     border-radius: 18rpx;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.55);
-    transition: inherit;
+    background: transparent;
+    transition: all 0.22s ease;
+  }
+
+  .tab-item.active .tab-icon-wrap {
+    background: linear-gradient(180deg, rgba(255, 242, 239, 0.96) 0%, rgba(255, 236, 232, 0.92) 100%);
+    box-shadow: inset 0 0 0 2rpx rgba(255, 255, 255, 0.7);
   }
 
   .tab-dot {
     position: absolute;
-    top: -6rpx;
-    right: -6rpx;
-    width: 16rpx;
-    height: 16rpx;
+    top: -4rpx;
+    right: -4rpx;
+    width: 14rpx;
+    height: 14rpx;
     border-radius: 50%;
-    background: linear-gradient(180deg, #ff9e9a, #ff6e82);
-    box-shadow:
-      0 0 0 4rpx rgba(255, 255, 255, 0.9),
-      0 8rpx 18rpx rgba(255, 110, 130, 0.18);
+    background: linear-gradient(180deg, #ffb0aa, #ff8e97);
+    box-shadow: 0 0 0 3rpx rgba(255, 255, 255, 0.92);
     z-index: 2;
   }
 
-  .tab-item.active .tab-icon-wrap {
-    background: rgba(255, 255, 255, 0.24);
-  }
-
   .tab-icon {
-    position: relative;
-    width: 30rpx;
-    height: 30rpx;
+    width: 25rpx;
+    height: 25rpx;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
   }
 
-  .tab-icon-home .icon-home-roof {
-    position: absolute;
-    left: 1rpx;
-    top: 0;
-    border-left: 14rpx solid transparent;
-    border-right: 14rpx solid transparent;
-    border-bottom: 14rpx solid #cf9f54;
+  .tab-icon-home {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4.8 10.5 12 5l7.2 5.5v7.1a1 1 0 0 1-1 1h-4.1v-5.2H9.9v5.2H5.8a1 1 0 0 1-1-1z' fill='none' stroke='%23d5b8a4' stroke-width='1.8' stroke-linejoin='round'/%3E%3C/svg%3E");
   }
 
-  .tab-icon-home .icon-home-body {
-    position: absolute;
-    left: 5rpx;
-    bottom: 1rpx;
-    width: 20rpx;
-    height: 16rpx;
-    border-radius: 4rpx;
-    background: #cf9f54;
+  .tab-icon-planet {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cellipse cx='12' cy='12' rx='7.8' ry='4.3' fill='none' stroke='%23d5b8a4' stroke-width='1.7' transform='rotate(-16 12 12)'/%3E%3Ccircle cx='11.2' cy='11.3' r='3.5' fill='none' stroke='%23d5b8a4' stroke-width='1.7'/%3E%3C/svg%3E");
   }
 
-  .tab-icon-home .icon-home-door {
-    position: absolute;
-    left: 12rpx;
-    bottom: 1rpx;
-    width: 6rpx;
-    height: 9rpx;
-    border-radius: 3rpx 3rpx 0 0;
-    background: rgba(255, 255, 255, 0.82);
+  .tab-icon-mine {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='8.4' r='3.1' fill='none' stroke='%23d5b8a4' stroke-width='1.7'/%3E%3Cpath d='M6.9 18.8c.7-3 3-4.7 5.1-4.7s4.4 1.7 5.1 4.7' fill='none' stroke='%23d5b8a4' stroke-width='1.7' stroke-linecap='round'/%3E%3C/svg%3E");
   }
 
-  .tab-icon-planet .icon-planet-core {
-    position: absolute;
-    left: 6rpx;
-    top: 6rpx;
-    width: 18rpx;
-    height: 18rpx;
-    border-radius: 50%;
-    background: #cf9f54;
+  .tab-item.active .tab-icon-home {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4.8 10.5 12 5l7.2 5.5v7.1a1 1 0 0 1-1 1h-4.1v-5.2H9.9v5.2H5.8a1 1 0 0 1-1-1z' fill='none' stroke='%23ef9a92' stroke-width='1.9' stroke-linejoin='round'/%3E%3C/svg%3E");
   }
 
-  .tab-icon-planet .icon-planet-ring {
-    position: absolute;
-    left: -1rpx;
-    top: 10rpx;
-    width: 32rpx;
-    height: 12rpx;
-    border-radius: 50%;
-    border: 4rpx solid #cf9f54;
-    transform: rotate(-18deg);
-    box-sizing: border-box;
+  .tab-item.active .tab-icon-planet {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cellipse cx='12' cy='12' rx='7.8' ry='4.3' fill='none' stroke='%23ef8b84' stroke-width='1.8' transform='rotate(-16 12 12)'/%3E%3Ccircle cx='11.2' cy='11.3' r='3.5' fill='none' stroke='%23ef8b84' stroke-width='1.8'/%3E%3Ccircle cx='16.6' cy='8.5' r='1.2' fill='%23f4b2ab'/%3E%3C/svg%3E");
   }
 
-  .tab-icon-heart .icon-heart-shape {
-    position: absolute;
-    left: 7rpx;
-    top: 9rpx;
-    width: 16rpx;
-    height: 14rpx;
-    transform: rotate(-45deg);
-    background: #cf9f54;
-  }
-
-  .tab-icon-heart .icon-heart-shape::before,
-  .tab-icon-heart .icon-heart-shape::after {
-    content: '';
-    position: absolute;
-    width: 16rpx;
-    height: 14rpx;
-    border-radius: 50%;
-    background: #cf9f54;
-  }
-
-  .tab-icon-heart .icon-heart-shape::before {
-    top: -8rpx;
-    left: 0;
-  }
-
-  .tab-icon-heart .icon-heart-shape::after {
-    top: 0;
-    left: 8rpx;
+  .tab-item.active .tab-icon-mine {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='8.4' r='3.1' fill='none' stroke='%23ef8b84' stroke-width='1.8'/%3E%3Cpath d='M6.9 18.8c.7-3 3-4.7 5.1-4.7s4.4 1.7 5.1 4.7' fill='none' stroke='%23ef8b84' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
   }
 
   .label {
-    font-size: 24rpx;
-    font-weight: 600;
-    color: #9f7a69;
+    font-size: 18rpx;
+    line-height: 1;
+    font-weight: 500;
+    color: #cfb8a7;
   }
 
   .tab-item.active .label {
-    color: #fff;
-  }
-
-  .tab-item.active .tab-icon-home .icon-home-roof,
-  .tab-item.active .tab-icon-home .icon-home-body,
-  .tab-item.active .tab-icon-planet .icon-planet-core,
-  .tab-item.active .tab-icon-planet .icon-planet-ring,
-  .tab-item.active .tab-icon-heart .icon-heart-shape,
-  .tab-item.active .tab-icon-heart .icon-heart-shape::before,
-  .tab-item.active .tab-icon-heart .icon-heart-shape::after {
-    background: #fff;
-    border-color: #fff;
-  }
-  .tab-item.active .tab-icon-home .icon-home-door {
-    background: rgba(255, 255, 255, 0.72);
+    color: #ea8a84;
+    font-weight: 600;
   }
 </style>

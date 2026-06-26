@@ -1,0 +1,20 @@
+<svg width="120" height="110" viewBox="0 0 120 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="leftPlanetFill" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(58 40) rotate(120) scale(54 54)">
+      <stop offset="0" stop-color="#F9C0AF"/>
+      <stop offset="0.6" stop-color="#EA9278"/>
+      <stop offset="1" stop-color="#DD6F5C"/>
+    </radialGradient>
+    <radialGradient id="leftPlanetGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(60 82) scale(54 20)">
+      <stop stop-color="#F7B8A3" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#F7B8A3" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="leftBlur" x="0" y="0" width="120" height="110" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="1.4"/>
+    </filter>
+  </defs>
+  <ellipse cx="60" cy="83" rx="46" ry="18" fill="url(#leftPlanetGlow)"/>
+  <ellipse cx="58" cy="56" rx="42" ry="13" stroke="#E3C6AF" stroke-width="1.6" opacity="0.72"/>
+  <circle cx="60" cy="56" r="38" fill="url(#leftPlanetFill)"/>
+  <circle cx="48" cy="33" r="8" fill="white" opacity="0.18" filter="url(#leftBlur)"/>
+</svg>

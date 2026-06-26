@@ -12,6 +12,7 @@ import org.love.romantic.exception.BusinessException;
 import org.love.romantic.mapper.CoupleProfileMapper;
 import org.love.romantic.model.LoginRequest;
 import org.love.romantic.model.LoginResponse;
+import org.love.romantic.model.PasswordResetRequest;
 import org.love.romantic.model.PasswordUpdateRequest;
 import org.love.romantic.model.ProfileResponse;
 import org.love.romantic.model.ProfileUpdateRequest;
@@ -179,6 +180,21 @@ public class CoupleProfileServiceImpl implements CoupleProfileService {
         coupleProfileMapper.updateById(profile);
         authTokenService.invalidateUserTokens(profile.getUsername());
         log.info("更新密码成功，username={}, profileId={}", profile.getUsername(), profile.getId());
+        return toProfileResponse(profile);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ProfileResponse resetPassword(PasswordResetRequest request) {
+        CoupleProfile profile = getProfileByUsername(request.getUsername());
+        if (profile == null) {
+            throw new BusinessException("账号不存在");
+        }
+        profile.setPassword(request.getPassword().trim());
+        profile.setUpdatedAt(LocalDateTime.now());
+        coupleProfileMapper.updateById(profile);
+        authTokenService.invalidateUserTokens(profile.getUsername());
+        log.info("重置密码成功，username={}, profileId={}", profile.getUsername(), profile.getId());
         return toProfileResponse(profile);
     }
 

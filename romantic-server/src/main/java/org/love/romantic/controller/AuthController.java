@@ -7,6 +7,7 @@ import org.love.romantic.auth.AuthTokenService;
 import org.love.romantic.common.ApiResponse;
 import org.love.romantic.model.LoginRequest;
 import org.love.romantic.model.LoginResponse;
+import org.love.romantic.model.PasswordResetRequest;
 import org.love.romantic.service.CoupleProfileService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,6 +55,16 @@ public class AuthController {
             authTokenService.invalidateToken(authorization.substring(BEARER_PREFIX.length()).trim());
         }
         return ApiResponse.ok("退出成功", null);
+    }
+
+    /**
+     * 按账号重置登录密码
+     */
+    @ApiOperation("重置密码")
+    @PostMapping("/reset-password")
+    public ApiResponse<Void> resetPassword(@Validated @RequestBody PasswordResetRequest request) {
+        coupleProfileService.resetPassword(request);
+        return ApiResponse.ok("密码重置成功", null);
     }
 
     /**

@@ -52,7 +52,7 @@
 
           <view class="hero-main">
             <view class="hero-main-title">{{ planDetail.title || '未命名计划' }}</view>
-            <view class="hero-main-desc">{{ planDetail.description || '先把目标定下来，再慢慢推进。' }}</view>
+            <view class="hero-main-desc" @longpress.stop="copyText(planDetail.description || '先把目标定下来，再慢慢推进。')">{{ planDetail.description || '先把目标定下来，再慢慢推进。' }}</view>
 
             <view class="hero-overview-row">
               <view class="hero-overview-card">
@@ -90,7 +90,7 @@
 
             <view v-if="latestFeedbackText" class="hero-latest-feedback">
               <view class="hero-latest-feedback-label">最近反馈</view>
-              <view class="hero-latest-feedback-text">{{ latestFeedbackText }}</view>
+              <view class="hero-latest-feedback-text" @longpress.stop="copyText(latestFeedbackText)">{{ latestFeedbackText }}</view>
             </view>
           </view>
         </view>
@@ -134,7 +134,7 @@
                     <view class="roadmap-title">{{ item.title || '未命名条目' }}</view>
                     <view class="roadmap-state" :class="{ done: item.completed }">{{ item.completed ? '已完成' : '待执行' }}</view>
                   </view>
-                  <view v-if="item.content" class="roadmap-content">{{ item.content }}</view>
+                  <view v-if="item.content" class="roadmap-content" @longpress.stop="copyText(item.content)">{{ item.content }}</view>
                   <view class="roadmap-meta">{{ resolveItemMeta(item) }}</view>
                   <view class="roadmap-foot">
                     <view class="roadmap-owner">{{ resolveUserName(item.creatorNickname, item.creatorUsername, '共同安排') }}</view>
@@ -193,7 +193,7 @@
                   <view class="feedback-date">{{ item.feedbackDate || item.createdAt }}</view>
                 </view>
                 <view class="feedback-status">{{ resolveFeedbackStatus(item.status) }}</view>
-                <view class="feedback-content">{{ item.content || '这条反馈还没有补内容。' }}</view>
+                <view class="feedback-content" @longpress.stop="copyText(item.content || '这条反馈还没有补内容。')">{{ item.content || '这条反馈还没有补内容。' }}</view>
               </view>
             </view>
             <view v-else class="sub-empty">还没有反馈，第一次执行完就可以来这里记一笔。</view>
@@ -228,7 +228,7 @@
                   <view class="comment-author">{{ resolveUserName(item.commenterNickname, item.commenterUsername, '共同留言') }}</view>
                   <view class="comment-time">{{ item.createdAt || item.updatedAt }}</view>
                 </view>
-                <view class="comment-content">{{ item.content || '这条评论没有内容。' }}</view>
+                <view class="comment-content" @longpress.stop="copyText(item.content || '这条评论没有内容。')">{{ item.content || '这条评论没有内容。' }}</view>
                 <view v-if="canDeleteComment(item)" class="comment-delete" @click="handleDeleteComment(item.id)">删除评论</view>
               </view>
             </view>
@@ -472,6 +472,17 @@ function handleDeleteComment(commentId) {
       } catch (error) {
         uni.showToast({ title: error?.message || '删除评论失败', icon: 'none' })
       }
+    }
+  })
+}
+
+function copyText(value) {
+  const content = String(value || '').trim()
+  if (!content) return
+  uni.setClipboardData({
+    data: content,
+    success: () => {
+      uni.showToast({ title: '内容已复制', icon: 'success' })
     }
   })
 }

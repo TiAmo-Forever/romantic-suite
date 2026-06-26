@@ -14,7 +14,7 @@
         </view>
         <view class="album-title">{{ featuredMemory?.title || TEXT.albumTitle }}</view>
         <view class="album-meta">{{ featuredMetaText }}</view>
-        <view class="album-summary">{{ featuredMemory?.summary || TEXT.heroSummary }}</view>
+        <view class="album-summary" @longpress.stop="copyText(featuredMemory?.summary || TEXT.heroSummary)">{{ featuredMemory?.summary || TEXT.heroSummary }}</view>
         <button class="album-create-btn app-primary-btn app-primary-btn-shadow" @click="handleCreate">
           {{ TEXT.createButton }}
         </button>
@@ -88,7 +88,7 @@
               </view>
               <view class="memory-title app-line-clamp-2">{{ item.title }}</view>
               <view v-if="item.location" class="memory-location app-line-clamp-1">{{ item.location }}</view>
-              <view v-if="item.summary" class="memory-summary app-line-clamp-2">{{ item.summary }}</view>
+              <view v-if="item.summary" class="memory-summary app-line-clamp-2" @longpress.stop="copyText(item.summary)">{{ item.summary }}</view>
               <view v-if="item.tags.length" class="memory-tags">
                 <view v-for="tag in item.tags.slice(0, 4)" :key="tag" class="memory-tag">{{ tag }}</view>
               </view>
@@ -130,6 +130,18 @@ import { useThemePage } from '@/utils/useThemePage.js'
 import AccountHeader from '@/pages/account/components/AccountHeader.vue'
 
 const FILLED_HEART = '❤'
+
+function copyText(value) {
+  const content = String(value || '').trim()
+  if (!content) return
+  uni.setClipboardData({
+    data: content,
+    success: () => {
+      uni.showToast({ title: '内容已复制', icon: 'success' })
+    }
+  })
+}
+
 const TEXT = {
   albumTitle: '甜蜜相册',
   albumEyebrow: '回忆收藏',

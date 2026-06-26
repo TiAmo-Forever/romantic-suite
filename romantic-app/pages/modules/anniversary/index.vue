@@ -60,7 +60,7 @@
           </view>
           <view class="event-date">{{ item.eventDate }}</view>
           <view class="event-status">{{ formatStatus(item) }}</view>
-          <view class="event-summary">{{ item.description || item.location || TEXT.cardFallback }}</view>
+          <view class="event-summary" @longpress.stop="copyText(item.description || item.location || TEXT.cardFallback)">{{ item.description || item.location || TEXT.cardFallback }}</view>
 
           <view class="event-footer">
             <view class="event-location">{{ item.location || TEXT.locationFallback }}</view>
@@ -99,6 +99,17 @@ import AccountHeader from '@/pages/account/components/AccountHeader.vue'
 
 const HEART = '❤'
 const FILLED_HEART = '❤'
+
+function copyText(value) {
+  const content = String(value || '').trim()
+  if (!content) return
+  uni.setClipboardData({
+    data: content,
+    success: () => {
+      uni.showToast({ title: '内容已复制', icon: 'success' })
+    }
+  })
+}
 const TEXT = {
   pageTitle: '恋爱纪念日',
   eyebrow: '重要日子',

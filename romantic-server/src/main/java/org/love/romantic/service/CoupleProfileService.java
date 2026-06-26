@@ -2,6 +2,7 @@ package org.love.romantic.service;
 
 import org.love.romantic.model.LoginRequest;
 import org.love.romantic.model.LoginResponse;
+import org.love.romantic.model.PasswordResetRequest;
 import org.love.romantic.model.PasswordUpdateRequest;
 import org.love.romantic.model.ProfileResponse;
 import org.love.romantic.model.ProfileUpdateRequest;
@@ -42,6 +43,11 @@ public interface CoupleProfileService {
      * 更新当前登录账号密码。
      */
     ProfileResponse updatePassword(PasswordUpdateRequest request);
+
+    /**
+     * 按账号重置登录密码
+     */
+    ProfileResponse resetPassword(PasswordResetRequest request);
 
     /**
      * 将当前登录账号资料恢复为默认值。

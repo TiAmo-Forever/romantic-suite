@@ -1,142 +1,165 @@
 <template>
   <view class="page app-page-shell app-page-shell-tabbed planet-page" :style="themeStyle">
     <GlobalNotificationBanner />
+    <image class="planet-texture" :src="pageBackgroundImage" mode="scaleToFill"></image>
     <view class="planet-bg planet-bg-a"></view>
     <view class="planet-bg planet-bg-b"></view>
+    <view class="planet-bg planet-bg-c"></view>
+    <view class="planet-bg planet-bg-d"></view>
 
-    <view class="planet-top app-fade-up">
-      <view class="planet-brand-wrap">
-        <view class="planet-brand-kicker">{{ TEXT.brandKicker }}</view>
-        <view class="planet-brand">{{ TEXT.brand }}</view>
-        <view class="planet-brand-sub">{{ TEXT.brandSub }}</view>
-        <view class="planet-brand-line">
-          <view class="planet-brand-sep"></view>
-          <view class="planet-brand-icon-wrap">
-            <view class="planet-brand-star planet-brand-star-left"></view>
-            <view class="planet-brand-icon">{{ TEXT.brandIcon }}</view>
-            <view class="planet-brand-star planet-brand-star-right"></view>
+    <view class="planet-content">
+      <view class="planet-hero app-fade-up">
+        <view class="planet-kicker">我 们 的</view>
+        <view class="planet-title">宇 宙</view>
+        <view class="planet-subline">
+          <view class="planet-subline-line"></view>
+          <view class="planet-subline-text">已相爱 {{ relationshipDays }} 天 · {{ relationshipDateLabel }}</view>
+          <view class="planet-subline-line"></view>
+        </view>
+
+        <view class="planet-orbit-shell app-delay-1">
+          <image class="planet-orbit-decor" :src="orbitalDecorImage" mode="widthFix"></image>
+          <view class="planet-ball planet-ball-left orbit-float-left">
+            <image class="planet-ball-image planet-ball-image-left" :src="leftPlanetImage" mode="aspectFit"></image>
+            <text class="planet-ball-name">{{ heroLeftName }}</text>
           </view>
-          <view class="planet-brand-sep"></view>
-        </view>
-      </view>
-    </view>
-
-    <view class="planet-hero app-fade-up app-delay-1">
-      <view class="planet-hero-title">{{ TEXT.heroTitle }}</view>
-      <view class="planet-hero-desc">{{ TEXT.heroDesc }}</view>
-      <view class="planet-chip-row">
-        <view class="planet-chip">{{ TEXT.chipAnniversary }}</view>
-        <view class="planet-chip">{{ TEXT.chipAlbum }}</view>
-        <view class="planet-chip">{{ TEXT.chipDailySummary }}</view>
-      </view>
-    </view>
-
-    <view class="planet-grid app-fade-up app-delay-2">
-      <view class="planet-card app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goAnniversary">
-        <view class="planet-card-head">
-          <view class="status-badge status-badge-open">{{ TEXT.opened }}</view>
-        </view>
-        <view class="planet-icon planet-icon-frame">
-          <view class="icon-calendar">
-            <view class="icon-calendar-ring icon-calendar-ring-left"></view>
-            <view class="icon-calendar-ring icon-calendar-ring-right"></view>
-            <view class="icon-calendar-top"></view>
-            <view class="icon-calendar-heart"></view>
-            <view class="icon-calendar-dot icon-calendar-dot-a"></view>
-            <view class="icon-calendar-dot icon-calendar-dot-b"></view>
-            <view class="icon-calendar-dot icon-calendar-dot-c"></view>
-            <view class="icon-calendar-dot icon-calendar-dot-d"></view>
+          <view class="planet-ball planet-ball-right orbit-float-right">
+            <image class="planet-ball-image planet-ball-image-right" :src="rightPlanetImage" mode="aspectFit"></image>
+            <text class="planet-ball-name">{{ heroRightName }}</text>
           </view>
         </view>
-        <view class="planet-card-title">{{ TEXT.anniversaryTitle }}</view>
-        <view class="planet-card-desc">{{ TEXT.anniversaryDesc }}</view>
       </view>
 
-      <view class="planet-card app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goAlbum">
-        <view class="planet-card-head">
-          <view class="status-badge status-badge-open">{{ TEXT.opened }}</view>
-        </view>
-        <view class="planet-icon planet-icon-frame">
-          <view class="icon-album">
-            <view class="icon-album-back"></view>
-            <view class="icon-album-front">
-              <view class="icon-album-sun"></view>
-              <view class="icon-album-mountain icon-album-mountain-left"></view>
-              <view class="icon-album-mountain icon-album-mountain-right"></view>
-              <view class="icon-album-flower"></view>
-            </view>
-          </view>
-        </view>
-        <view class="planet-card-title">{{ TEXT.albumTitle }}</view>
-        <view class="planet-card-desc">{{ TEXT.albumDesc }}</view>
+      <view class="planet-divider app-fade-up app-delay-1">
+        <view class="planet-divider-line"></view>
+        <view class="planet-divider-spark">✦ ✦ ✦</view>
+        <view class="planet-divider-line"></view>
       </view>
 
-      <view class="planet-card app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goImprovement">
-        <view class="planet-card-head">
-          <view class="status-badge status-badge-open">{{ TEXT.opened }}</view>
-        </view>
-        <view class="planet-icon planet-icon-frame">
-          <view class="icon-book">
-            <view class="icon-book-cover icon-book-cover-left"></view>
-            <view class="icon-book-cover icon-book-cover-right"></view>
-            <view class="icon-book-page"></view>
-            <view class="icon-book-line icon-book-line-a"></view>
-            <view class="icon-book-line icon-book-line-b"></view>
-            <view class="icon-book-pen"></view>
+      <view class="relation-card app-fade-up app-delay-1">
+        <view class="relation-card-head">
+          <view class="relation-card-title-wrap">
+            <view class="section-kicker-bar"></view>
+            <view class="relation-card-title">关系档案</view>
           </view>
+          <view class="relation-card-star">✦</view>
         </view>
-        <view class="planet-card-title">{{ TEXT.improvementTitle }}</view>
-        <view class="planet-card-desc">{{ TEXT.improvementDesc }}</view>
+
+        <view class="relation-row">
+          <view class="relation-label">我们的称呼</view>
+          <view class="relation-value">{{ relationCallNames }}</view>
+        </view>
+        <view class="relation-divider"></view>
+
+        <view class="relation-row">
+          <view class="relation-label">在一起</view>
+          <view class="relation-value">{{ relationshipDateText }}</view>
+        </view>
+        <view class="relation-divider"></view>
+
+        <view class="relation-row">
+          <view class="relation-label">常驻城市</view>
+          <view class="relation-value">{{ residentCityText }}</view>
+        </view>
+        <view class="relation-divider"></view>
+
+        <view class="relation-row relation-row-intro">
+          <view class="relation-label">我们是</view>
+          <view class="relation-value relation-value-intro">{{ relationIntroText }}</view>
+        </view>
       </view>
 
-      <view class="planet-card app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goDailySummary">
-        <view class="planet-card-head">
-          <view class="status-badge status-badge-open">{{ TEXT.opened }}</view>
+      <view class="section-head recent-head app-fade-up app-delay-2">
+        <view class="section-head-left">
+          <view class="section-kicker-bar"></view>
+          <view class="section-head-title">最近节点</view>
         </view>
-        <view class="planet-icon planet-icon-frame">
-          <view class="icon-daily">
-            <view class="icon-daily-sheet"></view>
-            <view class="icon-daily-sun"></view>
-            <view class="icon-daily-line icon-daily-line-a"></view>
-            <view class="icon-daily-line icon-daily-line-b"></view>
-            <view class="icon-daily-dot"></view>
-          </view>
-        </view>
-        <view class="planet-card-title">{{ TEXT.dailySummaryTitle }}</view>
-        <view class="planet-card-desc">{{ TEXT.dailySummaryDesc }}</view>
+        <view class="section-head-link" hover-class="surface-press" hover-stay-time="60" @click="openRecentList">更多 →</view>
       </view>
 
-      <view class="planet-card app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goRomanticPlan">
-        <view class="planet-card-head">
-          <view class="status-badge status-badge-open">{{ TEXT.opened }}</view>
-        </view>
-        <view class="planet-icon planet-icon-frame">
-          <view class="icon-grid">
-            <view class="icon-grid-cell"></view>
-            <view class="icon-grid-cell"></view>
-            <view class="icon-grid-cell"></view>
-            <view class="icon-grid-cell"></view>
+      <view class="timeline-list app-fade-up app-delay-2">
+        <view
+          v-for="(item, index) in recentNodes"
+          :key="item.id || index"
+          class="timeline-item"
+          hover-class="surface-press"
+          hover-stay-time="60"
+          @click="openRecentDetail(item)"
+        >
+          <view class="timeline-rail">
+            <view class="timeline-dot" :class="[`timeline-dot-${index}`]"></view>
+            <view v-if="index !== recentNodes.length - 1" class="timeline-line"></view>
+          </view>
+          <view class="timeline-copy">
+            <view class="timeline-meta">{{ item.meta }}</view>
+            <view class="timeline-title">{{ item.title }}</view>
+            <view class="timeline-desc">{{ item.desc }}</view>
           </view>
         </view>
-        <view class="planet-card-title">{{ TEXT.planTitle }}</view>
-        <view class="planet-card-desc">{{ TEXT.planDesc }}</view>
       </view>
 
-      <view class="planet-card planet-card-subtle app-card-soft" hover-class="surface-press" hover-stay-time="70" @click="goComingSoon(TEXT.cookingTitle)">
-        <view class="planet-card-head">
-          <view class="status-badge status-badge-reserve">{{ TEXT.reserve }}</view>
+      <view class="section-head app-fade-up app-delay-3">
+        <view class="section-head-left">
+          <view class="section-kicker-bar"></view>
+          <view class="section-head-title">回忆相册</view>
         </view>
-        <view class="planet-icon planet-icon-frame">
-          <view class="icon-pan">
-            <view class="icon-pan-pot"></view>
-            <view class="icon-pan-handle"></view>
-            <view class="icon-pan-steam icon-pan-steam-a"></view>
-            <view class="icon-pan-steam icon-pan-steam-b"></view>
-            <view class="icon-pan-heart"></view>
+      </view>
+
+      <view class="album-grid app-fade-up app-delay-3">
+        <view
+          v-for="item in albumDisplayList"
+          :key="item.id"
+          class="album-card"
+          hover-class="surface-press"
+          hover-stay-time="60"
+          @click="openAlbum(item)"
+        >
+          <view class="album-cover-shell" :class="{ 'album-cover-shell-empty': !item.coverUrl }">
+            <image v-if="item.coverUrl" class="album-cover" :src="item.coverUrl" mode="aspectFill"></image>
+            <view v-else class="album-placeholder">{{ item.symbol }}</view>
+          </view>
+          <view class="album-card-body">
+            <view class="album-card-title">{{ item.title }}</view>
+            <view class="album-card-count">{{ item.countLabel }}</view>
           </view>
         </view>
-        <view class="planet-card-title">{{ TEXT.cookingTitle }}</view>
-        <view class="planet-card-desc">{{ TEXT.cookingDesc }}</view>
+      </view>
+
+      <view class="year-card app-fade-up app-delay-3">
+        <view class="year-card-head">
+          <view class="year-card-title">今年的我们</view>
+          <view class="year-card-range">{{ yearRangeLabel }}</view>
+        </view>
+        <view class="year-grid">
+          <view class="year-metric year-metric-border-right year-metric-border-bottom">
+            <view class="year-metric-value">{{ yearSnapshot.tripCount }}<text class="year-metric-unit">次</text></view>
+            <view class="year-metric-label">一起出行</view>
+          </view>
+          <view class="year-metric year-metric-border-bottom">
+            <view class="year-metric-value">{{ yearSnapshot.diaryCount }}<text class="year-metric-unit">篇</text></view>
+            <view class="year-metric-label">日记</view>
+          </view>
+          <view class="year-metric year-metric-border-right">
+            <view class="year-metric-value">{{ yearSnapshot.photoCount }}<text class="year-metric-unit">张</text></view>
+            <view class="year-metric-label">照片</view>
+          </view>
+          <view class="year-metric">
+            <view class="year-metric-value year-metric-value-accent">{{ yearSnapshot.nextDays }}<text class="year-metric-unit">天</text></view>
+            <view class="year-metric-label">↓ {{ yearSnapshot.nextLabel }}</view>
+          </view>
+        </view>
+        <view class="year-card-topline"></view>
+      </view>
+
+      <view class="footprint-entry app-fade-up app-delay-3" hover-class="surface-press" hover-stay-time="60" @click="openFootprints">
+        <view class="footprint-icon-shell">
+          <image class="footprint-icon" :src="footprintsIconImage" mode="aspectFit"></image>
+        </view>
+        <view class="footprint-copy">
+          <view class="footprint-title">我们走过 {{ footprintSummary.cityCount }} 座城市</view>
+          <view class="footprint-desc">最近：{{ footprintSummary.latestCity }}</view>
+        </view>
+        <image class="footprint-arrow" :src="footprintsArrowImage" mode="aspectFit"></image>
       </view>
     </view>
 
@@ -145,696 +168,920 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { computed, ref } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
 import { requireAuth } from '@/utils/auth.js'
 import { goPage } from '@/utils/nav.js'
 import { useThemePage } from '@/utils/useThemePage.js'
+import { fetchAlbumMemoryList } from '@/services/albums.js'
+import { fetchAnniversaryList } from '@/services/anniversaries.js'
+import { fetchDailySummaryHistory } from '@/services/daily-summaries.js'
+import { fetchPartnerProfile, fetchRemoteProfile } from '@/services/profile.js'
+import { resolveMediaUrl } from '@/utils/media-upload.js'
+import pageBackgroundImage from '@/assets/planet/page-background.png'
+import orbitalDecorImage from '@/assets/planet/orbital-decor.svg'
+import leftPlanetImage from '@/assets/planet/planet-left.svg'
+import rightPlanetImage from '@/assets/planet/planet-right.svg'
+import footprintsIconImage from '@/assets/planet/footprints-icon.png'
+import footprintsArrowImage from '@/assets/planet/footprints-arrow.png'
 import BottomTab from '@/pages/components/BottomTab.vue'
 
-const TEXT = {
-  brandKicker: '模块星球',
-  brand: '浪漫星球',
-  brandSub: '常用模块',
-  brandIcon: '✦',
-  heroTitle: '常用功能入口',
-  heroDesc: '纪念日、相册、今日小计、改进簿、浪漫计划',
-  chipAnniversary: '纪念日',
-  chipAlbum: '相册',
-  chipDailySummary: '今日小计',
-  opened: '已开放',
-  reserve: '预留',
-  anniversaryTitle: '恋爱纪念日',
-  anniversaryDesc: '纪念日记录',
-  albumTitle: '甜蜜相册',
-  albumDesc: '照片记录',
-  improvementTitle: '恋爱改进簿',
-  improvementDesc: '改进记录',
-  dailySummaryTitle: '今日小计',
-  dailySummaryDesc: '日常记录',
-  planTitle: '浪漫计划',
-  planDesc: '计划记录',
-  cookingTitle: '一起做饭',
-  cookingDesc: '每日做菜'
-}
-
+const DAY_MS = 24 * 60 * 60 * 1000
 const { themeStyle } = useThemePage()
 
-function goAnniversary() {
+const profile = ref({})
+const partnerProfile = ref(null)
+const anniversaryList = ref([])
+const albumList = ref([])
+const dailyHistory = ref([])
+
+const heroLeftName = computed(() => shrinkName(getSelfCallName(), 3))
+const heroRightName = computed(() => shrinkName(getPartnerCallName(), 3))
+const relationshipDays = computed(() => {
+  const startDate = parseDateOnly(profile.value?.anniversaryDate)
+  if (!startDate) return 0
+  const today = startOfDay(new Date())
+  return Math.max(0, Math.floor((today.getTime() - startDate.getTime()) / DAY_MS) + 1)
+})
+const relationshipDateLabel = computed(() => formatDotDate(parseDateOnly(profile.value?.anniversaryDate)) || '--')
+const relationshipDateText = computed(() => formatChineseDate(parseDateOnly(profile.value?.anniversaryDate)) || '待设置')
+const residentCityText = computed(() => String(profile.value?.city || profile.value?.defaultMeetingPlace || '待设置').trim() || '待设置')
+const relationIntroText = computed(() => String(profile.value?.bio || '').trim() || '两个认真相爱的人，把喜欢慢慢过成了日常')
+const relationCallNames = computed(() => `${getSelfCallName()} & ${getPartnerCallName()}`)
+const yearRangeLabel = computed(() => {
+  const now = new Date()
+  return `${now.getFullYear()} · 1—${now.getMonth() + 1}月`
+})
+
+const recentNodes = computed(() => {
+  const list = [...anniversaryList.value]
+    .filter((item) => parseDateOnly(item.eventDate))
+    .sort((a, b) => parseDateOnly(b.eventDate).getTime() - parseDateOnly(a.eventDate).getTime())
+    .slice(0, 3)
+    .map((item, index) => ({
+      id: item.id || `node_${index}`,
+      title: String(item.title || '新的纪念').trim() || '新的纪念',
+      meta: buildTimelineMeta(item),
+      desc: buildTimelineDesc(item),
+      detailId: item.id || ''
+    }))
+
+  if (list.length > 0) return list
+
+  return [
+    {
+      id: 'empty_node',
+      title: '还没有最近节点',
+      meta: '现在',
+      desc: '去纪念日里记录属于你们的下一段故事',
+      detailId: ''
+    }
+  ]
+})
+
+const albumDisplayList = computed(() => {
+  const list = (Array.isArray(albumList.value) ? albumList.value : []).slice(0, 4).map((item, index) => ({
+    id: item.id || `album_${index}`,
+    title: String(item.title || `回忆 ${index + 1}`).trim() || `回忆 ${index + 1}`,
+    countLabel: `${Number(item.imageCount || 0)} 张`,
+    coverUrl: pickAlbumCover(item),
+    symbol: inferAlbumSymbol(item, index),
+    detailId: item.id || ''
+  }))
+
+  while (list.length < 4) {
+    list.push({
+      id: `placeholder_${list.length}`,
+      title: '等待新回忆',
+      countLabel: '0 张',
+      coverUrl: '',
+      symbol: ['✈', '☽', '✦', '♡'][list.length % 4],
+      detailId: ''
+    })
+  }
+
+  return list
+})
+
+const yearSnapshot = computed(() => {
+  const diaryCount = dailyHistory.value.reduce((sum, item) => sum + Math.max(Number(item.entryCount || 0), 1), 0)
+  const photoCount = albumList.value.reduce((sum, item) => sum + Math.max(Number(item.imageCount || 0), 0), 0)
+  const tripCount = albumList.value.filter((item) => isTripMemory(item)).length || albumList.value.filter((item) => String(item.location || '').trim()).length
+  const upcoming = getUpcomingMilestone(anniversaryList.value, profile.value?.anniversaryDate)
+
+  return {
+    tripCount,
+    diaryCount,
+    photoCount,
+    nextDays: upcoming.days,
+    nextLabel: upcoming.label
+  }
+})
+
+const footprintSummary = computed(() => {
+  const citySet = new Set()
+  const timeline = []
+
+  appendLocation(citySet, timeline, profile.value?.city, profile.value?.anniversaryDate)
+  anniversaryList.value.forEach((item) => appendLocation(citySet, timeline, item.location, item.eventDate))
+  albumList.value.forEach((item) => appendLocation(citySet, timeline, item.location, item.memoryDate))
+
+  timeline.sort((a, b) => getDateTimestamp(b.date) - getDateTimestamp(a.date))
+  const latest = timeline.find((item) => item.city)
+
+  return {
+    cityCount: citySet.size || 1,
+    latestCity: latest ? `${latest.city} · ${formatYearMonth(parseDateOnly(latest.date))}` : residentCityText.value
+  }
+})
+
+onShow(async () => {
+  if (!requireAuth()) return
+  await loadPlanetPage()
+})
+
+async function loadPlanetPage() {
+  const [profileResult, partnerResult, anniversaryResult, albumResult, historyResult] = await Promise.allSettled([
+    fetchRemoteProfile(),
+    fetchPartnerProfile(),
+    fetchAnniversaryList('all'),
+    fetchAlbumMemoryList(),
+    fetchDailySummaryHistory()
+  ])
+
+  profile.value = profileResult.status === 'fulfilled' ? profileResult.value || {} : {}
+  partnerProfile.value = partnerResult.status === 'fulfilled' ? partnerResult.value || null : null
+  anniversaryList.value = anniversaryResult.status === 'fulfilled' && Array.isArray(anniversaryResult.value) ? anniversaryResult.value : []
+  albumList.value = albumResult.status === 'fulfilled' && Array.isArray(albumResult.value) ? albumResult.value : []
+  dailyHistory.value = historyResult.status === 'fulfilled' && Array.isArray(historyResult.value) ? historyResult.value : []
+}
+
+function openRecentList() {
   goPage('/pages/modules/anniversary/index')
 }
 
-function goAlbum() {
-  goPage('/pages/modules/album/index')
+function openRecentDetail(item) {
+  if (!item?.detailId) {
+    openRecentList()
+    return
+  }
+  goPage(`/pages/modules/anniversary/detail?id=${encodeURIComponent(item.detailId)}`)
 }
 
-function goImprovement() {
-  goPage('/pages/modules/improvement/index')
+function openAlbum(item) {
+  if (!item?.detailId) {
+    goPage('/pages/modules/album/index')
+    return
+  }
+  goPage(`/pages/modules/album/detail?id=${encodeURIComponent(item.detailId)}`)
 }
 
-function goDailySummary() {
-  goPage('/pages/modules/daily-summary/detail')
+function openFootprints() {
+  goPage('/pages/modules/coming-soon/index?title=' + encodeURIComponent('共同足迹'))
 }
 
-function goRomanticPlan() {
-  goPage('/pages/modules/romantic-plan/index')
+
+
+function getSelfCallName() {
+  return String(partnerProfile.value?.loverNickname || profile.value?.nickname || '我').trim() || '我'
 }
 
-function goComingSoon(title) {
-  goPage(`/pages/modules/coming-soon/index?title=${encodeURIComponent(title)}`)
+function getPartnerCallName() {
+  return String(profile.value?.loverNickname || partnerProfile.value?.nickname || 'TA').trim() || 'TA'
 }
 
-onMounted(() => {
-  requireAuth()
-})
+function buildTimelineMeta(item) {
+  const date = parseDateOnly(item.eventDate)
+  const dateLabel = formatDotDate(date) || '待补充'
+  return `${getTimelineTypeLabel(item.type)} · ${dateLabel}`
+}
+
+function buildTimelineDesc(item) {
+  const description = String(item.description || '').trim()
+  const location = String(item.location || '').trim()
+  if (description) return description
+  if (location) return `一起去过 ${location}`
+  return '把这一天记下来，留给以后慢慢回看'
+}
+
+function pickAlbumCover(item) {
+  const firstMedia = Array.isArray(item?.mediaList) ? item.mediaList[0] : null
+  const coverPath = item?.coverUrl || firstMedia?.thumbnailUrl || firstMedia?.fileUrl || ''
+  return resolveMediaUrl(coverPath)
+}
+
+function inferAlbumSymbol(item, index) {
+  const source = `${String(item?.title || '')} ${String(item?.summary || '')} ${String(item?.location || '')}`
+  if (/[旅途游玩出发海边山川]/.test(source)) return '✈'
+  if (/[夜晚月亮日常晚安]/.test(source)) return '☽'
+  if (/[节日生日纪念]/.test(source)) return '✦'
+  if (/[喜欢心动美食做饭]/.test(source)) return '♡'
+  return ['✈', '☽', '✦', '♡'][index % 4]
+}
+
+function isTripMemory(item) {
+  const source = `${String(item?.title || '')} ${String(item?.summary || '')} ${String(item?.location || '')}`
+  return /[旅途旅行出发机场高铁海边山川东京西安厦门上海]/.test(source)
+}
+
+function getUpcomingMilestone(list, fallbackDateValue) {
+  const today = startOfDay(new Date())
+  const candidates = []
+
+  list.forEach((item) => {
+    const baseDate = parseDateOnly(item.eventDate)
+    if (!baseDate) return
+    const nextDate = getNextOccurrence(baseDate, today)
+    const days = Math.max(0, Math.floor((nextDate.getTime() - today.getTime()) / DAY_MS))
+    candidates.push({ label: String(item.title || '重要日子').trim() || '重要日子', days })
+  })
+
+  const fallbackDate = parseDateOnly(fallbackDateValue)
+  if (fallbackDate) {
+    const nextDate = getNextOccurrence(fallbackDate, today)
+    const days = Math.max(0, Math.floor((nextDate.getTime() - today.getTime()) / DAY_MS))
+    candidates.push({ label: '纪念日', days })
+  }
+
+  if (candidates.length === 0) {
+    return { label: '下一次见面', days: 0 }
+  }
+
+  candidates.sort((a, b) => a.days - b.days)
+  return candidates[0]
+}
+
+function getNextOccurrence(baseDate, today) {
+  const year = today.getFullYear()
+  const candidate = new Date(year, baseDate.getMonth(), baseDate.getDate())
+  if (candidate.getTime() < today.getTime()) {
+    candidate.setFullYear(year + 1)
+  }
+  return startOfDay(candidate)
+}
+
+function appendLocation(citySet, timeline, rawLocation, dateValue) {
+  const city = normalizeLocation(rawLocation)
+  if (!city) return
+  citySet.add(city)
+  timeline.push({ city, date: dateValue })
+}
+
+function normalizeLocation(rawLocation) {
+  const value = String(rawLocation || '').trim()
+  if (!value) return ''
+  return value.split(/[·,，/\s]+/).filter(Boolean)[0] || value
+}
+
+function parseDateOnly(value) {
+  const raw = String(value || '').trim()
+  if (!raw) return null
+  const normalized = raw.replace(/\./g, '-').replace(/\//g, '-')
+  const date = new Date(normalized)
+  if (Number.isNaN(date.getTime())) return null
+  return startOfDay(date)
+}
+
+function startOfDay(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+}
+
+function formatDotDate(date) {
+  if (!date) return ''
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}.${month}.${day}`
+}
+
+function formatChineseDate(date) {
+  if (!date) return ''
+  return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+}
+
+function getDateTimestamp(value) {
+  const date = parseDateOnly(value)
+  return date ? date.getTime() : 0
+}
+
+function getTimelineTypeLabel(type) {
+  const value = String(type || '').trim()
+  const map = {
+    anniversary: '纪念日',
+    meeting: '见面日',
+    birthday: '生日',
+    travel: '旅行',
+    festival: '节日'
+  }
+  return map[value] || '纪念日'
+}
+
+function formatYearMonth(date) {
+  if (!date) return '最近'
+  return `${date.getFullYear()}年${date.getMonth() + 1}月`
+}
+
+function shrinkName(value, limit) {
+  const text = String(value || '').trim() || 'TA'
+  return text.length > limit ? text.slice(0, limit) : text
+}
 </script>
 
 <style scoped>
   .planet-page {
-    --planet-accent: var(--app-color-primary);
-    --planet-accent-strong: var(--app-color-primary-strong);
-    --planet-accent-soft: var(--app-color-primary-soft);
-    --planet-text-main: var(--app-color-text-strong);
-    --planet-text-sub: var(--app-color-text);
-    --planet-surface: rgba(255, 255, 255, 0.96);
-    --planet-surface-soft: var(--app-color-surface-soft);
-    --planet-border: rgba(255, 255, 255, 0.72);
-    --planet-shadow: var(--app-shadow-card);
     position: relative;
     overflow: hidden;
-    background:
-      radial-gradient(circle at top, rgba(255, 255, 255, 0.94), rgba(255, 248, 241, 0.92)),
-      var(--app-page-gradient-soft);
+    background: linear-gradient(134deg, #fdf4ee 8%, #fceae0 46%, #f8d9ce 91%);
+  }
+
+  .planet-content {
+    position: relative;
+    z-index: 2;
+    padding: 56rpx 20rpx 184rpx;
+  }
+
+  .planet-texture {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.86;
   }
 
   .planet-bg {
     position: absolute;
     border-radius: 50%;
-    filter: blur(10rpx);
-    opacity: 0.58;
+    pointer-events: none;
   }
 
   .planet-bg-a {
-    width: 240rpx;
-    height: 240rpx;
-    top: 220rpx;
-    right: -70rpx;
-    background: color-mix(in srgb, var(--planet-accent-soft) 26%, #ffd7c0 74%);
+    top: -168rpx;
+    left: 96rpx;
+    width: 840rpx;
+    height: 840rpx;
+    background: rgba(244, 190, 175, 0.22);
+    filter: blur(180rpx);
   }
 
   .planet-bg-b {
-    width: 220rpx;
-    height: 220rpx;
-    left: -80rpx;
-    bottom: 280rpx;
-    background: color-mix(in srgb, var(--planet-accent-soft) 18%, #deebd0 82%);
+    top: 596rpx;
+    left: -196rpx;
+    width: 720rpx;
+    height: 720rpx;
+    background: rgba(240, 208, 196, 0.18);
+    filter: blur(160rpx);
   }
 
-  .planet-top,
-  .planet-hero,
-  .planet-grid {
-    position: relative;
-    z-index: 2;
+  .planet-bg-c {
+    top: 978rpx;
+    left: 140rpx;
+    width: 640rpx;
+    height: 640rpx;
+    background: rgba(232, 196, 160, 0.15);
+    filter: blur(140rpx);
   }
 
-  .planet-top {
-    margin-top: 8rpx;
+  .planet-bg-d {
+    top: 632rpx;
+    left: -40rpx;
+    width: 560rpx;
+    height: 560rpx;
+    background: rgba(242, 200, 184, 0.14);
+    filter: blur(160rpx);
   }
 
-  .planet-brand-wrap {
+  .planet-hero {
     text-align: center;
   }
 
-  .planet-brand-kicker {
-    font-size: 20rpx;
+  .planet-kicker {
+    font-size: 19rpx;
+    line-height: 1.5;
     letter-spacing: 6rpx;
-    text-transform: uppercase;
-    color: color-mix(in srgb, var(--planet-accent-soft) 56%, #d5c3aa 44%);
+    color: rgba(184, 137, 110, 0.65);
   }
 
-  .planet-brand {
-    margin-top: 8rpx;
-    font-size: 66rpx;
-    line-height: 1.02;
-    font-weight: 500;
-    letter-spacing: 2rpx;
-    color: var(--planet-accent);
-  }
-
-  .planet-brand-sub {
+  .planet-title {
     margin-top: 10rpx;
-    font-size: 24rpx;
-    line-height: 1.6;
-    color: color-mix(in srgb, var(--planet-text-sub) 70%, #d1c0b1 30%);
+    font-family: 'Times New Roman', serif;
+    font-size: 84rpx;
+    line-height: 1;
+    letter-spacing: 8rpx;
+    color: #6b3f32;
   }
 
-  .planet-brand-line {
+  .planet-subline {
     margin-top: 14rpx;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 18rpx;
-    color: color-mix(in srgb, var(--planet-accent-soft) 60%, #d9c3a2 40%);
   }
 
-  .planet-brand-sep {
-    width: 118rpx;
+  .planet-subline-line {
+    width: 52rpx;
     height: 2rpx;
-    background: linear-gradient(90deg, rgba(219, 192, 154, 0), rgba(219, 192, 154, 0.8), rgba(219, 192, 154, 0));
+    background: linear-gradient(90deg, rgba(201, 168, 122, 0), rgba(201, 168, 122, 0.78), rgba(201, 168, 122, 0));
   }
 
-  .planet-brand-icon-wrap {
-    display: inline-flex;
+  .planet-subline-text {
+    font-size: 19rpx;
+    line-height: 1.5;
+    letter-spacing: 2rpx;
+    color: #c9a87a;
+  }
+
+  .planet-orbit-shell {
+    position: relative;
+    margin: 18rpx auto 0;
+    width: 100%;
+    max-width: 748rpx;
+    height: 338rpx;
+  }
+
+  .planet-orbit-decor {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .planet-ball {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .planet-ball-left {
+    left: 86rpx;
+    top: 86rpx;
+    width: 164rpx;
+    height: 150rpx;
+  }
+
+  .planet-ball-right {
+    right: 86rpx;
+    top: 94rpx;
+    width: 138rpx;
+    height: 126rpx;
+  }
+
+  .planet-ball-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .planet-ball-name {
+    position: relative;
+    z-index: 2;
+    max-width: 72rpx;
+    text-align: center;
+    font-family: 'Times New Roman', serif;
+    font-size: 30rpx;
+    line-height: 1.15;
+    color: rgba(255, 248, 244, 0.96);
+    text-shadow: 0 2rpx 8rpx rgba(123, 60, 44, 0.18);
+    word-break: break-all;
+  }
+
+  .orbit-float-left {
+    animation: orbitFloatLeft 4.8s ease-in-out infinite;
+  }
+
+  .orbit-float-right {
+    animation: orbitFloatRight 5.2s ease-in-out infinite;
+  }
+
+  .planet-divider {
+    margin: 28rpx 8rpx 0;
+    display: flex;
     align-items: center;
     gap: 12rpx;
   }
 
-  .planet-brand-icon {
-    font-size: 26rpx;
+  .planet-divider-line {
+    flex: 1;
+    height: 2rpx;
+    background: linear-gradient(90deg, rgba(201, 168, 122, 0), rgba(201, 168, 122, 0.32), rgba(201, 168, 122, 0));
+  }
+
+  .planet-divider-spark {
+    font-size: 16rpx;
     line-height: 1;
+    letter-spacing: 3rpx;
+    color: rgba(201, 168, 122, 0.62);
   }
 
-  .planet-brand-star {
-    width: 10rpx;
-    height: 10rpx;
-    border-radius: 50%;
-    background: linear-gradient(180deg, #efe3d0, #d9c0a2);
-    box-shadow: 0 0 0 6rpx rgba(255, 255, 255, 0.24);
+  .relation-card,
+  .year-card,
+  .footprint-entry {
+    position: relative;
+    overflow: hidden;
+    border: 2rpx solid rgba(220, 160, 130, 0.14);
+    background: rgba(255, 250, 246, 0.86);
+    box-shadow: 0 12rpx 36rpx rgba(180, 80, 60, 0.07);
   }
 
-  .planet-brand-star-left {
-    transform: scale(0.88);
-  }
-
-  .planet-brand-star-right {
-    transform: scale(1.02);
-  }
-
-  .planet-hero {
+  .relation-card {
     margin-top: 28rpx;
-    padding: 30rpx 28rpx;
-    border-radius: 34rpx;
-    background: linear-gradient(180deg, var(--planet-surface), color-mix(in srgb, var(--planet-surface-soft) 55%, #fff9f4 45%));
-    box-shadow: var(--planet-shadow), inset 0 0 0 2rpx var(--planet-border);
+    border-radius: 48rpx;
+    padding: 42rpx 46rpx 36rpx;
   }
 
-  .planet-hero-title {
-    font-size: 34rpx;
-    line-height: 1.5;
-    font-weight: 600;
-    color: var(--planet-text-main);
+  .relation-card::after,
+  .year-card::after,
+  .footprint-entry::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, 0.9);
   }
 
-  .planet-hero-desc {
-    margin-top: 12rpx;
-    font-size: 25rpx;
-    line-height: 1.8;
-    color: var(--planet-text-sub);
-  }
-
-  .planet-chip-row {
-    margin-top: 18rpx;
+  .relation-card-head {
     display: flex;
-    flex-wrap: wrap;
-    gap: 14rpx;
-  }
-
-  .planet-chip {
-    padding: 10rpx 18rpx;
-    border-radius: 999rpx;
-    background: color-mix(in srgb, var(--planet-accent-soft) 20%, #fff4f7 80%);
-    color: var(--planet-accent-strong);
-    font-size: 22rpx;
-    font-weight: 700;
-  }
-
-  .planet-grid {
-    margin-top: 22rpx;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18rpx;
-    padding-bottom: 28rpx;
-  }
-
-  .planet-card {
-    min-height: 248rpx;
-    padding: 22rpx;
-    border-radius: 34rpx;
-    background:
-      radial-gradient(circle at 25% 92%, rgba(255, 231, 217, 0.3), transparent 26%),
-      radial-gradient(circle at 82% 88%, rgba(228, 236, 208, 0.25), transparent 22%),
-      linear-gradient(180deg, var(--planet-surface), color-mix(in srgb, var(--planet-surface-soft) 55%, #fff9f4 45%));
-    box-shadow: var(--planet-shadow), inset 0 0 0 2rpx var(--planet-border);
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
-  }
-
-  .surface-press {
-    transform: translateY(2rpx) scale(0.986);
-    box-shadow: 0 10rpx 24rpx rgba(0, 0, 0, 0.08);
-  }
-
-  .planet-card-subtle {
-    opacity: 0.96;
-  }
-
-  .planet-card-head {
-    display: flex;
-    justify-content: flex-end;
-  }
-
-  .status-badge {
-    min-width: 108rpx;
-    padding: 10rpx 16rpx;
-    border-radius: 999rpx;
-    text-align: center;
-    font-size: 21rpx;
-    font-weight: 700;
-    box-shadow: inset 0 0 0 2rpx rgba(255, 255, 255, 0.45);
-  }
-
-  .status-badge-open {
-    background: color-mix(in srgb, var(--planet-accent-soft) 20%, #fff4f7 80%);
-    color: var(--planet-accent-strong);
-  }
-
-  .status-badge-reserve {
-    background: rgba(247, 244, 238, 0.96);
-    color: color-mix(in srgb, var(--planet-text-sub) 78%, #d1bfab 22%);
-  }
-
-  .planet-icon {
-    margin-top: 6rpx;
-    display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: space-between;
   }
 
-  .planet-icon-frame {
-    height: 90rpx;
-  }
-
-  .planet-card-title {
-    margin-top: 14rpx;
-    text-align: center;
-    font-size: 29rpx;
-    line-height: 1.42;
-    font-weight: 600;
-    color: var(--planet-text-main);
-  }
-
-  .planet-card-desc {
-    margin-top: 8rpx;
-    text-align: center;
-    font-size: 23rpx;
-    line-height: 1.65;
-    color: var(--planet-text-sub);
-  }
-
-  .icon-album {
-    position: relative;
-    width: 96rpx;
-    height: 74rpx;
-  }
-
-  .icon-album-back,
-  .icon-album-front {
-    position: absolute;
-    border-radius: 12rpx;
-    background: #fff9ef;
-    box-shadow: 0 6rpx 18rpx rgba(0, 0, 0, 0.06);
-  }
-
-  .icon-album-back {
-    width: 64rpx;
-    height: 52rpx;
-    right: 6rpx;
-    top: 12rpx;
-    background: rgba(236, 224, 207, 0.7);
-    transform: rotate(8deg);
-  }
-
-  .icon-album-front {
-    width: 72rpx;
-    height: 56rpx;
-    left: 8rpx;
-    top: 6rpx;
-    overflow: hidden;
-  }
-
-  .icon-album-sun {
-    position: absolute;
-    top: 10rpx;
-    left: 12rpx;
-    width: 12rpx;
-    height: 12rpx;
-    border-radius: 50%;
-    background: #f1dcc3;
-  }
-
-  .icon-album-mountain {
-    position: absolute;
-    bottom: 8rpx;
-    border-bottom: 26rpx solid #b7c29b;
-    border-left: 16rpx solid transparent;
-    border-right: 16rpx solid transparent;
-  }
-
-  .icon-album-mountain-left {
-    left: 8rpx;
-  }
-
-  .icon-album-mountain-right {
-    right: 8rpx;
-    border-bottom-color: #94a56f;
-  }
-
-  .icon-album-flower {
-    position: absolute;
-    right: 2rpx;
-    bottom: 0;
-    width: 22rpx;
-    height: 22rpx;
-    border-radius: 50%;
-    background:
-      radial-gradient(circle at 50% 30%, #fff7ef 0 5rpx, transparent 6rpx),
-      radial-gradient(circle at 30% 60%, #f0d7c7 0 6rpx, transparent 7rpx),
-      radial-gradient(circle at 70% 60%, #f0d7c7 0 6rpx, transparent 7rpx),
-      radial-gradient(circle at 50% 80%, #f0d7c7 0 6rpx, transparent 7rpx);
-  }
-
-  .icon-calendar {
-    position: relative;
-    width: 82rpx;
-    height: 74rpx;
-    border-radius: 16rpx;
-    background: #fffaf3;
-    box-shadow: 0 6rpx 18rpx rgba(0, 0, 0, 0.06);
-    overflow: hidden;
-  }
-
-  .icon-calendar-top {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    height: 22rpx;
-    background: linear-gradient(180deg, #d8b779, #e7c998);
-  }
-
-  .icon-calendar-ring {
-    position: absolute;
-    top: -4rpx;
-    width: 8rpx;
-    height: 18rpx;
-    border-radius: 999rpx;
-    background: #f5efe4;
-    box-shadow: 0 0 0 2rpx rgba(210, 186, 150, 0.45);
-    z-index: 2;
-  }
-
-  .icon-calendar-ring-left {
-    left: 18rpx;
-  }
-
-  .icon-calendar-ring-right {
-    right: 18rpx;
-  }
-
-  .icon-calendar-heart {
-    position: absolute;
-    top: 28rpx;
-    left: 31rpx;
-    width: 20rpx;
-    height: 18rpx;
-    transform: rotate(-45deg);
-    background: #e7a08f;
-  }
-
-  .icon-calendar-heart::before,
-  .icon-calendar-heart::after {
-    content: '';
-    position: absolute;
-    width: 20rpx;
-    height: 18rpx;
-    border-radius: 50%;
-    background: #e7a08f;
-  }
-
-  .icon-calendar-heart::before {
-    top: -10rpx;
-    left: 0;
-  }
-
-  .icon-calendar-heart::after {
-    left: 10rpx;
-    top: 0;
-  }
-
-  .icon-calendar-dot {
-    position: absolute;
-    width: 6rpx;
-    height: 6rpx;
-    border-radius: 50%;
-    background: rgba(211, 193, 168, 0.8);
-  }
-
-  .icon-calendar-dot-a {
-    left: 16rpx;
-    bottom: 18rpx;
-  }
-
-  .icon-calendar-dot-b {
-    left: 28rpx;
-    bottom: 18rpx;
-  }
-
-  .icon-calendar-dot-c {
-    right: 28rpx;
-    bottom: 18rpx;
-  }
-
-  .icon-calendar-dot-d {
-    right: 16rpx;
-    bottom: 18rpx;
-  }
-
-  .icon-book {
-    position: relative;
-    width: 92rpx;
-    height: 72rpx;
-  }
-
-  .icon-book-cover {
-    position: absolute;
-    top: 10rpx;
-    width: 36rpx;
-    height: 48rpx;
-    border-radius: 8rpx;
-  }
-
-  .icon-book-cover-left {
-    left: 10rpx;
-    background: #aebc94;
-    transform: skewY(-8deg);
-  }
-
-  .icon-book-cover-right {
-    right: 10rpx;
-    background: #f4ead8;
-    transform: skewY(8deg);
-  }
-
-  .icon-book-page {
-    position: absolute;
-    left: 26rpx;
-    right: 26rpx;
-    top: 6rpx;
-    bottom: 10rpx;
-    border-radius: 6rpx;
-    background: #fffaf2;
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-  }
-
-  .icon-book-line {
-    position: absolute;
-    left: 34rpx;
-    right: 36rpx;
-    height: 3rpx;
-    border-radius: 999rpx;
-    background: rgba(206, 189, 163, 0.82);
-  }
-
-  .icon-book-line-a {
-    top: 24rpx;
-  }
-
-  .icon-book-line-b {
-    top: 34rpx;
-  }
-
-  .icon-book-pen {
-    position: absolute;
-    right: 6rpx;
-    bottom: 8rpx;
-    width: 34rpx;
-    height: 10rpx;
-    border-radius: 999rpx;
-    background: linear-gradient(90deg, #d4ae67, #c8954f);
-    transform: rotate(-34deg);
-  }
-
-  .icon-book-pen::after {
-    content: '';
-    position: absolute;
-    right: -8rpx;
-    top: 0;
-    border-left: 10rpx solid #d9c4a8;
-    border-top: 5rpx solid transparent;
-    border-bottom: 5rpx solid transparent;
-  }
-
-  .icon-daily {
-    position: relative;
-    width: 78rpx;
-    height: 78rpx;
-  }
-
-  .icon-daily-sheet {
-    position: absolute;
-    inset: 8rpx 10rpx 6rpx 10rpx;
-    border-radius: 16rpx;
-    background: linear-gradient(180deg, #fffaf4, #f8f1e7);
-    box-shadow: 0 8rpx 18rpx rgba(0, 0, 0, 0.06), inset 0 0 0 2rpx rgba(235, 224, 207, 0.92);
-  }
-
-  .icon-daily-sun {
-    position: absolute;
-    top: 18rpx;
-    right: 18rpx;
-    width: 14rpx;
-    height: 14rpx;
-    border-radius: 50%;
-    background: #efc680;
-    box-shadow: 0 0 0 6rpx rgba(239, 198, 128, 0.16);
-  }
-
-  .icon-daily-line {
-    position: absolute;
-    left: 20rpx;
-    right: 24rpx;
-    height: 4rpx;
-    border-radius: 999rpx;
-    background: rgba(197, 175, 146, 0.86);
-  }
-
-  .icon-daily-line-a {
-    top: 26rpx;
-  }
-
-  .icon-daily-line-b {
-    top: 38rpx;
-  }
-
-  .icon-daily-dot {
-    position: absolute;
-    left: 22rpx;
-    bottom: 18rpx;
-    width: 12rpx;
-    height: 12rpx;
-    border-radius: 50%;
-    background: #e6a598;
-    box-shadow: 18rpx 0 0 rgba(174, 197, 156, 0.9);
-  }
-
-  .icon-grid {
-    width: 68rpx;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+  .relation-card-title-wrap,
+  .section-head-left {
+    display: flex;
+    align-items: center;
     gap: 10rpx;
   }
 
-  .icon-grid-cell {
+  .section-kicker-bar {
+    width: 6rpx;
+    height: 22rpx;
+    border-radius: 999rpx;
+    background: rgba(201, 168, 122, 0.72);
+  }
+
+  .relation-card-title,
+  .section-head-title {
+    font-size: 28rpx;
+    line-height: 1.3;
+    color: #6b3f32;
+    font-weight: 500;
+  }
+
+  .relation-card-star {
+    font-size: 24rpx;
+    color: rgba(201, 168, 122, 0.8);
+  }
+
+  .relation-row {
+    min-height: 88rpx;
+    display: flex;
+    align-items: center;
+    gap: 20rpx;
+  }
+
+  .relation-row-intro {
+    align-items: flex-start;
+    padding-top: 16rpx;
+    min-height: 112rpx;
+  }
+
+  .relation-label {
+    flex-shrink: 0;
+    width: 124rpx;
+    font-size: 22rpx;
+    line-height: 1.5;
+    white-space: nowrap;
+    color: #b8896e;
+  }
+
+  .relation-value {
+    flex: 1;
+    min-width: 0;
+    font-size: 32rpx;
+    line-height: 1.45;
+    color: #6b3f32;
+    word-break: break-word;
+  }
+
+  .relation-value-intro {
+    font-size: 30rpx;
+    line-height: 1.6;
+  }
+
+  .relation-divider {
+    height: 2rpx;
+    background: rgba(201, 168, 122, 0.14);
+  }
+
+  .section-head {
+    margin-top: 34rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .section-head-link {
+    font-size: 22rpx;
+    line-height: 1.5;
+    color: rgba(201, 168, 122, 0.92);
+  }
+
+  .timeline-list {
+    margin-top: 14rpx;
+    padding: 0 6rpx;
+  }
+
+  .timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 18rpx;
+    padding: 12rpx 0 22rpx;
+  }
+
+  .timeline-rail {
+    width: 18rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .timeline-dot {
+    width: 14rpx;
+    height: 14rpx;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    border: 2rpx solid rgba(224, 123, 106, 0.3);
+  }
+
+  .timeline-dot-0 {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(224, 123, 106, 0.45);
+  }
+
+  .timeline-dot-1 {
+    background: #e68b80;
+    border-color: rgba(230, 139, 128, 0.12);
+  }
+
+  .timeline-dot-2 {
+    background: #d8b37a;
+    border-color: rgba(216, 179, 122, 0.16);
+  }
+
+  .timeline-line {
+    width: 2rpx;
+    min-height: 90rpx;
+    margin-top: 8rpx;
+    background: linear-gradient(180deg, rgba(224, 123, 106, 0.3), rgba(201, 168, 122, 0.08));
+  }
+
+  .timeline-copy {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .timeline-meta {
+    font-size: 18rpx;
+    line-height: 1.45;
+    color: rgba(201, 168, 122, 0.86);
+  }
+
+  .timeline-title {
+    margin-top: 8rpx;
+    font-size: 32rpx;
+    line-height: 1.25;
+    color: #6b3f32;
+  }
+
+  .timeline-desc {
+    margin-top: 8rpx;
+    font-size: 24rpx;
+    line-height: 1.7;
+    color: #a87b69;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .album-grid {
+    margin-top: 14rpx;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18rpx;
+  }
+
+  .album-card {
+    overflow: hidden;
+    border-radius: 26rpx;
+    border: 2rpx solid rgba(220, 160, 130, 0.14);
+    background: rgba(255, 250, 246, 0.82);
+    box-shadow: 0 12rpx 32rpx rgba(180, 80, 60, 0.07);
+  }
+
+  .album-cover-shell {
+    height: 140rpx;
+    background: linear-gradient(180deg, rgba(255, 240, 231, 0.95), rgba(248, 227, 212, 0.88));
+  }
+
+  .album-cover-shell-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .album-cover {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .album-placeholder {
+    font-size: 56rpx;
+    line-height: 1;
+    color: rgba(201, 168, 122, 0.82);
+  }
+
+  .album-card-body {
+    padding: 22rpx 24rpx 24rpx;
+  }
+
+  .album-card-title {
+    font-size: 28rpx;
+    line-height: 1.4;
+    color: #6b3f32;
+    font-weight: 500;
+  }
+
+  .album-card-count {
+    margin-top: 8rpx;
+    font-size: 22rpx;
+    line-height: 1.4;
+    color: #b8896e;
+  }
+
+  .year-card {
+    margin-top: 28rpx;
+    border-radius: 44rpx;
+    padding: 38rpx 42rpx 34rpx;
+  }
+
+  .year-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .year-card-title {
+    font-family: 'Times New Roman', serif;
+    font-size: 34rpx;
+    line-height: 1.3;
+    letter-spacing: 2rpx;
+    color: #6b3f32;
+  }
+
+  .year-card-range {
+    font-size: 20rpx;
+    line-height: 1.4;
+    color: rgba(201, 168, 122, 0.78);
+  }
+
+  .year-grid {
+    position: relative;
+    margin-top: 28rpx;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .year-metric {
+    min-height: 128rpx;
+    padding: 20rpx 12rpx 18rpx;
+    text-align: center;
+  }
+
+  .year-metric-border-right {
+    border-right: 2rpx solid rgba(201, 168, 122, 0.15);
+  }
+
+  .year-metric-border-bottom {
+    border-bottom: 2rpx solid rgba(201, 168, 122, 0.15);
+  }
+
+  .year-metric-value {
+    font-family: 'Times New Roman', serif;
+    font-size: 50rpx;
+    line-height: 1;
+    color: #6b3f32;
+  }
+
+  .year-metric-value-accent {
+    color: #e07b6a;
+  }
+
+  .year-metric-unit {
+    margin-left: 4rpx;
+    font-size: 20rpx;
+    color: #c9a87a;
+  }
+
+  .year-metric-label {
+    margin-top: 10rpx;
+    font-size: 20rpx;
+    line-height: 1.4;
+    color: rgba(184, 137, 110, 0.7);
+  }
+
+  .year-card-topline {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 390rpx;
+    height: 4rpx;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0), rgba(201, 168, 122, 0.88), rgba(0, 0, 0, 0));
+  }
+
+  .footprint-entry {
+    margin-top: 24rpx;
+    border-radius: 40rpx;
+    padding: 30rpx 34rpx;
+    display: flex;
+    align-items: center;
+    gap: 20rpx;
+  }
+
+  .footprint-icon-shell {
+    width: 76rpx;
+    height: 76rpx;
+    border-radius: 24rpx;
+    background: rgba(156, 184, 144, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .footprint-icon {
+    width: 36rpx;
+    height: 36rpx;
+  }
+
+  .footprint-copy {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .footprint-title {
+    font-size: 26rpx;
+    line-height: 1.45;
+    color: #6b3f32;
+    font-weight: 500;
+  }
+
+  .footprint-desc {
+    margin-top: 6rpx;
+    font-size: 20rpx;
+    line-height: 1.4;
+    color: rgba(184, 137, 110, 0.7);
+  }
+
+  .footprint-arrow {
     width: 28rpx;
     height: 28rpx;
-    border-radius: 8rpx;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 241, 232, 0.98));
-    box-shadow: inset 0 0 0 2rpx rgba(230, 218, 199, 0.96);
+    flex-shrink: 0;
+  }
+  .surface-press {
+    transform: translateY(2rpx) scale(0.992);
   }
 
-  .icon-pan {
-    position: relative;
-    width: 88rpx;
-    height: 78rpx;
+  @keyframes orbitFloatLeft {
+    0% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-12rpx);
+    }
+    100% {
+      transform: translateY(0);
+    }
   }
 
-  .icon-pan-pot {
-    position: absolute;
-    left: 14rpx;
-    right: 20rpx;
-    bottom: 16rpx;
-    height: 26rpx;
-    border-radius: 18rpx 18rpx 14rpx 14rpx;
-    background: linear-gradient(180deg, #f4e4d3, #e7c4a3);
-    box-shadow: 0 8rpx 16rpx rgba(0, 0, 0, 0.06);
-  }
-
-  .icon-pan-handle {
-    position: absolute;
-    right: 10rpx;
-    bottom: 22rpx;
-    width: 18rpx;
-    height: 8rpx;
-    border-radius: 999rpx;
-    background: #c89f77;
-  }
-
-  .icon-pan-steam {
-    position: absolute;
-    width: 10rpx;
-    height: 24rpx;
-    border-radius: 999rpx;
-    border: 3rpx solid rgba(219, 197, 173, 0.84);
-    border-left-color: transparent;
-    border-bottom-color: transparent;
-    transform: rotate(16deg);
-  }
-
-  .icon-pan-steam-a {
-    left: 24rpx;
-    top: 10rpx;
-  }
-
-  .icon-pan-steam-b {
-    left: 42rpx;
-    top: 6rpx;
-  }
-
-  .icon-pan-heart {
-    position: absolute;
-    left: 34rpx;
-    bottom: 20rpx;
-    width: 12rpx;
-    height: 12rpx;
-    transform: rotate(-45deg);
-    background: #e59b93;
-  }
-
-  .icon-pan-heart::before,
-  .icon-pan-heart::after {
-    content: '';
-    position: absolute;
-    width: 12rpx;
-    height: 12rpx;
-    border-radius: 50%;
-    background: #e59b93;
-  }
-
-  .icon-pan-heart::before {
-    top: -6rpx;
-    left: 0;
-  }
-
-  .icon-pan-heart::after {
-    left: 6rpx;
-    top: 0;
+  @keyframes orbitFloatRight {
+    0% {
+      transform: translateY(-2rpx);
+    }
+    50% {
+      transform: translateY(10rpx);
+    }
+    100% {
+      transform: translateY(-2rpx);
+    }
   }
 </style>
+
+

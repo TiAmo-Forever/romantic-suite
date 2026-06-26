@@ -111,10 +111,10 @@
               <view class="notification-time">{{ formatNotificationTime(item.createdAt) }}</view>
             </view>
             <view class="notification-title-row">
-              <view class="notification-title">{{ item.title }}</view>
+              <view class="notification-title" @longpress.stop="copyText(item.title)">{{ item.title }}</view>
               <view v-if="!item.isRead" class="notification-dot"></view>
             </view>
-            <view class="notification-card-content" :class="{ compact: isCompactNotification(item) }">
+            <view class="notification-card-content" :class="{ compact: isCompactNotification(item) }" @longpress.stop="copyText(item.content)">
               {{ item.content }}
             </view>
             <view class="notification-meta">
@@ -217,6 +217,18 @@ const activeBizTypeIndex = computed(() => {
   return index >= 0 ? index : 0
 })
 const activeBizTypeCount = computed(() => resolveBizTypeCount(activeBizType.value))
+
+function copyText(value) {
+  const content = String(value || '').trim()
+  if (!content) return
+  uni.setClipboardData({
+    data: content,
+    success: () => {
+      uni.showToast({ title: '内容已复制', icon: 'success' })
+    }
+  })
+}
+
 const toolbarTitle = computed(() => {
   if (activeBizType.value === 'all') {
     return `${activeFilterLabel.value}提醒`

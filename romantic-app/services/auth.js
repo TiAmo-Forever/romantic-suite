@@ -15,6 +15,21 @@ export async function loginByServer(payload) {
 	return response.data
 }
 
+export async function resetPasswordByServer(payload) {
+	const response = await request({
+		url: '/api/auth/reset-password',
+		method: 'POST',
+		data: payload,
+		offlineTip: false
+	})
+
+	if (!response?.success) {
+		throw new Error(response?.message || '密码重置失败')
+	}
+
+	return response.data
+}
+
 export async function logoutByServer() {
 	try {
 		await request({

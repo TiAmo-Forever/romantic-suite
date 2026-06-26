@@ -1,132 +1,91 @@
 <template>
   <view class="page app-page-shell app-page-shell-tabbed mine-page" :style="themeStyle">
     <GlobalNotificationBanner />
-
     <view class="mine-bg mine-bg-a"></view>
     <view class="mine-bg mine-bg-b"></view>
+    <view class="mine-bg mine-bg-c"></view>
+    <view class="mine-bg mine-bg-d"></view>
 
-    <view class="mine-header app-fade-up">
-      <view class="mine-back shell-btn" @click="goHome">
-        <text class="shell-btn-icon">‹</text>
-      </view>
-      <view class="mine-header-title">{{ TEXT.pageTitle }}</view>
-      <view class="mine-header-placeholder"></view>
-    </view>
+    <view class="profile-hero app-fade-up">
+      <view class="profile-hero-strip"></view>
+      <view class="profile-hero-inner">
+        <view class="profile-avatar-shell" hover-class="surface-press" hover-stay-time="60" @click="goAvatarSettings">
+          <image v-if="isImageAvatar" class="profile-avatar-image" :src="avatarImageUrl" mode="aspectFill"></image>
+          <text v-else class="profile-avatar-text">{{ avatarDisplay }}</text>
+        </view>
+        <view class="profile-name">{{ displayName }}</view>
+        <view class="profile-bio">{{ bioText }}</view>
 
-    <view class="mine-hero app-fade-up app-delay-1">
-      <view class="mine-hero-glow mine-hero-glow-a"></view>
-      <view class="mine-hero-glow mine-hero-glow-b"></view>
-      <view class="mine-hero-badge">Our Story</view>
-      <view class="mine-avatar-pair">
-        <view class="mine-avatar-shell mine-avatar-shell-main" @click="goAvatarSettings">
-          <image v-if="isImageAvatar" class="mine-avatar-image" :src="avatarImageUrl" mode="aspectFill"></image>
-          <view v-else class="mine-avatar-text">{{ avatarDisplay }}</view>
+        <view class="profile-divider">
+          <view class="profile-divider-line"></view>
+          <view class="profile-divider-spark">✦ ✦ ✦</view>
+          <view class="profile-divider-line"></view>
         </view>
-        <view class="mine-avatar-bridge" aria-hidden="true">
-          <view class="mine-avatar-bridge-core">♥</view>
-        </view>
-        <view class="mine-avatar-shell mine-avatar-shell-partner">
-          <image v-if="partnerIsImageAvatar" class="mine-avatar-image" :src="partnerAvatarImageUrl" mode="aspectFill"></image>
-          <view v-else class="mine-avatar-partner-text">{{ loverAvatarDisplay }}</view>
-        </view>
-      </view>
-      <view class="mine-avatar-tip">点击左侧头像修改</view>
-      <view class="mine-name">{{ coupleTitle }}</view>
-      <view class="mine-days">{{ togetherDaysText }}</view>
-      <view class="mine-intro">{{ coupleMoodLine }}</view>
-    </view>
 
-    <view class="mine-feature-stack app-fade-up app-delay-2">
-      <view class="mine-feature-card profile-card-surface" hover-class="surface-press" hover-stay-time="70" @click="goAccountSettings">
-        <view class="mine-feature-watermark">person</view>
-        <view class="mine-feature-head">
-          <view class="mine-feature-icon accent-profile">
-            <image class="mine-feature-icon-svg" :src="iconProfile" mode="aspectFit"></image>
+        <view class="profile-relationship-chip">
+          <view class="profile-chip-avatars">
+            <view class="profile-chip-avatar profile-chip-avatar-main">{{ avatarDisplayShort }}</view>
+            <view class="profile-chip-avatar profile-chip-avatar-partner">{{ partnerAvatarDisplayShort }}</view>
           </view>
-          <view class="mine-feature-title">{{ TEXT.profileTitle }}</view>
+          <view class="profile-chip-copy">{{ heroRelationText }}</view>
+          <view class="profile-chip-days">{{ heroDayLabel }}</view>
         </view>
-        <view class="mine-feature-kicker">{{ TEXT.profileKicker }}</view>
-        <view class="mine-feature-summary">{{ profileSummary }}</view>
-        <view class="mine-feature-action">{{ TEXT.profileAction }}</view>
-      </view>
 
-      <view class="mine-feature-card relationship-card-surface" hover-class="surface-press" hover-stay-time="70" @click="goRelationshipSettings">
-        <view class="mine-feature-watermark">favorite</view>
-        <view class="mine-feature-head">
-          <view class="mine-feature-icon accent-relationship">
-            <image class="mine-feature-icon-svg" :src="iconRelationship" mode="aspectFit"></image>
+        <view class="profile-stats">
+          <view class="profile-stat">
+            <view class="profile-stat-value">{{ diaryCount }}</view>
+            <view class="profile-stat-label">日记</view>
           </view>
-          <view class="mine-feature-title">{{ TEXT.relationshipTitle }}</view>
-        </view>
-        <view class="mine-feature-kicker">{{ relationshipTag }}</view>
-        <view class="mine-feature-summary">{{ relationshipSummary }}</view>
-        <view class="mine-feature-action">{{ TEXT.relationshipAction }}</view>
-      </view>
-    </view>
-
-    <view class="mine-menu-stack app-fade-up app-delay-3">
-      <view class="mine-list-card" hover-class="surface-press" hover-stay-time="70" @click="goSecuritySettings">
-        <view class="mine-list-icon">
-          <image class="mine-list-icon-svg" :src="iconSecurity" mode="aspectFit"></image>
-        </view>
-        <view class="mine-list-copy">
-          <view class="mine-list-title">{{ TEXT.securityTitle }}</view>
-          <view class="mine-list-desc">{{ securitySummary }}</view>
-        </view>
-        <view class="mine-list-arrow"></view>
-      </view>
-
-      <view class="mine-list-card" hover-class="surface-press" hover-stay-time="70" @click="goDataSettings">
-        <view class="mine-list-icon">
-          <image class="mine-list-icon-svg" :src="iconData" mode="aspectFit"></image>
-        </view>
-        <view class="mine-list-copy">
-          <view class="mine-list-title">{{ TEXT.dataTitle }}</view>
-          <view class="mine-list-desc">{{ TEXT.dataDesc }}</view>
-        </view>
-        <view class="mine-list-arrow"></view>
-      </view>
-
-      <view class="mine-list-card" hover-class="surface-press" hover-stay-time="70" @click="goNotifications">
-        <view class="mine-list-icon mine-list-icon-dot">
-          <image class="mine-list-icon-svg" :src="iconNotification" mode="aspectFit"></image>
-          <view v-if="unreadNotificationCount > 0" class="mine-list-dot"></view>
-        </view>
-        <view class="mine-list-copy">
-          <view class="mine-list-title">{{ TEXT.messageTitle }}</view>
-          <view class="mine-list-desc">{{ notificationSummaryText }}</view>
-        </view>
-        <view class="mine-list-side">
-          <view class="mine-list-status" :class="unreadNotificationCount > 0 ? 'active' : ''">
-            {{ unreadNotificationCount > 0 ? `${unreadNotificationCount} 条新提醒` : TEXT.readAll }}
+          <view class="profile-stat">
+            <view class="profile-stat-value">{{ photoCount }}</view>
+            <view class="profile-stat-label">照片</view>
           </view>
-          <view class="mine-list-arrow"></view>
+          <view class="profile-stat">
+            <view class="profile-stat-value">{{ wishCount }}</view>
+            <view class="profile-stat-label">心愿</view>
+          </view>
         </view>
-      </view>
-
-      <view class="mine-list-card" hover-class="surface-press" hover-stay-time="70" @click="goThemeSettings">
-        <view class="mine-list-icon">
-          <image class="mine-list-icon-svg" :src="iconTheme" mode="aspectFit"></image>
-        </view>
-        <view class="mine-list-copy">
-          <view class="mine-list-title">{{ TEXT.themeTitle }}</view>
-          <view class="mine-list-desc">{{ currentTheme.name }}</view>
-        </view>
-        <view class="mine-list-arrow"></view>
       </view>
     </view>
 
-    <view class="mine-logout-shell app-fade-up app-delay-4">
-      <button class="mine-logout-btn" @click="handleLogout">{{ TEXT.logoutTitle }}</button>
+    <view v-for="section in sections" :key="section.key" class="mine-section app-fade-up app-delay-1">
+      <view class="section-label">
+        <view class="section-label-bar"></view>
+        <view class="section-label-text">{{ section.title }}</view>
+      </view>
+
+      <view class="section-card">
+        <view
+          v-for="(item, index) in section.items"
+          :key="item.key"
+          class="setting-row"
+          :class="{ 'setting-row-last': index === section.items.length - 1 }"
+          hover-class="surface-press"
+          hover-stay-time="60"
+          @click="handleRowClick(item.key)"
+        >
+          <view class="setting-icon" :class="item.tone">
+            <image v-if="item.iconType === 'image'" class="setting-icon-image" :src="item.icon" mode="aspectFit"></image>
+            <text v-else class="setting-icon-text">{{ item.icon }}</text>
+          </view>
+
+          <view class="setting-copy">
+            <view class="setting-title">{{ item.title }}</view>
+            <view class="setting-desc">{{ item.desc }}</view>
+          </view>
+
+          <view v-if="item.badge" class="setting-badge">{{ item.badge }}</view>
+          <view class="setting-arrow"></view>
+        </view>
+      </view>
     </view>
 
-    <view class="mine-footer app-fade-up app-delay-4">
-      <view class="mine-footer-copy">{{ TEXT.footerCopy }}</view>
-      <view class="mine-footer-dots">
-        <text class="mine-footer-dot active"></text>
-        <text class="mine-footer-dot"></text>
-        <text class="mine-footer-dot"></text>
-      </view>
+    <view class="logout-shell app-fade-up app-delay-2">
+      <button class="logout-btn" @click="handleLogout">退出登录</button>
+    </view>
+
+    <view class="version-shell app-fade-up app-delay-2">
+      <view class="version-text">{{ versionText }}</view>
     </view>
 
     <BottomTab activeKey="mine" />
@@ -135,200 +94,295 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { onHide, onShow, onUnload } from '@dcloudio/uni-app'
-import { getUser, requireAuth, logout } from '@/utils/auth.js'
+import { onShow } from '@dcloudio/uni-app'
+import { getUser, isAdminUser, requireAuth, logout } from '@/utils/auth.js'
 import { resolveAvatarUrl } from '@/utils/avatar.js'
-import { getAvatarPresetMap, getProfile } from '@/utils/profile.js'
-import { fetchLatestNotification, fetchUnreadNotificationCount } from '@/services/notifications.js'
+import { fetchAlbumMemoryList } from '@/services/albums.js'
+import { fetchAnniversaryList } from '@/services/anniversaries.js'
+import { fetchDailySummaryHistory } from '@/services/daily-summaries.js'
 import { fetchPartnerProfile, fetchRemoteProfile } from '@/services/profile.js'
+import { fetchRomanticPlanList } from '@/services/romantic-plans.js'
 import iconData from '@/assets/icons/icon-data-outline.svg'
-import iconNotification from '@/assets/icons/icon-notification-outline.svg'
 import iconProfile from '@/assets/icons/icon-profile-outline.svg'
 import iconRelationship from '@/assets/icons/icon-relationship-outline.svg'
 import iconSecurity from '@/assets/icons/icon-security-outline.svg'
-import iconTheme from '@/assets/icons/icon-theme-outline.svg'
 import { goPage } from '@/utils/nav.js'
-import { syncNotificationUnreadCount } from '@/utils/notification-indicator.js'
-import { subscribeNotificationSocket } from '@/utils/notification-socket.js'
-import { getCurrentThemePreset, getThemeSettings } from '@/utils/theme.js'
+import { getAvatarPresetMap, getProfile } from '@/utils/profile.js'
 import { useThemePage } from '@/utils/useThemePage.js'
 import BottomTab from '@/pages/components/BottomTab.vue'
 
-const TEXT = {
-  pageTitle: '我的设置',
-  defaultName: '浪漫用户',
-  defaultIntro: '个人资料与关系设置',
-  cityFallback: '城市未设置',
-  loverFallback: 'TA',
-  profileTitle: '我的资料',
-  profileKicker: '预览',
-  profileAction: '编辑详情',
-  relationshipTitle: '关系信息',
-  relationshipAction: '查看契约',
-  securityTitle: '账号安全',
-  dataTitle: '数据管理',
-  dataDesc: '备份、导出、同步',
-  messageTitle: '通知提醒',
-  themeTitle: '主题外观',
-  messageEmptyDesc: '暂无提醒',
-  readAll: '已查看',
-  logoutTitle: '退出当前登录',
-  footerCopy: '管理个人资料、关系信息与账号设置'
-}
-
+const APP_VERSION = '1.0.0'
+const DAY_MS = 24 * 60 * 60 * 1000
+const avatarPresetMap = getAvatarPresetMap()
 const { themeStyle } = useThemePage()
-const user = ref(null)
+
+const user = ref(getUser())
 const profile = ref(getProfile())
 const partnerProfile = ref(null)
-const avatarPresetMap = getAvatarPresetMap()
-const currentTheme = ref(getCurrentThemePreset(getThemeSettings()))
-const unreadNotificationCount = ref(0)
-const latestNotification = ref(null)
-let unsubscribeNotificationSocket = null
+const anniversaryCount = ref(0)
+const diaryCount = ref(0)
+const photoCount = ref(0)
+const wishCount = ref(0)
+const latestAlbumTitle = ref('')
+const cacheSizeText = ref('0 B')
 
 const isImageAvatar = computed(() => profile.value.avatarType === 'upload' && !!profile.value.avatarImage)
 const avatarImageUrl = computed(() => resolveAvatarUrl(profile.value.avatarImage))
-const partnerIsImageAvatar = computed(() => partnerProfile.value?.avatarType === 'upload' && !!partnerProfile.value?.avatarImage)
-const partnerAvatarImageUrl = computed(() => resolveAvatarUrl(partnerProfile.value?.avatarImage || ''))
 const avatarDisplay = computed(() => {
   if (profile.value.avatarType === 'preset') {
-    return avatarPresetMap[profile.value.avatarPreset] || '爱'
+    return avatarPresetMap[profile.value.avatarPreset] || '晴'
   }
-  return String(profile.value.avatarText || '').trim() || '爱'
+  return String(profile.value.avatarText || '').trim() || '晴'
 })
-const loverDisplay = computed(() => profile.value.loverNickname || TEXT.loverFallback)
-const loverAvatarDisplay = computed(() => {
-  if (partnerProfile.value) {
-    if (partnerProfile.value.avatarType === 'preset') {
-      return avatarPresetMap[partnerProfile.value.avatarPreset] || '爱'
-    }
-    const partnerAvatarText = String(partnerProfile.value.avatarText || '').trim()
-    if (partnerAvatarText) return partnerAvatarText.slice(0, 2)
+const avatarDisplayShort = computed(() => shrinkAvatarText(avatarDisplay.value, displayName.value))
+const partnerAvatarDisplay = computed(() => {
+  if (partnerProfile.value?.avatarType === 'preset') {
+    return avatarPresetMap[partnerProfile.value.avatarPreset] || '泽'
   }
-
-  const raw = String(partnerProfile.value?.nickname || '').trim() || String(profile.value.loverNickname || '').trim()
-  if (!raw) return '♥'
-  if (/^[A-Za-z]{2,}$/.test(raw)) return raw.slice(0, 1).toUpperCase()
-  return raw.slice(0, 1)
+  const partnerAvatarText = String(partnerProfile.value?.avatarText || '').trim()
+  if (partnerAvatarText) return partnerAvatarText
+  return String(partnerProfile.value?.nickname || '').trim() || String(profile.value.loverNickname || '').trim() || 'TA'
 })
-const partnerCallDisplay = computed(() => partnerProfile.value?.loverNickname || partnerProfile.value?.nickname || 'TA')
-const coupleTitle = computed(() => `${loverDisplay.value} × ${partnerCallDisplay.value}`)
-const togetherDaysText = computed(() => {
+const partnerAvatarDisplayShort = computed(() => shrinkAvatarText(partnerAvatarDisplay.value, partnerProfile.value?.nickname || partnerCallDisplay.value))
+const displayName = computed(() => String(profile.value.nickname || user.value?.nickname || '浪漫用户').trim() || '浪漫用户')
+const bioText = computed(() => String(profile.value.bio || '').trim() || '把日子过得细水长流')
+const loverDisplay = computed(() => String(profile.value.loverNickname || '').trim() || 'TA')
+const partnerCallDisplay = computed(() => String(partnerProfile.value?.loverNickname || partnerProfile.value?.nickname || '').trim() || 'TA')
+const togetherDaysValue = computed(() => {
   const startDate = parseDateOnly(profile.value.anniversaryDate)
-  if (!startDate) return '纪念日待设置'
-
+  if (!startDate) return 0
   const today = startOfDay(new Date())
-  const diffDays = Math.floor((today.getTime() - startDate.getTime()) / DAY_MS)
-  if (diffDays >= 0) return `已经一起 ${diffDays + 1} 天`
-  return `距离我们的纪念开始还有 ${Math.abs(diffDays)} 天`
+  return Math.max(0, Math.floor((today.getTime() - startDate.getTime()) / DAY_MS) + 1)
 })
-const coupleMoodLine = computed(() => {
-  const bio = String(profile.value.bio || '').trim()
-  if (bio && bio.length <= 20) return bio
-  return '资料待完善'
+const heroRelationText = computed(() => `${loverDisplay.value} 与 ${partnerCallDisplay.value}相恋`)
+const heroDayLabel = computed(() => togetherDaysValue.value > 0 ? `第 ${togetherDaysValue.value} 天` : '纪念日待设置')
+const versionText = computed(() => `爱意成笺 · v${APP_VERSION}`)
+const avatarSummaryText = computed(() => {
+  if (profile.value.avatarType === 'upload' && profile.value.avatarImage) return '当前：已上传头像'
+  if (profile.value.avatarType === 'text') return `当前：${String(profile.value.avatarText || '').trim() || '字符头像'}`
+  return '当前：渐变珊瑚色'
 })
-const anniversaryDisplay = computed(() => profile.value.anniversaryDate || '纪念日未设置')
-const relationshipTag = computed(() => profile.value.loverNickname || '点滴')
-const profileSummary = computed(() => {
-  const parts = []
-  if (profile.value.city) parts.push(`坐标：${profile.value.city}`)
-  if (profile.value.bio) parts.push(profile.value.bio)
-  return parts.join(' · ') || '城市未设置'
+const albumCoverText = computed(() => latestAlbumTitle.value ? `当前：${latestAlbumTitle.value}` : '选择展示封面图')
+const relationshipInfoText = computed(() => profile.value.anniversaryDate ? `${formatDotDate(parseDateOnly(profile.value.anniversaryDate))} 起` : '纪念日待设置')
+const anniversaryManageText = computed(() => anniversaryCount.value > 0 ? `已添加 ${anniversaryCount.value} 个纪念日` : '还没有纪念日')
+const callNameText = computed(() => `${loverDisplay.value} · ${partnerCallDisplay.value}`)
+const accountManageText = computed(() => profile.value.email ? '邮箱已绑定' : `登录账号：${user.value?.username || '未登录'}`)
+const privacyText = computed(() => isAdminUser(user.value) ? '基础信息模块已开放' : '控制内容可见范围')
+const loginBindingText = computed(() => {
+  const passwordReady = Boolean(profile.value.passwordConfigured) || String(profile.value.password || '').length >= 4
+  return `${user.value?.username || '未登录'} · ${passwordReady ? '已设置密码' : '待设置密码'}`
 })
-const relationshipSummary = computed(() => {
-  const parts = []
-  if (profile.value.defaultMeetingPlace) parts.push(`相遇：${profile.value.defaultMeetingPlace}`)
-  parts.push(`纪念日：${anniversaryDisplay.value}`)
-  return parts.join(' · ')
-})
-const securitySummary = computed(() => {
-  const passwordLength = Math.max(String(profile.value.password || '').length, 4)
-  return `密码、验证与设备管理 · ${'•'.repeat(passwordLength)}`
-})
-const notificationSummaryText = computed(() => {
-  const title = String(latestNotification.value?.title || '').trim()
-  const content = String(latestNotification.value?.content || '').trim()
-  if (title && content) return `${title} · ${content}`
-  return title || content || TEXT.messageEmptyDesc
+const syncText = computed(() => '恢复默认与重新同步资料')
+
+const sections = computed(() => [
+  {
+    key: 'profile',
+    title: '个人信息',
+    items: [
+      { key: 'profile', title: '个人资料', desc: '昵称、签名、邮箱', iconType: 'image', icon: iconProfile, tone: 'tone-salmon' },
+      { key: 'avatar', title: '我的头像', desc: avatarSummaryText.value, iconType: 'text', icon: '📷', tone: 'tone-soft' },
+      { key: 'album-cover', title: '相册封面', desc: albumCoverText.value, iconType: 'text', icon: '🖼', tone: 'tone-peach' }
+    ]
+  },
+  {
+    key: 'relationship',
+    title: '关系设置',
+    items: [
+      { key: 'relationship-info', title: '关系信息', desc: relationshipInfoText.value, iconType: 'image', icon: iconRelationship, tone: 'tone-gold' },
+      { key: 'anniversary-manage', title: '纪念日管理', desc: anniversaryManageText.value, iconType: 'text', icon: '📅', tone: 'tone-rose' },
+      { key: 'call-name', title: '我们的称呼', desc: callNameText.value, iconType: 'text', icon: '💞', tone: 'tone-mint' }
+    ]
+  },
+  {
+    key: 'security',
+    title: '账号与安全',
+    items: [
+      { key: 'account-manage', title: '账号管理', desc: accountManageText.value, iconType: 'image', icon: iconSecurity, tone: 'tone-peach' },
+      { key: 'privacy', title: '隐私设置', desc: privacyText.value, iconType: 'text', icon: '🔒', tone: 'tone-sand' },
+      { key: 'binding', title: '登录与密码', desc: loginBindingText.value, iconType: 'text', icon: '🔑', tone: 'tone-lilac' }
+    ]
+  },
+  {
+    key: 'data',
+    title: '数据管理',
+    items: [
+      { key: 'data-sync', title: '资料同步', desc: syncText.value, iconType: 'image', icon: iconData, tone: 'tone-mint', badge: '建议同步' },
+      { key: 'export', title: '导出手帐', desc: '导出为 PDF 或图片集', iconType: 'text', icon: '🗂', tone: 'tone-soft' },
+      { key: 'clear-cache', title: '清空本地缓存', desc: `释放 ${cacheSizeText.value}`, iconType: 'text', icon: '🧹', tone: 'tone-warm' }
+    ]
+  },
+  {
+    key: 'other',
+    title: '其他',
+    items: [
+      { key: 'about', title: '爱意成笺', desc: `v ${APP_VERSION} · 更新日志`, iconType: 'text', icon: '✦', tone: 'tone-peach' },
+      { key: 'notifications', title: '消息中心', desc: '查看提醒与互动消息', iconType: 'text', icon: '🔔', tone: 'tone-soft' },
+      { key: 'help', title: '帮助与反馈', desc: '遇到问题？来这里', iconType: 'text', icon: '💌', tone: 'tone-soft' }
+    ]
+  }
+])
+
+onShow(async () => {
+  if (!requireAuth()) return
+  user.value = getUser()
+  await loadMinePage()
 })
 
-const DAY_MS = 24 * 60 * 60 * 1000
+async function loadMinePage() {
+  const [profileResult, partnerResult, anniversaryResult, diaryHistoryResult, albumResult, planResult] = await Promise.allSettled([
+    fetchRemoteProfile(),
+    fetchPartnerProfile(),
+    fetchAnniversaryList('all'),
+    fetchDailySummaryHistory(),
+    fetchAlbumMemoryList(),
+    fetchRomanticPlanList('all')
+  ])
 
-function goHome() {
-  goPage('/pages/home/home')
+  profile.value = profileResult.status === 'fulfilled' ? profileResult.value : getProfile()
+  partnerProfile.value = partnerResult.status === 'fulfilled' ? partnerResult.value : null
+  anniversaryCount.value = anniversaryResult.status === 'fulfilled' && Array.isArray(anniversaryResult.value) ? anniversaryResult.value.length : 0
+  diaryCount.value = diaryHistoryResult.status === 'fulfilled'
+    ? diaryHistoryResult.value.reduce((sum, item) => sum + Math.max(Number(item.entryCount || 0), 1), 0)
+    : 0
+
+  if (albumResult.status === 'fulfilled') {
+    const list = Array.isArray(albumResult.value) ? albumResult.value : []
+    photoCount.value = list.reduce((sum, item) => sum + Math.max(Number(item.imageCount || 0), 0), 0)
+    latestAlbumTitle.value = String(list[0]?.title || '').trim()
+  } else {
+    photoCount.value = 0
+    latestAlbumTitle.value = ''
+  }
+
+  if (planResult.status === 'fulfilled') {
+    const list = Array.isArray(planResult.value) ? planResult.value : []
+    wishCount.value = list.reduce((sum, item) => {
+      const total = Number(item.totalItemCount || item.itemList?.length || 0)
+      return sum + Math.max(total, 0)
+    }, 0)
+  } else {
+    wishCount.value = 0
+  }
+
+  refreshCacheSize()
 }
 
-function goAccountSettings() {
-  goPage('/pages/account/profile')
+function handleRowClick(key) {
+  switch (key) {
+    case 'profile':
+    case 'account-manage':
+      goPage('/pages/account/profile')
+      return
+    case 'avatar':
+      goAvatarSettings()
+      return
+    case 'album-cover':
+      goPage('/pages/modules/album/index')
+      return
+    case 'relationship-info':
+    case 'call-name':
+      goPage('/pages/account/relationship')
+      return
+    case 'anniversary-manage':
+      goPage('/pages/modules/anniversary/index')
+      return
+    case 'privacy':
+      openComingSoon('隐私设置')
+      return
+    case 'binding':
+      goPage('/pages/account/security')
+      return
+    case 'data-sync':
+      goPage('/pages/account/data')
+      return
+    case 'export':
+      openComingSoon('导出手帐')
+      return
+    case 'clear-cache':
+      handleClearCache()
+      return
+    case 'about':
+      openComingSoon('爱意成笺')
+      return
+    case 'notifications':
+      goPage('/pages/modules/notifications/index')
+      return
+    case 'help':
+      openComingSoon('帮助与反馈')
+      return
+    default:
+      break
+  }
 }
 
 function goAvatarSettings() {
   goPage('/pages/account/avatar')
 }
 
-function goRelationshipSettings() {
-  goPage('/pages/account/relationship')
+function openComingSoon(title) {
+  goPage(`/pages/modules/coming-soon/index?title=${encodeURIComponent(title)}`)
 }
 
-function goSecuritySettings() {
-  goPage('/pages/account/security')
+function handleClearCache() {
+  uni.showModal({
+    title: '清空本地缓存',
+    content: '这不会退出当前登录，也不会删除服务端数据',
+    success: (result) => {
+      if (!result.confirm) return
+      const keys = getClearableCacheKeys()
+      const bytes = estimateCacheBytes(keys)
+      keys.forEach((key) => uni.removeStorageSync(key))
+      refreshCacheSize()
+      uni.showToast({
+        title: bytes > 0 ? `已释放 ${formatBytes(bytes)}` : '本地缓存已清空',
+        icon: 'none'
+      })
+    }
+  })
 }
 
-function goDataSettings() {
-  goPage('/pages/account/data')
+function handleLogout() {
+  uni.showModal({
+    title: '退出登录',
+    content: '确定退出当前账号吗',
+    success: async (result) => {
+      if (!result.confirm) return
+      await logout()
+      uni.reLaunch({ url: '/pages/login/login' })
+    }
+  })
 }
 
-function goThemeSettings() {
-  goPage('/pages/theme/index')
+function refreshCacheSize() {
+  cacheSizeText.value = formatBytes(estimateCacheBytes(getClearableCacheKeys()))
 }
 
-function goNotifications() {
-  goPage('/pages/modules/notifications/index')
+function getClearableCacheKeys() {
+  const username = String(user.value?.username || '').trim()
+  const userThemeKey = username ? `romantic_theme_settings_${username}` : 'romantic_theme_settings'
+  const protectedKeys = new Set(['romantic_token', 'romantic_user', 'romantic_profile', userThemeKey, 'romantic_theme_settings'])
+  const keys = uni.getStorageInfoSync().keys || []
+  return keys.filter((key) => String(key || '').startsWith('romantic_') && !protectedKeys.has(key))
 }
 
-async function handleLogout() {
-  await logout()
-  uni.reLaunch({ url: '/pages/login/login' })
+function estimateCacheBytes(keys) {
+  return keys.reduce((sum, key) => sum + getStorageByteLength(uni.getStorageSync(key)), 0)
 }
 
-async function syncProfileFromServer() {
+function getStorageByteLength(value) {
   try {
-    profile.value = await fetchRemoteProfile()
+    const text = JSON.stringify(value ?? '') || ''
+    return unescape(encodeURIComponent(text)).length
   } catch (error) {
-    profile.value = getProfile()
+    return 0
   }
 }
 
-async function syncPartnerProfileFromServer() {
-  try {
-    partnerProfile.value = await fetchPartnerProfile()
-  } catch (error) {
-    partnerProfile.value = null
-  }
-}
-
-async function loadUnreadNotificationCount() {
-  try {
-    unreadNotificationCount.value = Number(await fetchUnreadNotificationCount())
-    syncNotificationUnreadCount(unreadNotificationCount.value)
-  } catch (error) {
-    unreadNotificationCount.value = 0
-    syncNotificationUnreadCount(0)
-  }
-}
-
-async function loadLatestNotification() {
-  try {
-    latestNotification.value = await fetchLatestNotification()
-  } catch (error) {
-    latestNotification.value = null
-  }
-}
-
-function applyRealtimeNotificationEvent(event) {
-  unreadNotificationCount.value = Number(event?.unreadCount || 0)
-  syncNotificationUnreadCount(unreadNotificationCount.value)
-  latestNotification.value = event?.latestNotification || null
+function shrinkAvatarText(value, fallback) {
+  const raw = String(value || fallback || '').trim()
+  if (!raw) return 'TA'
+  if (/^[A-Za-z]{2,}$/.test(raw)) return raw.slice(0, 1).toUpperCase()
+  return raw.slice(0, 1)
 }
 
 function parseDateOnly(value) {
@@ -338,583 +392,417 @@ function parseDateOnly(value) {
 }
 
 function startOfDay(date) {
-  const current = new Date(date)
-  current.setHours(0, 0, 0, 0)
-  return current
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
 }
 
-onShow(async () => {
-  if (!requireAuth()) return
-  if (!unsubscribeNotificationSocket) {
-    unsubscribeNotificationSocket = subscribeNotificationSocket(applyRealtimeNotificationEvent)
-  }
-  user.value = getUser()
-  await Promise.all([
-    syncProfileFromServer(),
-    syncPartnerProfileFromServer(),
-    loadUnreadNotificationCount(),
-    loadLatestNotification()
-  ])
-  currentTheme.value = getCurrentThemePreset(getThemeSettings())
-})
+function formatDotDate(date) {
+  if (!date) return '未设置'
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}.${month}.${day}`
+}
 
-onHide(() => {
-  if (unsubscribeNotificationSocket) {
-    unsubscribeNotificationSocket()
-    unsubscribeNotificationSocket = null
-  }
-})
-
-onUnload(() => {
-  if (unsubscribeNotificationSocket) {
-    unsubscribeNotificationSocket()
-    unsubscribeNotificationSocket = null
-  }
-})
+function formatBytes(bytes) {
+  const size = Math.max(Number(bytes || 0), 0)
+  if (size < 1024) return `${size} B`
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(size >= 10 * 1024 ? 0 : 1)} KB`
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`
+}
 </script>
 
 <style scoped>
-.mine-page {
-  --mine-surface: rgba(255, 255, 255, 0.92);
-  --mine-surface-soft: rgba(255, 255, 255, 0.78);
-  --mine-stroke: rgba(255, 255, 255, 0.62);
-  --mine-text-main: var(--app-color-text-strong);
-  --mine-text-sub: var(--app-color-text);
-  position: relative;
-  overflow: hidden;
-  background: var(--app-page-gradient-main);
-}
-
-.mine-bg {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(12rpx);
-  opacity: 0.68;
-}
-
-.mine-bg-a {
-  width: 240rpx;
-  height: 240rpx;
-  top: 180rpx;
-  right: -70rpx;
-  background: color-mix(in srgb, var(--app-page-glow-strong) 64%, #fff2f6 36%);
-}
-
-.mine-bg-b {
-  width: 220rpx;
-  height: 220rpx;
-  left: -80rpx;
-  bottom: 280rpx;
-  background: color-mix(in srgb, var(--app-page-glow-mid) 58%, #fff8fb 42%);
-}
-
-.mine-header,
-.mine-hero,
-.mine-feature-grid,
-.mine-menu-stack,
-.mine-logout-shell,
-.mine-footer {
-  position: relative;
-  z-index: 2;
-}
-
-.mine-header {
-  display: grid;
-  grid-template-columns: 76rpx 1fr 76rpx;
-  align-items: center;
-  margin-top: 8rpx;
-}
-
-.shell-btn,
-.mine-header-placeholder {
-  width: 68rpx;
-  height: 68rpx;
-  border-radius: 50%;
-}
-
-.shell-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.72);
-  box-shadow: 0 10rpx 24rpx rgba(255, 128, 160, 0.1);
-}
-
-.shell-btn-icon {
-  font-size: 40rpx;
-  line-height: 1;
-  color: var(--app-color-primary);
-  margin-top: -4rpx;
-}
-
-.mine-header-title {
-  text-align: center;
-  font-size: 40rpx;
-  font-weight: 600;
-  color: var(--app-color-primary);
-  letter-spacing: 2rpx;
-}
-
-.mine-hero {
-  margin-top: 24rpx;
-  padding: 34rpx 28rpx 36rpx;
-  border-radius: 42rpx;
-  background:
-    radial-gradient(circle at top center, rgba(255, 255, 255, 0.74), transparent 46%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(255, 249, 251, 0.94));
-  box-shadow: var(--app-shadow-card);
-  text-align: center;
-  overflow: hidden;
-  border: 2rpx solid rgba(255, 255, 255, 0.62);
-}
-
-.mine-hero-glow {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(18rpx);
-}
-
-.mine-hero-glow-a {
-  width: 220rpx;
-  height: 220rpx;
-  top: -56rpx;
-  right: -44rpx;
-  background: rgba(128, 232, 221, 0.18);
-}
-
-.mine-hero-glow-b {
-  width: 190rpx;
-  height: 190rpx;
-  left: -30rpx;
-  bottom: -42rpx;
-  background: rgba(255, 191, 214, 0.24);
-}
-
-.mine-hero-badge,
-.mine-avatar-pair,
-.mine-avatar-tip,
-.mine-name,
-.mine-days,
-.mine-intro {
-  position: relative;
-  z-index: 1;
-}
-
-.mine-hero-badge {
-  width: fit-content;
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 8rpx 20rpx;
-  border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.76);
-  color: #87a5a1;
-  font-size: 20rpx;
-  font-weight: 700;
-  letter-spacing: 2rpx;
-}
-
-.mine-avatar-pair {
-  margin-top: 26rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 18rpx;
-}
-
-.mine-avatar-shell {
-  width: 132rpx;
-  height: 132rpx;
-  border-radius: 50%;
-  overflow: hidden;
-  box-shadow:
-    0 18rpx 30rpx rgba(255, 176, 204, 0.18),
-    inset 0 0 0 6rpx rgba(255, 255, 255, 0.68);
-  background: rgba(255, 255, 255, 0.9);
-  flex-shrink: 0;
-}
-
-.mine-avatar-shell-main {
-  border: 2rpx solid rgba(133, 219, 211, 0.32);
-}
-
-.mine-avatar-shell-partner {
-  border: 2rpx solid rgba(255, 198, 210, 0.42);
-  background: linear-gradient(135deg, #ffe4ec, #fff8fa);
-}
-
-.mine-avatar-image,
-.mine-avatar-text {
-  width: 100%;
-  height: 100%;
-}
-
-.mine-avatar-text {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 50rpx;
-  font-weight: 700;
-  color: #fff;
-  background: var(--app-gradient-primary);
-}
-
-.mine-avatar-partner-text {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 46rpx;
-  font-weight: 700;
-  color: #d88197;
-}
-
-.mine-avatar-bridge {
-  position: relative;
-  width: 44rpx;
-  height: 12rpx;
-  border-radius: 999rpx;
-  background: linear-gradient(90deg, rgba(145, 228, 218, 0.55), rgba(255, 191, 214, 0.65));
-}
-
-.mine-avatar-bridge-core {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 36rpx;
-  height: 36rpx;
-  margin-left: -18rpx;
-  margin-top: -18rpx;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.94);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ee9ab2;
-  font-size: 18rpx;
-  box-shadow: 0 8rpx 16rpx rgba(255, 173, 195, 0.18);
-}
-
-.mine-avatar-tip {
-  margin-top: 14rpx;
-  font-size: 22rpx;
-  color: color-mix(in srgb, var(--app-color-primary-strong) 62%, #b89ba5 38%);
-}
-
-.mine-name {
-  margin-top: 22rpx;
-  font-size: 46rpx;
-  line-height: 1.18;
-  font-weight: 700;
-  color: var(--mine-text-main);
-}
-
-.mine-days {
-  margin-top: 14rpx;
-  font-size: 26rpx;
-  font-weight: 700;
-  color: #67bdb7;
-}
-
-.mine-intro {
-  margin-top: 16rpx;
-  font-size: 24rpx;
-  line-height: 1.7;
-  color: var(--mine-text-sub);
-}
-
-.mine-feature-stack {
-  margin-top: 26rpx;
-  display: grid;
-  gap: 20rpx;
-}
-
-.mine-feature-card {
-  min-height: 248rpx;
-  padding: 28rpx 28rpx 30rpx;
-  border-radius: 36rpx;
-  box-shadow: var(--app-shadow-card);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(255, 250, 252, 0.95));
-  position: relative;
-  overflow: hidden;
-  border: 2rpx solid rgba(255, 255, 255, 0.48);
-}
-
-.mine-feature-watermark {
-  position: absolute;
-  right: 24rpx;
-  top: 20rpx;
-  font-size: 86rpx;
-  line-height: 1;
-  font-weight: 300;
-  letter-spacing: -2rpx;
-  text-transform: lowercase;
-  color: color-mix(in srgb, var(--app-color-primary-soft) 44%, #ffffff 56%);
-  opacity: 0.16;
-  pointer-events: none;
-}
-
-.relationship-card-surface {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 246, 248, 0.95));
-  box-shadow:
-    var(--app-shadow-card),
-    inset 0 0 0 2rpx rgba(255, 171, 186, 0.22);
-}
-
-.mine-feature-head {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-  position: relative;
-  z-index: 1;
-}
-
-.mine-feature-icon {
-  width: 62rpx;
-  height: 62rpx;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26rpx;
-  font-weight: 700;
-  color: var(--app-color-primary-strong);
-  box-shadow: inset 0 0 0 2rpx rgba(255, 255, 255, 0.36);
-}
-
-.mine-feature-icon-svg {
-  width: 34rpx;
-  height: 34rpx;
-  display: block;
-}
-
-.accent-profile {
-  background: color-mix(in srgb, var(--app-color-primary-soft) 26%, #fff3f7 74%);
-}
-
-.accent-relationship {
-  background: color-mix(in srgb, #ffb7a3 34%, #fff4f6 66%);
-}
-
-.mine-feature-title {
-  font-size: 36rpx;
-  font-weight: 700;
-  color: var(--mine-text-main);
-}
-
-.mine-feature-kicker {
-  position: relative;
-  z-index: 1;
-  margin-top: 24rpx;
-  font-size: 22rpx;
-  color: color-mix(in srgb, var(--app-color-primary-strong) 68%, #b98f9c 32%);
-}
-
-.mine-feature-summary {
-  position: relative;
-  z-index: 1;
-  margin-top: 12rpx;
-  font-size: 26rpx;
-  line-height: 1.75;
-  color: var(--mine-text-main);
-}
-
-.mine-feature-action {
-  position: relative;
-  z-index: 1;
-  margin-top: 24rpx;
-  display: inline-flex;
-  align-items: center;
-  gap: 8rpx;
-  font-size: 26rpx;
-  font-weight: 700;
-  color: var(--app-color-primary-strong);
-}
-
-.mine-feature-action::after {
-  content: '›';
-  font-size: 28rpx;
-  line-height: 1;
-}
-
-.mine-menu-stack {
-  margin-top: 20rpx;
-  display: grid;
-  gap: 18rpx;
-}
-
-.mine-list-card {
-  min-height: 116rpx;
-  padding: 20rpx 22rpx;
-  border-radius: 30rpx;
-  background: linear-gradient(180deg, var(--mine-surface), var(--mine-surface-soft));
-  box-shadow:
-    var(--app-shadow-soft),
-    inset 0 0 0 2rpx var(--mine-stroke);
-  display: flex;
-  align-items: center;
-  gap: 18rpx;
-}
-
-.mine-list-icon {
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: 50%;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.84);
-  color: var(--mine-text-main);
-  font-size: 28rpx;
-  font-weight: 600;
-}
-
-.mine-list-icon-svg {
-  width: 36rpx;
-  height: 36rpx;
-  display: block;
-}
-
-.mine-list-icon-dot {
-  position: relative;
-  overflow: visible;
-}
-
-.mine-list-dot {
-  position: absolute;
-  top: -4rpx;
-  right: -2rpx;
-  width: 16rpx;
-  height: 16rpx;
-  border-radius: 50%;
-  background: linear-gradient(180deg, #ff9e9a, #ff6e82);
-  box-shadow: 0 0 0 4rpx rgba(255, 255, 255, 0.9);
-}
-
-.mine-list-copy {
-  flex: 1;
-  min-width: 0;
-}
-
-.mine-list-title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: var(--mine-text-main);
-}
-
-.mine-list-desc {
-  margin-top: 8rpx;
-  font-size: 22rpx;
-  line-height: 1.65;
-  color: var(--mine-text-sub);
-}
-
-.mine-list-side {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 14rpx;
-}
-
-.mine-list-status {
-  min-height: 48rpx;
-  padding: 0 16rpx;
-  border-radius: 999rpx;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--mine-text-sub);
-  font-size: 20rpx;
-  font-weight: 700;
-}
-
-.mine-list-status.active {
-  background: color-mix(in srgb, var(--app-color-primary-soft) 18%, #fff4f7 82%);
-  color: var(--app-color-primary-strong);
-}
-
-.mine-list-arrow {
-  width: 18rpx;
-  height: 18rpx;
-  border-top: 4rpx solid color-mix(in srgb, var(--app-color-primary-strong) 58%, #c8a2ae 42%);
-  border-right: 4rpx solid color-mix(in srgb, var(--app-color-primary-strong) 58%, #c8a2ae 42%);
-  transform: rotate(45deg);
-  border-radius: 2rpx;
-  box-sizing: border-box;
-}
-
-.surface-press {
-  transform: translateY(2rpx) scale(0.988);
-  box-shadow: 0 10rpx 24rpx rgba(255, 128, 160, 0.08);
-}
-
-.mine-logout-shell {
-  margin-top: 34rpx;
-}
-
-.mine-logout-btn {
-  width: 100%;
-  height: 96rpx;
-  border: none;
-  border-radius: 32rpx;
-  background: rgba(255, 255, 255, 0.76);
-  box-shadow:
-    var(--app-shadow-soft),
-    inset 0 0 0 2rpx color-mix(in srgb, var(--app-color-primary-soft) 26%, #f7d8e1 74%);
-  color: var(--mine-text-main);
-  font-size: 30rpx;
-  font-weight: 500;
-}
-
-.mine-logout-btn::after {
-  border: none;
-}
-
-.mine-footer {
-  margin-top: 34rpx;
-  padding: 0 18rpx;
-  text-align: center;
-}
-
-.mine-footer-copy {
-  font-size: 22rpx;
-  line-height: 1.8;
-  color: color-mix(in srgb, var(--mine-text-sub) 68%, #b89ba5 32%);
-}
-
-.mine-footer-dots {
-  margin-top: 12rpx;
-  display: inline-flex;
-  gap: 10rpx;
-  align-items: center;
-  justify-content: center;
-}
-
-.mine-footer-dot {
-  width: 10rpx;
-  height: 10rpx;
-  border-radius: 50%;
-  background: rgba(255, 179, 199, 0.58);
-}
-
-.mine-footer-dot.active {
-  background: var(--app-color-primary);
-}
-
-@media screen and (max-width: 520px) {
-  .mine-feature-card {
-    min-height: 228rpx;
+  .mine-page {
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at top, rgba(255, 255, 255, 0.9), rgba(255, 245, 242, 0.92)),
+      linear-gradient(180deg, #fff6f1 0%, #ffecdf 100%);
   }
 
-  .mine-list-card {
-    border-radius: 28rpx;
-    align-items: flex-start;
+  .mine-bg {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(18rpx);
+    pointer-events: none;
   }
 
-  .mine-list-side {
-    align-self: center;
+  .mine-bg-a {
+    width: 360rpx;
+    height: 360rpx;
+    right: -40rpx;
+    top: -20rpx;
+    background: rgba(244, 190, 175, 0.24);
   }
-}
+
+  .mine-bg-b {
+    width: 300rpx;
+    height: 300rpx;
+    left: -100rpx;
+    top: 420rpx;
+    background: rgba(240, 208, 196, 0.2);
+  }
+
+  .mine-bg-c {
+    width: 260rpx;
+    height: 260rpx;
+    right: 30rpx;
+    top: 720rpx;
+    background: rgba(232, 196, 160, 0.16);
+  }
+
+  .mine-bg-d {
+    width: 240rpx;
+    height: 240rpx;
+    left: -20rpx;
+    bottom: 160rpx;
+    background: rgba(242, 200, 184, 0.16);
+  }
+
+  .profile-hero,
+  .mine-section,
+  .logout-shell,
+  .version-shell {
+    position: relative;
+    z-index: 2;
+  }
+
+  .profile-hero {
+    overflow: hidden;
+    margin-top: 6rpx;
+    border-radius: 42rpx;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 249, 246, 0.96));
+    box-shadow: 0 18rpx 42rpx rgba(215, 166, 142, 0.16);
+    border: 2rpx solid rgba(255, 255, 255, 0.92);
+  }
+
+  .profile-hero-strip {
+    height: 168rpx;
+    background: linear-gradient(180deg, #f3cfbd 0%, #efc0a8 100%);
+  }
+  .profile-hero-inner {
+    position: relative;
+    margin-top: -80rpx;
+    padding: 0 42rpx 34rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .profile-avatar-shell {
+    width: 160rpx;
+    height: 160rpx;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(140deg, #e8887a 0%, #d4635a 100%);
+    box-shadow: 0 12rpx 34rpx rgba(212, 99, 90, 0.28);
+  }
+
+  .profile-avatar-image {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+  }
+
+  .profile-avatar-text {
+    font-size: 64rpx;
+    line-height: 1;
+    color: #fff8f4;
+    font-family: 'Times New Roman', serif;
+  }
+
+  .profile-name {
+    margin-top: 24rpx;
+    font-size: 50rpx;
+    line-height: 1.1;
+    letter-spacing: 6rpx;
+    color: #6b3f32;
+    font-family: 'Times New Roman', serif;
+  }
+
+  .profile-bio {
+    margin-top: 14rpx;
+    font-size: 24rpx;
+    line-height: 1.5;
+    color: #9b7060;
+    text-align: center;
+  }
+
+  .profile-divider {
+    width: 100%;
+    margin-top: 28rpx;
+    display: flex;
+    align-items: center;
+    gap: 14rpx;
+  }
+
+  .profile-divider-line {
+    flex: 1;
+    height: 2rpx;
+    background: linear-gradient(90deg, rgba(201, 168, 122, 0), rgba(201, 168, 122, 0.35), rgba(201, 168, 122, 0));
+  }
+
+  .profile-divider-spark {
+    flex-shrink: 0;
+    font-size: 16rpx;
+    letter-spacing: 4rpx;
+    color: #c9a87a;
+    opacity: 0.7;
+  }
+
+  .profile-relationship-chip {
+    margin-top: 30rpx;
+    min-height: 82rpx;
+    padding: 0 24rpx;
+    border-radius: 999rpx;
+    display: flex;
+    align-items: center;
+    gap: 12rpx;
+    background: rgba(252, 236, 224, 0.6);
+    border: 2rpx solid rgba(220, 160, 130, 0.2);
+  }
+
+  .profile-chip-avatars {
+    position: relative;
+    width: 52rpx;
+    height: 26rpx;
+    flex-shrink: 0;
+  }
+
+  .profile-chip-avatar {
+    position: absolute;
+    top: 0;
+    width: 26rpx;
+    height: 26rpx;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14rpx;
+    color: #fff8f4;
+    border: 2rpx solid rgba(255, 248, 244, 0.9);
+    font-family: 'Times New Roman', serif;
+  }
+
+  .profile-chip-avatar-main {
+    left: 0;
+    background: linear-gradient(140deg, #e8887a 0%, #d4635a 100%);
+    z-index: 2;
+  }
+
+  .profile-chip-avatar-partner {
+    right: 0;
+    background: linear-gradient(140deg, #d4a87a 0%, #b88860 100%);
+  }
+
+  .profile-chip-copy {
+    font-size: 22rpx;
+    color: #9b7060;
+    letter-spacing: 1rpx;
+  }
+
+  .profile-chip-days {
+    font-size: 22rpx;
+    color: #e07b6a;
+    font-family: 'Times New Roman', serif;
+  }
+
+  .profile-stats {
+    width: 100%;
+    margin-top: 30rpx;
+    display: flex;
+    justify-content: center;
+    gap: 48rpx;
+  }
+
+  .profile-stat {
+    min-width: 80rpx;
+    text-align: center;
+  }
+
+  .profile-stat-value {
+    font-size: 38rpx;
+    line-height: 1.05;
+    color: #6b3f32;
+    font-family: 'Times New Roman', serif;
+  }
+
+  .profile-stat-label {
+    margin-top: 8rpx;
+    font-size: 20rpx;
+    color: #b8896e;
+  }
+
+  .mine-section {
+    margin-top: 28rpx;
+  }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 12rpx;
+    padding: 0 6rpx 14rpx;
+  }
+
+  .section-label-bar {
+    width: 6rpx;
+    height: 24rpx;
+    border-radius: 999rpx;
+    background: rgba(201, 168, 122, 0.55);
+  }
+
+  .section-label-text {
+    font-size: 22rpx;
+    letter-spacing: 4rpx;
+    color: #b8896e;
+  }
+
+  .section-card {
+    overflow: hidden;
+    border-radius: 34rpx;
+    background: rgba(255, 250, 246, 0.82);
+    box-shadow: 0 16rpx 34rpx rgba(180, 80, 60, 0.07);
+    border: 2rpx solid rgba(220, 160, 130, 0.14);
+  }
+
+  .setting-row {
+    min-height: 126rpx;
+    padding: 0 24rpx;
+    display: flex;
+    align-items: center;
+    gap: 16rpx;
+    border-bottom: 2rpx solid rgba(220, 160, 130, 0.1);
+    transition: transform 0.18s ease;
+  }
+
+  .setting-row-last {
+    border-bottom: none;
+  }
+
+  .setting-icon {
+    width: 64rpx;
+    height: 64rpx;
+    border-radius: 20rpx;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tone-salmon { background: rgba(232, 150, 126, 0.12); }
+  .tone-soft { background: rgba(255, 232, 222, 0.78); }
+  .tone-peach { background: rgba(243, 212, 192, 0.42); }
+  .tone-gold { background: rgba(212, 168, 122, 0.14); }
+  .tone-rose { background: rgba(232, 150, 126, 0.14); }
+  .tone-mint { background: rgba(156, 184, 144, 0.12); }
+  .tone-sand { background: rgba(201, 168, 122, 0.12); }
+  .tone-lilac { background: rgba(205, 194, 229, 0.18); }
+  .tone-warm { background: rgba(255, 221, 198, 0.45); }
+
+  .setting-icon-image {
+    width: 32rpx;
+    height: 32rpx;
+  }
+
+  .setting-icon-text {
+    font-size: 30rpx;
+    line-height: 1;
+  }
+
+  .setting-copy {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .setting-title {
+    font-size: 28rpx;
+    line-height: 1.35;
+    color: #6b3f32;
+    font-weight: 600;
+  }
+
+  .setting-desc {
+    margin-top: 8rpx;
+    font-size: 22rpx;
+    line-height: 1.5;
+    color: #b8896e;
+  }
+
+  .setting-badge {
+    flex-shrink: 0;
+    padding: 8rpx 16rpx;
+    border-radius: 999rpx;
+    background: rgba(255, 236, 224, 0.9);
+    color: #d07b62;
+    font-size: 20rpx;
+  }
+
+  .setting-arrow {
+    width: 18rpx;
+    height: 18rpx;
+    flex-shrink: 0;
+    border-top: 3rpx solid rgba(201, 168, 122, 0.8);
+    border-right: 3rpx solid rgba(201, 168, 122, 0.8);
+    transform: rotate(45deg);
+  }
+
+  .logout-shell {
+    margin-top: 28rpx;
+  }
+
+  .logout-btn {
+    width: 100%;
+    height: 102rpx;
+    padding: 0;
+    border: none;
+    border-radius: 32rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(200, 70, 60, 0.05);
+    color: rgba(180, 60, 50, 0.78);
+    font-size: 28rpx;
+    letter-spacing: 8rpx;
+    line-height: 1;
+    font-weight: 600;
+    box-shadow: none;
+  }
+
+  .logout-btn::after {
+    border: 2rpx solid rgba(200, 70, 60, 0.14);
+    border-radius: 32rpx;
+  }
+
+  .version-shell {
+    padding: 28rpx 0 8rpx;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .version-text {
+    font-size: 20rpx;
+    letter-spacing: 2rpx;
+    color: rgba(201, 168, 122, 0.82);
+  }
+
+  .surface-press {
+    transform: translateY(2rpx) scale(0.992);
+  }
+
+  @media screen and (max-width: 520px) {
+    .profile-name {
+      font-size: 46rpx;
+    }
+
+    .profile-stats {
+      gap: 34rpx;
+    }
+
+    .setting-row {
+      min-height: 118rpx;
+    }
+  }
 </style>
