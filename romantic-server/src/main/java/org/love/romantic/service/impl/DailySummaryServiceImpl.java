@@ -23,6 +23,7 @@ import org.love.romantic.model.DailySummaryEntryMediaResponse;
 import org.love.romantic.model.DailySummaryEntryRequest;
 import org.love.romantic.model.DailySummaryEntryResponse;
 import org.love.romantic.model.DailySummaryHistoryItemResponse;
+import org.love.romantic.model.DailySummaryPageViewResponse;
 import org.love.romantic.model.DailySummaryResponse;
 import org.love.romantic.model.InteractionCommentRequest;
 import org.love.romantic.model.InteractionCommentResponse;
@@ -274,45 +275,28 @@ public class DailySummaryServiceImpl implements DailySummaryService {
     private DailySummaryResponse buildSummaryResponse(LocalDate date) {
         DailySummary summary = findByDate(date);
         List<DailySummaryHistoryItemResponse> historyList = buildHistoryResponses();
-        if (summary == null) {
-            return DailySummaryResponse.builder()
-                    .id(null)
-                    .summaryDate(formatDate(date))
-                    .mood(DEFAULT_MOOD)
-                    .content("")
-                    .hasRecord(false)
-                    .entryCount(0)
-                    .creatorUsername("")
-                    .updaterUsername("")
-                    .updatedAt("")
-                    .likeCount(0L)
-                    .likedByCurrentUser(false)
-                    .likeUsers(new ArrayList<>())
-                    .commentList(new ArrayList<>())
-                    .entryList(new ArrayList<>())
-                    .historyList(historyList)
-                    .build();
-        }
-
         Map<String, String> nicknameMap = buildNicknameMap();
-        List<DailySummaryEntryResponse> entryList = listEntryResponses(summary.getId(), nicknameMap);
+        List<DailySummaryEntryResponse> entryList = summary == null
+                ? new ArrayList<>()
+                : listEntryResponses(summary.getId(), nicknameMap);
 
         return DailySummaryResponse.builder()
-                .id(summary.getId())
-                .summaryDate(formatDate(summary.getSummaryDate()))
-                .mood(normalizeMood(summary.getMood()))
-                .content(defaultIfBlank(summary.getContent(), ""))
+                .id(summary == null ? null : summary.getId())
+                .summaryDate(formatDate(summary == null ? date : summary.getSummaryDate()))
+                .mood(summary == null ? DEFAULT_MOOD : normalizeMood(summary.getMood()))
+                .content(summary == null ? "" : defaultIfBlank(summary.getContent(), ""))
                 .hasRecord(!entryList.isEmpty())
                 .entryCount(entryList.size())
-                .creatorUsername(defaultIfBlank(summary.getCreatorUsername(), ""))
-                .updaterUsername(defaultIfBlank(summary.getUpdatedBy(), ""))
-                .updatedAt(formatDateTime(summary.getUpdatedAt()))
+                .creatorUsername(summary == null ? "" : defaultIfBlank(summary.getCreatorUsername(), ""))
+                .updaterUsername(summary == null ? "" : defaultIfBlank(summary.getUpdatedBy(), ""))
+                .updatedAt(summary == null ? "" : formatDateTime(summary.getUpdatedAt()))
                 .likeCount(0L)
                 .likedByCurrentUser(false)
                 .likeUsers(new ArrayList<>())
                 .commentList(new ArrayList<>())
                 .entryList(entryList)
                 .historyList(historyList)
+                .pageView(buildPageViewResponse(date, entryList, nicknameMap))
                 .build();
     }
 
@@ -536,6 +520,155 @@ public class DailySummaryServiceImpl implements DailySummaryService {
                         .updatedAt(formatDateTime(item.getUpdatedAt()))
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    private DailySummaryPageViewResponse buildPageViewResponse(LocalDate summaryDate,
+                                                               List<DailySummaryEntryResponse> entryList,
+                                                               Map<String, String> nicknameMap) {
+        String currentUsername = AuthContext.getRequiredUsername();
+        Map<String, CoupleProfile> profileMap = buildProfileMap();
+        CoupleProfile selfProfile = profileMap.get(currentUsername);
+        CoupleProfile partnerProfile = resolvePartnerProfile(currentUsername, profileMap);
+        String selfDisplayName = resolveProfileDisplayName(selfProfile, currentUsername, nicknameMap);
+        String partnerDisplayName = resolvePartnerDisplayName(selfProfile, partnerProfile, nicknameMap);
+        Integer relationshipDays = calculateRelationshipDays(summaryDate, selfProfile == null ? null : selfProfile.getAnniversaryDate());
+        String relationshipText = relationshipDays > 0
+                ? String.format("与%s在一起的第 %d 天", partnerDisplayName, relationshipDays)
+                : "把今天写成一页温柔的小记";
+        String responseState = "waiting";
+        String responseDisplayName = partnerDisplayName;
+        String responseMetaText = "还没有新的回应";
+        String responseContent = "今天的记录已经放进小计里了，等对方来接住这一页日常";
+        Long responseEntryId = entryList.isEmpty() ? null : entryList.get(0).getId();
+        Long responseLikeCount = 0L;
+        InteractionCommentResponse latestComment = null;
+        DailySummaryEntryResponse latestCommentEntry = null;
+
+        for (DailySummaryEntryResponse entry : entryList) {
+            for (InteractionCommentResponse comment : entry.getCommentList()) {
+                String commenterUsername = defaultIfBlank(comment.getCommenterUsername(), "");
+                if (!StringUtils.hasText(commenterUsername) || commenterUsername.equalsIgnoreCase(currentUsername)) {
+                    continue;
+                }
+                if (latestComment == null || compareDateTime(defaultIfBlank(comment.getUpdatedAt(), comment.getCreatedAt()), defaultIfBlank(latestComment.getUpdatedAt(), latestComment.getCreatedAt())) > 0) {
+                    latestComment = comment;
+                    latestCommentEntry = entry;
+                }
+            }
+        }
+
+        if (latestComment != null) {
+            responseState = "commented";
+            responseDisplayName = defaultIfBlank(latestComment.getCommenterNickname(), resolveNickname(latestComment.getCommenterUsername(), nicknameMap));
+            responseMetaText = buildResponseMetaText(defaultIfBlank(latestComment.getUpdatedAt(), latestComment.getCreatedAt()));
+            responseContent = defaultIfBlank(latestComment.getContent(), responseContent);
+            responseEntryId = latestCommentEntry == null ? responseEntryId : latestCommentEntry.getId();
+            responseLikeCount = latestCommentEntry == null ? 0L : latestCommentEntry.getLikeCount();
+        } else {
+            for (DailySummaryEntryResponse entry : entryList) {
+                boolean hasPartnerLike = entry.getLikeUsers().stream()
+                        .anyMatch(item -> StringUtils.hasText(item.getUsername()) && !item.getUsername().equalsIgnoreCase(currentUsername));
+                if (!hasPartnerLike) {
+                    continue;
+                }
+                responseState = "liked";
+                responseDisplayName = partnerDisplayName;
+                responseMetaText = "今天 · 收到爱心";
+                responseContent = String.format("%s已经给今天点了赞，可以继续留下一句回应", partnerDisplayName);
+                responseEntryId = entry.getId();
+                responseLikeCount = entry.getLikeCount();
+                break;
+            }
+        }
+
+        return DailySummaryPageViewResponse.builder()
+                .selfDisplayName(selfDisplayName)
+                .partnerDisplayName(partnerDisplayName)
+                .relationshipDays(relationshipDays)
+                .relationshipText(relationshipText)
+                .mediaCount(countMedia(entryList))
+                .responseState(responseState)
+                .responseDisplayName(responseDisplayName)
+                .responseMetaText(responseMetaText)
+                .responseContent(responseContent)
+                .responseEntryId(responseEntryId)
+                .responseLikeCount(responseLikeCount)
+                .build();
+    }
+
+    private Map<String, CoupleProfile> buildProfileMap() {
+        return coupleProfileMapper.selectList(null).stream()
+                .filter(item -> StringUtils.hasText(item.getUsername()))
+                .collect(Collectors.toMap(CoupleProfile::getUsername, item -> item, (left, right) -> left, LinkedHashMap::new));
+    }
+
+    private CoupleProfile resolvePartnerProfile(String currentUsername, Map<String, CoupleProfile> profileMap) {
+        return profileMap.values().stream()
+                .filter(item -> !defaultIfBlank(item.getUsername(), "").equalsIgnoreCase(currentUsername))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private String resolveProfileDisplayName(CoupleProfile profile, String username, Map<String, String> nicknameMap) {
+        if (profile != null && StringUtils.hasText(profile.getNickname())) {
+            return profile.getNickname();
+        }
+        return resolveNickname(username, nicknameMap);
+    }
+
+    private String resolvePartnerDisplayName(CoupleProfile selfProfile,
+                                             CoupleProfile partnerProfile,
+                                             Map<String, String> nicknameMap) {
+        if (partnerProfile != null && StringUtils.hasText(partnerProfile.getNickname())) {
+            return partnerProfile.getNickname();
+        }
+        if (selfProfile != null && StringUtils.hasText(selfProfile.getLoverNickname())) {
+            return selfProfile.getLoverNickname();
+        }
+        if (partnerProfile != null) {
+            return resolveNickname(partnerProfile.getUsername(), nicknameMap);
+        }
+        return "TA";
+    }
+
+    private Integer calculateRelationshipDays(LocalDate summaryDate, String anniversaryDate) {
+        if (!StringUtils.hasText(anniversaryDate)) {
+            return 0;
+        }
+        try {
+            LocalDate startDate = LocalDate.parse(anniversaryDate, DATE_FORMATTER);
+            LocalDate baseDate = summaryDate == null ? LocalDate.now() : summaryDate;
+            long days = baseDate.toEpochDay() - startDate.toEpochDay() + 1;
+            return (int) Math.max(days, 0L);
+        } catch (Exception error) {
+            return 0;
+        }
+    }
+
+    private Integer countMedia(List<DailySummaryEntryResponse> entryList) {
+        return entryList.stream().mapToInt(item -> item.getMediaList() == null ? 0 : item.getMediaList().size()).sum();
+    }
+
+    private int compareDateTime(String left, String right) {
+        return parseDateTimeValue(left).compareTo(parseDateTimeValue(right));
+    }
+
+    private LocalDateTime parseDateTimeValue(String value) {
+        if (!StringUtils.hasText(value)) {
+            return LocalDateTime.MIN;
+        }
+        try {
+            return LocalDateTime.parse(value, DATE_TIME_FORMATTER);
+        } catch (Exception error) {
+            return LocalDateTime.MIN;
+        }
+    }
+
+    private String buildResponseMetaText(String dateTime) {
+        if (!StringUtils.hasText(dateTime) || dateTime.length() < 16) {
+            return "今天 · 已看";
+        }
+        return "今天 " + dateTime.substring(11, 16) + " · 已看";
     }
 
     private Map<Long, Integer> buildEntryCountMap() {

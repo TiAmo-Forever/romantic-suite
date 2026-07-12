@@ -8,7 +8,7 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * 今日小计响应。
+ * 今日小计响应
  */
 @Data
 @Builder
@@ -59,4 +59,7 @@ public class DailySummaryResponse {
 
     @ApiModelProperty("历史列表")
     private List<DailySummaryHistoryItemResponse> historyList;
+
+    @ApiModelProperty("页面视图数据")
+    private DailySummaryPageViewResponse pageView;
 }

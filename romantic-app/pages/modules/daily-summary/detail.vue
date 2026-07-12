@@ -1,432 +1,385 @@
-﻿<template>
-  <view class="page app-account-page daily-detail-page" :style="themeStyle">
+<template>
+  <view class="page daily-page" :style="themeStyle">
     <GlobalNotificationBanner />
-    <view class="app-account-topbar-shell">
-      <AccountHeader :title="TEXT.pageTitle" :eyebrow="TEXT.eyebrow" />
-    </view>
+    <view class="bg blob a"></view>
+    <view class="bg blob b"></view>
+    <view class="bg blob c"></view>
 
-    <view class="app-account-content app-account-stack daily-detail-content">
-      <view class="daily-hero app-account-intro-card app-card">
-        <view class="daily-hero-topline">
-          <view class="app-account-intro-kicker">{{ currentDateLabel }}</view>
-        </view>
-        <view class="daily-hero-row">
-          <view class="daily-mood-pill" :class="`daily-mood-pill-${summary.mood}`">{{ moodMeta.label }}</view>
-          <view class="daily-hero-updated">{{ updaterLabel }}</view>
-        </view>
-        <view class="app-account-intro-title">{{ heroTitle }}</view>
-        <view class="app-account-intro-desc">{{ heroDesc }}</view>
-        <view class="daily-hero-meta">
-          <view class="app-account-intro-chip">{{ entryCountText }}</view>
-          <view class="app-account-intro-chip">{{ activeEntrySummary }}</view>
-        </view>
+    <view class="topbar">
+      <view class="icon-btn" hover-class="surface-press" hover-stay-time="60" @click="backPage()">
+        <image class="icon" :src="iconBack" mode="aspectFit"></image>
       </view>
-
-      <view class="daily-stage app-card">
-        <view class="daily-stage-head">
-          <view>
-            <view class="daily-stage-title">{{ TEXT.recordBookTitle }}</view>
-            <view class="daily-stage-desc">{{ summary.entryList.length ? TEXT.recordBookDesc : TEXT.emptyBoardDesc }}</view>
-          </view>
-          <view class="daily-stage-actions">
-            <view class="daily-history-entry stage" @click.stop="openHistoryDrawer">
-              <text class="daily-history-entry-dot"></text>
-              <text>{{ TEXT.historyButton }}</text>
-            </view>
-            <view v-if="summary.entryList.length" class="daily-stage-count">{{ activeEntryIndex + 1 }}/{{ summary.entryList.length }}</view>
-          </view>
-        </view>
-
-        <view v-if="summary.entryList.length" class="daily-swiper-shell">
-          <swiper class="daily-swiper" :current="activeEntryIndex" @change="handleEntryChange">
-            <swiper-item v-for="(entry, index) in summary.entryList" :key="entry.id">
-              <view class="daily-entry-card" :class="getEntryCardClass(entry.creatorUsername)">
-                <view class="daily-entry-topline">
-                  <view class="daily-entry-left">
-                    <view class="identity-badge" :class="getIdentityBadgeClass(entry.creatorUsername)">
-                      <view class="identity-badge-dot"></view>
-                      <text>{{ getIdentityBadgeText(entry.creatorUsername) }}</text>
-                    </view>
-                    <view class="entry-mood-pill" :class="`entry-mood-pill-${entry.mood}`">{{ entry.moodMeta.label }}</view>
-                  </view>
-                  <view class="daily-entry-page-index">第 {{ index + 1 }} 页</view>
-                </view>
-                <view class="daily-entry-meta">{{ getEntryMeta(entry) }}</view>
-
-                <view class="daily-entry-actions">
-                  <view class="daily-entry-edit" @click.stop="goEdit(entry)">{{ TEXT.editAction }}</view>
-                  <view class="daily-entry-stamp">
-                    <text>{{ formatCommentTime(entry.updatedAt || entry.createdAt) }}</text>
-                  </view>
-                </view>
-
-                <scroll-view class="daily-entry-scroll" scroll-y enhanced show-scrollbar="false">
-                  <view class="daily-entry-paper">
-                    <view class="daily-entry-paper-label">{{ TEXT.entryContentLabel }}</view>
-                    <view class="daily-entry-content" @longpress.stop="copyText(entry.content)">{{ entry.content }}</view>
-                  </view>
-
-                  <view v-if="entry.mediaList.length" class="daily-media-grid">
-                    <view class="daily-entry-paper-label media-label">{{ TEXT.entryMediaLabel }}</view>
-                    <view
-                      v-for="(media, mediaIndex) in entry.mediaList"
-                      :key="media.id || mediaIndex"
-                      class="daily-media-card"
-                      @click.stop="openEntryViewer(entry.mediaList, mediaIndex)"
-                    >
-                      <image
-                        v-if="media.mediaType === 'image' && resolveMedia(media.fileUrl)"
-                        class="daily-media-thumb"
-                        :src="resolveMedia(media.fileUrl)"
-                        mode="aspectFill"
-                      />
-                      <image
-                        v-else-if="resolveMedia(media.thumbnailUrl)"
-                        class="daily-media-thumb"
-                        :src="resolveMedia(media.thumbnailUrl)"
-                        mode="aspectFill"
-                      />
-                      <view v-else class="daily-media-thumb daily-media-fallback">
-                        <view class="daily-play-icon"></view>
-                      </view>
-                      <view class="daily-media-tag">{{ media.mediaType === 'video' ? TEXT.videoWord : TEXT.imageWord }}</view>
-                    </view>
-                  </view>
-                </scroll-view>
-
-                <view class="daily-entry-footer">
-                  <view class="daily-entry-summary-card">
-                    <view class="daily-entry-summary-kicker">{{ TEXT.entrySummaryLabel }}</view>
-                    <view class="daily-entry-summary-text" @longpress.stop="copyText(getEntryInteractionSummary(entry))">{{ getEntryInteractionSummary(entry) }}</view>
-                  </view>
-                  <view class="daily-entry-footer-actions">
-                    <view class="daily-inline-action" @click.stop="handleLikeToggle(entry)">
-                      <text class="daily-inline-action-heart">{{ FILLED_HEART }}</text>
-                      <text>{{ entry.likedByCurrentUser ? TEXT.unlikeAction : TEXT.likeAction }}</text>
-                    </view>
-                    <view class="daily-inline-action primary" @click.stop="openCommentDrawer(null, entry.id, true)">
-                      <text>{{ entry.commentList.length ? TEXT.viewCommentAction : TEXT.writeCommentAction }}</text>
-                    </view>
-                  </view>
-                </view>
-              </view>
-            </swiper-item>
-          </swiper>
-
-          <scroll-view class="entry-strip" scroll-x enable-flex enhanced show-scrollbar="false">
-            <view
-              v-for="(entry, index) in summary.entryList"
-              :key="entry.id"
-              class="entry-strip-chip"
-              :class="{ active: index === activeEntryIndex }"
-              @click="switchEntry(index)"
-            >
-              <text class="entry-strip-mood">{{ entry.moodMeta.label }}</text>
-              <text class="entry-strip-time">{{ formatCommentTime(entry.updatedAt || entry.createdAt) }}</text>
-            </view>
-          </scroll-view>
-        </view>
-        <view v-else class="detail-empty">{{ TEXT.emptyEntryContent }}</view>
+      <view class="title">每日小计</view>
+      <view class="icon-btn" hover-class="surface-press" hover-stay-time="60" @click="handleTopAction">
+        <image class="icon edit-icon" :src="iconEdit" mode="aspectFit"></image>
       </view>
     </view>
 
-    <view v-if="historyDrawerVisible" class="history-drawer-mask" @click="closeHistoryDrawer">
-      <view class="history-drawer-card" @click.stop>
-        <view class="history-drawer-handle"></view>
-        <view class="history-drawer-head">
-          <view class="history-drawer-title">{{ TEXT.historyTitle }}</view>
-          <view class="history-drawer-subtitle">{{ historyDrawerSubtitle }}</view>
-        </view>
-        <scroll-view class="history-drawer-scroll" scroll-y enhanced show-scrollbar="false">
-          <view v-if="historyList.length" class="history-list">
-              <view
-              v-for="item in historyList"
-              :key="item.id || item.summaryDate"
-              class="history-item"
-              :class="[getHistoryItemClass(item), { active: item.summaryDate === activeDate }]"
-              @click="handleHistorySelect(item.summaryDate)"
-            >
-              <view class="history-main">
-                <view class="history-date">{{ formatHistoryDate(item.summaryDate) }}</view>
-                <view class="history-count">{{ item.entryCount }} 条</view>
-              </view>
-              <view class="history-author">{{ getHistoryMeta(item) }}</view>
-              <view class="history-preview" @longpress.stop="copyText(item.content || TEXT.emptyHistoryPreview)">{{ item.content || TEXT.emptyHistoryPreview }}</view>
+    <view class="head-copy">
+      <view class="date">{{ fullDateLabel }}</view>
+      <view class="love-line">
+        <view class="line"></view>
+        <text>{{ togetherText }}</text>
+        <view class="line right"></view>
+      </view>
+    </view>
+
+    <view class="content">
+      <view class="card overview">
+        <view class="overview-strip"></view>
+        <view class="overview-body">
+          <view class="overview-top">
+            <view class="duo">
+              <view class="duo-badge main">{{ selfBadge }}</view>
+              <view class="duo-heart">♥</view>
+              <view class="duo-badge partner">{{ partnerBadge }}</view>
+            </view>
+            <view class="status" :class="{ muted: !summary.hasRecord }">
+              <image class="mini-icon" :src="iconCheck" mode="aspectFit"></image>
+              <text>{{ summary.hasRecord ? '今日已记录' : '等待记录' }}</text>
             </view>
           </view>
-          <view v-else class="detail-empty">{{ TEXT.emptyHistory }}</view>
+
+          <view class="mood">
+            <view class="mood-glow"></view>
+            <image class="flower" :src="iconFlower" mode="aspectFit"></image>
+            <view class="mood-title">{{ moodView.title }}</view>
+            <view class="mood-desc">{{ moodView.desc }}</view>
+          </view>
+
+          <view class="divider"></view>
+          <view class="summary-text" @longpress.stop="copyText(summaryText)">{{ summaryText }}</view>
+          <view class="chips">
+            <view class="chip"><image class="mini-icon" :src="iconNote" mode="aspectFit"></image><text>{{ entryCount }} 个片段</text></view>
+            <view class="chip"><image class="mini-icon" :src="iconImage" mode="aspectFit"></image><text>{{ mediaCountDisplay }} 张附图</text></view>
+            <view class="chip"><image class="mini-icon" :src="iconHeart" mode="aspectFit"></image><text>{{ responseChipText }}</text></view>
+          </view>
+        </view>
+      </view>
+
+      <view class="card note-card">
+        <view class="section-label"><view class="bar"></view><text>今日小记</text></view>
+        <view class="note-text" @longpress.stop="copyText(noteText)">{{ noteText }}</view>
+        <view v-if="noteExpandable" class="expand" @click="noteExpanded = !noteExpanded">
+          <text>{{ noteExpanded ? '收起内容' : '展开全部' }}</text>
+          <image class="expand-icon" :class="{ open: noteExpanded }" :src="iconChevronDown" mode="aspectFit"></image>
+        </view>
+        <view class="note-foot"><view class="note-line"></view><text>{{ noteFooter }}</text><text>✦</text></view>
+      </view>
+
+      <view class="section-head"><view class="section-label"><view class="bar"></view><text>今日片段</text></view><text class="section-count">{{ entryCount }} 个</text></view>
+      <view v-if="entryCards.length" class="list">
+        <view v-for="item in entryCards" :key="item.id" class="card row" hover-class="surface-press" hover-stay-time="60" @click="goEdit(item.raw)">
+          <text class="time">{{ item.time }}</text>
+          <text class="row-text">{{ item.text }}</text>
+          <view class="action"><image class="mini-icon" :src="iconItemAction" mode="aspectFit"></image></view>
+        </view>
+      </view>
+      <view v-else class="card empty">今天还没有新的片段</view>
+
+      <view v-if="allMedia.length" class="photo-block">
+        <view class="section-head"><view class="section-label"><view class="bar"></view><text>今日附图</text></view><text class="section-count">共 {{ allMedia.length }} 张 →</text></view>
+        <view class="card photo-strip">
+          <view v-for="item in photoPreview" :key="item.key" class="thumb" @click="openGallery(item.index)">
+            <image v-if="resolveMedia(item.src)" class="thumb-img" :src="resolveMedia(item.src)" mode="aspectFill"></image>
+            <view v-else class="thumb-fallback"><image class="thumb-fallback-icon" :src="iconImage" mode="aspectFit"></image></view>
+            <view v-if="item.more" class="thumb-mask"><text class="thumb-more">{{ item.more }}</text><text class="thumb-see">查看</text></view>
+          </view>
+        </view>
+      </view>
+
+      <view class="section-head response-head"><view class="section-label"><view class="bar"></view><text>{{ responseTitle }}</text></view></view>
+      <view class="card response-card">
+        <view class="response-top">
+          <view class="avatar">{{ partnerBadge }}</view>
+          <view class="response-copy"><view class="response-name">{{ response.displayName }}</view><view class="response-meta">{{ response.meta }}</view></view>
+          <view v-if="response.likeCount" class="like-pill"><image class="mini-icon" :src="iconHeart" mode="aspectFit"></image><text>{{ response.likeCount }}</text></view>
+        </view>
+        <view class="quote"><text class="quote-mark">"</text><text class="quote-text" @longpress.stop="copyText(response.content)">{{ response.content }}</text></view>
+        <view class="response-foot"><text>✦</text><text class="response-action" @click="openResponse">{{ response.action }}</text></view>
+      </view>
+
+      <view class="section-head"><view class="section-label"><view class="bar"></view><text>往期记录</text></view></view>
+      <scroll-view class="history-scroll" scroll-x enable-flex enhanced show-scrollbar="false">
+        <view v-for="item in historyChips" :key="item.summaryDate" class="history-chip" :class="{ active: item.summaryDate === activeDate }" @click="selectHistory(item.summaryDate)">
+          <text class="history-chip-top">{{ item.label }}</text>
+          <text class="history-chip-date">{{ item.short }}</text>
+        </view>
+        <view class="history-chip calendar" @click="historyVisible = true"><image class="calendar-icon" :src="iconCalendar" mode="aspectFit"></image><text class="calendar-text">日历</text></view>
+      </scroll-view>
+    </view>
+
+    <view v-if="historyVisible" class="sheet-mask" @click="historyVisible = false">
+      <view class="sheet card" @click.stop>
+        <view class="handle"></view>
+        <view class="sheet-title">往期记录</view>
+        <scroll-view class="sheet-scroll" scroll-y enhanced show-scrollbar="false">
+          <view v-for="item in historyList" :key="item.summaryDate" class="history-item" :class="historyTone(item)" @click="pickHistory(item.summaryDate)">
+            <view class="history-main"><text class="history-title">{{ pretty(item.summaryDate) }}</text><text class="history-num">{{ item.entryCount }} 条</text></view>
+            <view class="history-meta">{{ historyMeta(item) }}</view>
+            <view class="history-preview" @longpress.stop="copyText(item.content || '暂无预览内容')">{{ item.content || '暂无预览内容' }}</view>
+          </view>
         </scroll-view>
       </view>
     </view>
 
-    <view v-if="commentDrawerVisible && activeEntry?.id" class="comment-drawer-mask" @click="closeCommentDrawer">
-      <view class="comment-drawer-card" @click.stop>
-        <view class="comment-drawer-handle"></view>
-        <view class="comment-drawer-head">
-          <view>
-            <view class="comment-drawer-title">{{ TEXT.commentDrawerTitle }}</view>
-            <view class="comment-drawer-subtitle">{{ commentDrawerSubtitle }}</view>
-          </view>
-          <view class="comment-drawer-badge">{{ activeEntryCommentStats }}</view>
-        </view>
-
-        <scroll-view class="comment-drawer-scroll" scroll-y enable-flex enhanced show-scrollbar="false">
-          <view class="comment-overview-card">
-            <view class="comment-overview-title">{{ TEXT.commentOverviewTitle }}</view>
-            <view class="comment-overview-copy" @longpress.stop="copyText(getEntryInteractionSummary(activeEntry))">{{ getEntryInteractionSummary(activeEntry) }}</view>
-          </view>
-
-          <view v-if="activeEntry.likeUsers.length" class="comment-like-strip">
-            <text class="comment-like-strip-heart">{{ FILLED_HEART }}</text>
-            <text class="comment-like-strip-text">{{ getEntryLikeUserSummary(activeEntry) }}</text>
-          </view>
-
-          <view v-if="activeEntry.commentList.length" class="comment-thread-list">
-            <view
-              v-for="item in activeEntry.commentList"
-              :key="item.id"
-              class="comment-thread-card"
-              :class="{ mine: String(item.commenterUsername || '').trim() === currentUsername }"
-              @click.stop="handleCommentTap(activeEntry, item)"
-              @longpress.stop="copyText(item.content)"
-            >
-              <view class="comment-thread-topline">
-                <view class="comment-thread-name">{{ getCommentDisplayName(item) }}</view>
-                <view class="comment-thread-time">{{ formatCommentTime(item.createdAt || item.updatedAt) }}</view>
-              </view>
-              <view class="comment-thread-content">{{ item.content }}</view>
+    <view v-if="commentVisible && activeEntry" class="sheet-mask" @click="closeComment">
+      <view class="sheet card" @click.stop>
+        <view class="handle"></view>
+        <view class="sheet-title">今天的留言</view>
+        <view class="sheet-sub">{{ commentSub }}</view>
+        <scroll-view class="sheet-scroll" scroll-y enhanced show-scrollbar="false">
+          <view class="comment-summary" @longpress.stop="copyText(interactionSummary(activeEntry))">{{ interactionSummary(activeEntry) }}</view>
+          <view v-if="activeEntry.likeUsers.length" class="likes">❤ {{ likeUsers(activeEntry) }}</view>
+          <view v-if="activeEntry.commentList.length" class="comment-list">
+            <view v-for="item in activeEntry.commentList" :key="item.id" class="comment-item" :class="{ mine: item.commenterUsername === currentUsername }" @click.stop="tapComment(activeEntry, item)" @longpress.stop="copyText(item.content)">
+              <view class="comment-head"><text>{{ commentName(item) }}</text><text>{{ clock(item.createdAt || item.updatedAt) }}</text></view>
+              <view class="comment-body">{{ item.content }}</view>
             </view>
           </view>
-
-          <view v-else class="comment-thread-empty">{{ TEXT.emptyEntryInteraction }}</view>
+          <view v-else class="empty comment-empty">暂无互动</view>
         </scroll-view>
-
-        <view class="comment-composer drawer-composer">
-          <view v-if="replyTargetComment" class="comment-reply-banner">
-            <text class="comment-reply-text">{{ `${TEXT.replyingPrefix}${getCommentDisplayName(replyTargetComment)}` }}</text>
-            <text class="comment-reply-clear" @click.stop="clearReplyTarget">{{ TEXT.clearReplyAction }}</text>
-          </view>
-          <textarea
-            v-model="commentForm.content"
-            class="comment-input comment-textarea"
-            :focus="commentFocus"
-            :maxlength="500"
-            :cursor-spacing="24"
-            :placeholder="commentInputPlaceholder"
-            placeholder-class="app-account-input-placeholder"
-            auto-height
-            :show-confirm-bar="false"
-            :adjust-position="true"
-          />
-          <view class="comment-composer-actions">
-            <view class="comment-limit">{{ commentLengthText }}</view>
-            <button class="comment-send-btn" :disabled="submittingComment" @click="handleSubmitComment">
-              {{ submittingComment ? TEXT.commentSending : TEXT.commentSend }}
-            </button>
-          </view>
+        <view class="composer">
+          <view v-if="replyTo" class="reply-tip"><text>{{ `正在回复 ${commentName(replyTo)}` }}</text><text @click="clearReply">取消</text></view>
+          <textarea v-model="commentForm.content" class="comment-input" :focus="commentFocus" :maxlength="500" :cursor-spacing="24" :placeholder="commentPlaceholder" auto-height :show-confirm-bar="false" :adjust-position="true" />
+          <view class="composer-foot"><text>{{ commentForm.content.length }}/500</text><button class="send-btn" :disabled="commentSubmitting" @click="submitComment">{{ commentSubmitting ? '发送中' : '发送' }}</button></view>
         </view>
       </view>
     </view>
 
-    <view v-if="commentActionSheetVisible" class="comment-sheet-mask" @click="closeCommentActionSheet">
-      <view class="comment-sheet-card" @click.stop>
-        <view class="comment-sheet-title">{{ TEXT.deleteOwnCommentTitle }}</view>
-        <view class="comment-sheet-action danger" @click="handleDeleteSelectedComment">{{ TEXT.deleteAction }}</view>
-        <view class="comment-sheet-action" @click="closeCommentActionSheet">{{ TEXT.cancelAction }}</view>
+    <view v-if="commentActionVisible" class="sheet-mask small-mask" @click="closeCommentAction">
+      <view class="action-sheet card" @click.stop>
+        <view class="action-row title-row">删除我的评论</view>
+        <view class="action-row danger" @click="deleteComment">删除</view>
+        <view class="action-row" @click="closeCommentAction">取消</view>
       </view>
     </view>
 
-    <button class="daily-add-btn app-primary-btn app-primary-btn-shadow" @click="goAddEntry">
-      {{ summary.hasRecord ? TEXT.addAnotherButton : TEXT.firstEntryButton }}
-    </button>
+    <view class="bottom-bar">
+      <button class="primary-btn" @click="goAddEntry"><image class="btn-icon" :src="iconBottomAction" mode="aspectFit"></image><text>{{ summary.hasRecord ? '继续记录今天' : '开始记录今天' }}</text></button>
+      <view class="bottom-note">{{ summary.hasRecord ? '今天还可以继续补充记录' : '从第一句开始写下今天' }}</view>
+    </view>
   </view>
 </template>
 
 <script setup>
 import { computed, nextTick, reactive, ref } from 'vue'
 import { onLoad, onShow } from '@dcloudio/uni-app'
-import {
-  createDailySummaryEntryComment,
-  deleteDailySummaryEntryComment,
-  fetchDailySummaryByDate,
-  fetchTodayDailySummary,
-  getDailySummaryMoodMeta,
-  toggleDailySummaryEntryLike
-} from '@/services/daily-summaries.js'
+import { createDailySummaryEntryComment, deleteDailySummaryEntryComment, fetchDailySummaryByDate, fetchTodayDailySummary } from '@/services/daily-summaries.js'
 import { getUser, requireAuth } from '@/utils/auth.js'
 import { resolveMediaUrl } from '@/utils/media-upload.js'
 import { openMediaViewer } from '@/utils/media-viewer.js'
-import { goPage } from '@/utils/nav.js'
+import { backPage, goPage } from '@/utils/nav.js'
 import { useThemePage } from '@/utils/useThemePage.js'
-import AccountHeader from '@/pages/account/components/AccountHeader.vue'
+import { fetchPartnerProfile, fetchRemoteProfile } from '@/services/profile.js'
+import { getProfile } from '@/utils/profile.js'
+import iconBack from '@/assets/daily-summary/icon-back.svg'
+import iconEdit from '@/assets/daily-summary/icon-edit.svg'
+import iconCheck from '@/assets/daily-summary/icon-check.svg'
+import iconNote from '@/assets/daily-summary/icon-note.svg'
+import iconImage from '@/assets/daily-summary/icon-image.svg'
+import iconHeart from '@/assets/daily-summary/icon-heart.svg'
+import iconChevronDown from '@/assets/daily-summary/icon-chevron-down.svg'
+import iconItemAction from '@/assets/daily-summary/icon-item-action.svg'
+import iconCalendar from '@/assets/daily-summary/icon-calendar.svg'
+import iconBottomAction from '@/assets/daily-summary/icon-bottom-action.svg'
+import iconFlower from '@/assets/daily-summary/icon-flower.svg'
 
-const FILLED_HEART = '❤'
-const TEXT = {
-  pageTitle: '今日小计',
-  eyebrow: '共享日常',
-  historyButton: '历史查看',
-  historyTitle: '历史查看',
-  recordBookTitle: '当天记录册',
-  recordBookDesc: '查看当天全部小计',
-  entryContentLabel: '今天记下',
-  entryMediaLabel: '贴图',
-  entrySummaryLabel: '互动摘要',
-  emptyUpdated: '今日暂无更新',
-  updatedPrefix: '最后更新：',
-  commentAction: '评论',
-  commentDrawerTitle: '今天的留言',
-  commentOverviewTitle: '内容与留言',
-  commentPlaceholder: '写下一句想留在今天的话',
-  commentReplyPrefix: '回复 ',
-  commentReplyDivider: '：',
-  replyingPrefix: '正在回复 ',
-  clearReplyAction: '取消',
-  commentSend: '发送',
-  commentSending: '发送中',
-  commentFailed: '评论失败，请稍后再试',
-  commentEmptyError: '请先写下评论内容',
-  commentDeleted: '评论已删除',
-  commentDeleteFailed: '删除评论失败',
-  copySuccess: '内容已复制',
-  likeAction: '点赞',
-  unlikeAction: '取消点赞',
-  likeFailed: '操作失败，请稍后再试',
-  editAction: '编辑',
-  viewCommentAction: '打开留言区',
-  writeCommentAction: '写一句留言',
-  imageWord: '图片',
-  videoWord: '视频',
-  emptyBoardDesc: '今天暂无小计',
-  emptyEntryContent: '暂无内容',
-  emptyEntryInteraction: '暂无互动',
-  emptyHistory: '暂无历史记录',
-  emptyHistoryPreview: '暂无预览内容',
-  deleteOwnCommentTitle: '删除我的评论',
-  deleteAction: '删除',
-  cancelAction: '取消',
-  addAnotherButton: '再写一条今天的小计',
-  firstEntryButton: '开始记录今天',
-  commentLengthSuffix: '/500'
+const DAY = 24 * 60 * 60 * 1000
+const WEEK = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+const MOOD = {
+  gentle: { title: '温暖', desc: '心情平静、有点期待' },
+  sweet: { title: '很甜', desc: '空气里都是认真喜欢' },
+  calm: { title: '安稳', desc: '今天也过得刚刚好' },
+  missing: { title: '想念', desc: '有一点想你，也有一点柔软' },
+  busy: { title: '忙碌', desc: '在匆忙里也记得彼此' },
+  closer: { title: '靠近', desc: '今天又向彼此靠近一点' }
 }
 
 const { themeStyle } = useThemePage()
+const profile = ref(getProfile())
+const partner = ref(null)
+const activeDate = ref('')
+const noteExpanded = ref(false)
+const historyVisible = ref(false)
+const commentVisible = ref(false)
+const commentFocus = ref(false)
+const commentSubmitting = ref(false)
+const commentActionVisible = ref(false)
+const replyTo = ref(null)
+const replyEntryId = ref('')
+const pickedComment = ref(null)
+const pickedCommentEntryId = ref('')
+const activeEntryId = ref('')
+const commentForm = reactive({ content: '' })
 const summary = reactive({
   id: '',
   summaryDate: '',
   mood: 'gentle',
   content: '',
   hasRecord: false,
-  entryCount: 0,
-  creatorUsername: '',
   updaterUsername: '',
   updatedAt: '',
   entryList: [],
-  historyList: []
+  historyList: [],
+  pageView: null
 })
-
-const activeDate = ref('')
-const activeEntryIndex = ref(0)
-const submittingComment = ref(false)
-const deletingComment = ref(false)
-const liking = ref(false)
-const commentDrawerVisible = ref(false)
-const commentFocus = ref(false)
-const commentActionSheetVisible = ref(false)
-const historyDrawerVisible = ref(false)
-const selectedComment = ref(null)
-const selectedCommentEntryId = ref('')
-const replyTargetComment = ref(null)
-const replyEntryId = ref('')
-const commentForm = reactive({ content: '' })
 
 const currentUsername = computed(() => String(getUser()?.username || '').trim())
-const moodMeta = computed(() => getDailySummaryMoodMeta(summary.mood))
-const currentDateLabel = computed(() => formatPrettyDate(activeDate.value || summary.summaryDate))
-const updaterLabel = computed(() => {
-  if (!summary.hasRecord || !summary.updaterUsername) return TEXT.emptyUpdated
-  return `${TEXT.updatedPrefix}${summary.updaterUsername === currentUsername.value ? '我写的' : 'TA写的'}`
-})
-const heroTitle = computed(() => {
-  if (!summary.hasRecord) return '今日小计'
-  return `${moodMeta.value.label}的一天，被写成了 ${summary.entryCount} 条小计`
-})
-const heroDesc = computed(() => {
-  if (!summary.hasRecord) return '暂无今日小计'
-  if (summary.entryCount > 1) {
-    return '当天共记录多条小计'
+const pageView = computed(() => summary.pageView || null)
+const activeEntry = computed(() => summary.entryList.find((item) => String(item.id) === String(activeEntryId.value)) || summary.entryList[0] || null)
+const moodView = computed(() => MOOD[summary.mood] || MOOD.gentle)
+const entryCount = computed(() => Array.isArray(summary.entryList) ? summary.entryList.length : 0)
+const summaryText = computed(() => String(summary.content || activeEntry.value?.content || '今天还没有留下新的内容').trim() || '今天还没有留下新的内容')
+const noteExpandable = computed(() => summaryText.value.length > 64 || summaryText.value.includes('\n'))
+const noteText = computed(() => noteExpanded.value || !noteExpandable.value ? summaryText.value : cut(summaryText.value, 64))
+const allMedia = computed(() => summary.entryList.flatMap((entry) => (entry.mediaList || []).map((media) => ({ ...media, entryId: entry.id }))))
+const mediaCountDisplay = computed(() => Number(pageView.value?.mediaCount || allMedia.value.length || 0))
+const entryCards = computed(() => summary.entryList.slice(0, 3).map((entry, index) => ({
+  id: entry.id || `entry_${index}`,
+  raw: entry,
+  time: clock(entry.createdAt || entry.updatedAt) || '--:--',
+  text: cut(entry.content || '这条记录还没有文字内容', 28)
+})))
+const photoPreview = computed(() => {
+  const list = allMedia.value
+  if (list.length <= 4) {
+    return list.map((item, index) => ({ key: item.id || index, src: item.thumbnailUrl || item.fileUrl, index, more: '' }))
   }
-  return '查看今日小计内容'
+  return [
+    ...list.slice(0, 3).map((item, index) => ({ key: item.id || index, src: item.thumbnailUrl || item.fileUrl, index, more: '' })),
+    { key: 'more', src: list[3].thumbnailUrl || list[3].fileUrl, index: 3, more: `+${list.length - 3}` }
+  ]
 })
-const entryCountText = computed(() => (summary.hasRecord ? `今天写下了 ${summary.entryCount} 条小计` : '今天还没有小计'))
-const activeEntry = computed(() => summary.entryList[activeEntryIndex.value] || null)
-const activeEntrySummary = computed(() => {
-  if (!activeEntry.value) return `历史共 ${historyList.value.length} 天`
-  return `${activeEntry.value.moodMeta.label} · ${formatCommentTime(activeEntry.value.updatedAt || activeEntry.value.createdAt)}`
+const selfName = computed(() => String(pageView.value?.selfDisplayName || profile.value?.nickname || getUser()?.nickname || currentUsername.value || '我').trim() || '我')
+const partnerName = computed(() => String(pageView.value?.partnerDisplayName || partner.value?.nickname || profile.value?.loverNickname || 'TA').trim() || 'TA')
+const selfBadge = computed(() => shortText(selfName.value, 1))
+const partnerBadge = computed(() => shortText(partnerName.value, 1))
+const togetherText = computed(() => {
+  const text = String(pageView.value?.relationshipText || '').trim()
+  if (text) {
+    return text
+  }
+  const start = onlyDate(profile.value?.anniversaryDate)
+  if (!start) {
+    return '把今天写成一页温柔的小记'
+  }
+  const days = Math.max(0, Math.floor((dayStart(new Date()).getTime() - start.getTime()) / DAY) + 1)
+  return `与${partnerName.value}在一起的第 ${days} 天`
 })
+const responseSource = computed(() => {
+  const comments = summary.entryList.flatMap((entry) => (entry.commentList || []).map((comment) => ({ ...comment, entryId: entry.id, likeCount: (entry.likeUsers || []).length })))
+  const latestComment = [...comments]
+    .filter((item) => String(item.commenterUsername || '').trim() && item.commenterUsername !== currentUsername.value)
+    .sort((a, b) => stamp(b.updatedAt || b.createdAt) - stamp(a.updatedAt || a.createdAt))[0]
+  if (latestComment) {
+    return {
+      state: 'commented',
+      displayName: commentName(latestComment),
+      meta: clock(latestComment.updatedAt || latestComment.createdAt) ? `今天 ${clock(latestComment.updatedAt || latestComment.createdAt)} · 已看` : '今天 · 已看',
+      content: latestComment.content || '今天留下一句温柔的回应',
+      likeCount: latestComment.likeCount || 0,
+      entryId: latestComment.entryId,
+      action: '回应 →',
+      ready: true
+    }
+  }
+  const likeEntry = [...summary.entryList]
+    .filter((entry) => (entry.likeUsers || []).some((item) => item.username !== currentUsername.value))
+    .sort((a, b) => stamp(b.updatedAt || b.createdAt) - stamp(a.updatedAt || a.createdAt))[0]
+  if (likeEntry) {
+    return {
+      state: 'liked',
+      displayName: partnerName.value,
+      meta: '今天 · 收到爱心',
+      content: `${partnerName.value}已经给今天点了赞，可以继续留下一句回应`,
+      likeCount: (likeEntry.likeUsers || []).length,
+      entryId: likeEntry.id,
+      action: '写下回应 →',
+      ready: true
+    }
+  }
+  return {
+    state: 'waiting',
+    displayName: partnerName.value,
+    meta: '还没有新的回应',
+    content: '今天的记录已经放进小计里了，等对方来接住这一页日常',
+    likeCount: 0,
+    entryId: activeEntry.value?.id || '',
+    action: '去留言 →',
+    ready: false
+  }
+})
+const response = computed(() => {
+  const state = String(pageView.value?.responseState || '').trim()
+  const content = String(pageView.value?.responseContent || '').trim()
+  if (!state && !content) {
+    return responseSource.value
+  }
+  const resolvedState = state || 'waiting'
+  return {
+    state: resolvedState,
+    displayName: String(pageView.value?.responseDisplayName || partnerName.value).trim() || partnerName.value,
+    meta: String(pageView.value?.responseMetaText || '').trim() || (resolvedState === 'commented' ? '今天 · 已看' : resolvedState === 'liked' ? '今天 · 收到爱心' : '还没有新的回应'),
+    content: content || '今天的记录已经放进小计里了，等对方来接住这一页日常',
+    likeCount: Number(pageView.value?.responseLikeCount || 0),
+    entryId: pageView.value?.responseEntryId || activeEntry.value?.id || '',
+    action: resolvedState === 'commented' ? '回应 →' : resolvedState === 'liked' ? '写下回应 →' : '去留言 →',
+    ready: resolvedState !== 'waiting'
+  }
+})
+const responseChipText = computed(() => response.value.ready ? `${partnerName.value}已回应` : '等待回应')
+const responseTitle = computed(() => response.value.ready ? '爱的回应' : '等待回应')
 const historyList = computed(() => Array.isArray(summary.historyList) ? summary.historyList : [])
-const historyDrawerSubtitle = computed(() => `共 ${historyList.value.length} 天记录`)
-const activeEntryCommentStats = computed(() => {
-  if (!activeEntry.value) return '0 条留言'
-  const commentCount = Array.isArray(activeEntry.value.commentList) ? activeEntry.value.commentList.length : 0
-  return `${commentCount} 条留言`
-})
-const commentDrawerSubtitle = computed(() => {
-  if (!activeEntry.value) return '暂无留言'
-  const likeCount = Array.isArray(activeEntry.value.likeUsers) ? activeEntry.value.likeUsers.length : 0
-  const commentCount = Array.isArray(activeEntry.value.commentList) ? activeEntry.value.commentList.length : 0
-  return `${likeCount} 个爱心 · ${commentCount} 条留言`
-})
-const commentLengthText = computed(() => `${String(commentForm.content || '').length}${TEXT.commentLengthSuffix}`)
-const commentInputPlaceholder = computed(() => {
-  if (!replyTargetComment.value) return TEXT.commentPlaceholder
-  return `${TEXT.commentReplyPrefix}${getCommentDisplayName(replyTargetComment.value)}${TEXT.commentReplyDivider}`
-})
+const historyChips = computed(() => historyList.value.slice(0, 5).map((item) => ({ ...item, label: relative(item.summaryDate, activeDate.value || summary.summaryDate), short: shortDate(item.summaryDate) })))
+const fullDateLabel = computed(() => fullDate(activeDate.value || summary.summaryDate))
+const noteFooter = computed(() => `${shortText(selfName.value, 4)} · ${same(activeDate.value || summary.summaryDate, today()) ? '今天' : pretty(activeDate.value || summary.summaryDate)}`)
+const commentSub = computed(() => !activeEntry.value ? '暂无留言' : `${(activeEntry.value.likeUsers || []).length} 个爱心 · ${(activeEntry.value.commentList || []).length} 条留言`)
+const commentPlaceholder = computed(() => replyTo.value ? `回复 ${commentName(replyTo.value)}：` : '写下一句想留在今天的话')
+
 onLoad((options) => {
   requireAuth()
   activeDate.value = String(options?.date || '').trim()
 })
 
-onShow(() => {
-  if (!requireAuth()) return
-  loadSummary(activeDate.value)
+onShow(async () => {
+  if (!requireAuth()) {
+    return
+  }
+  await Promise.allSettled([loadSummary(activeDate.value), loadProfile()])
 })
+
+async function loadProfile() {
+  try {
+    const [mine, partnerProfile] = await Promise.all([
+      fetchRemoteProfile({ allowOfflineFallback: true }),
+      fetchPartnerProfile({ allowOfflineFallback: true })
+    ])
+    profile.value = mine || getProfile()
+    partner.value = partnerProfile || null
+  } catch {
+    profile.value = getProfile()
+    partner.value = null
+  }
+}
 
 async function loadSummary(date) {
   try {
     const detail = date ? await fetchDailySummaryByDate(date) : await fetchTodayDailySummary()
     Object.assign(summary, detail)
     activeDate.value = detail.summaryDate || date || activeDate.value
-    activeEntryIndex.value = 0
-    closeTransientState()
+    activeEntryId.value = detail.entryList?.[0]?.id || ''
+    noteExpanded.value = false
+    closeComment()
+    closeCommentAction()
+    historyVisible.value = false
   } catch (error) {
     uni.showToast({ title: error?.message || '今日小计加载失败', icon: 'none' })
   }
 }
 
-function handleEntryChange(event) {
-  activeEntryIndex.value = Number(event?.detail?.current || 0)
-  closeTransientState()
-}
-
-function switchEntry(index) {
-  activeEntryIndex.value = index
-  closeTransientState()
-}
-
-function openHistoryDrawer() {
-  historyDrawerVisible.value = true
-  closeTransientState()
-}
-
-function closeHistoryDrawer() {
-  historyDrawerVisible.value = false
-}
-
-async function handleHistorySelect(date) {
-  if (!date) return
-  closeHistoryDrawer()
-  if (date === activeDate.value) return
-  await loadSummary(date)
+function handleTopAction() {
+  activeEntry.value?.id ? goEdit(activeEntry.value) : goAddEntry()
 }
 
 function goAddEntry() {
@@ -434,30 +387,43 @@ function goAddEntry() {
 }
 
 function goEdit(entry) {
-  if (!summary.id || !entry?.id) return
+  if (!summary.id || !entry?.id) {
+    return
+  }
   goPage(`/pages/modules/daily-summary/edit?summaryId=${encodeURIComponent(summary.id)}&entryId=${encodeURIComponent(entry.id)}&date=${encodeURIComponent(activeDate.value || summary.summaryDate)}`)
 }
 
-async function handleLikeToggle(entry) {
-  const targetEntry = entry?.id ? entry : activeEntry.value
-  if (!summary.id || !targetEntry?.id || liking.value) return
-  try {
-    liking.value = true
-    await toggleDailySummaryEntryLike(summary.id, targetEntry.id)
-    await loadSummary(activeDate.value)
-  } catch (error) {
-    uni.showToast({ title: error?.message || TEXT.likeFailed, icon: 'none' })
-  } finally {
-    liking.value = false
+function selectHistory(date) {
+  if (!date || date === activeDate.value) {
+    return
+  }
+  loadSummary(date)
+}
+
+function pickHistory(date) {
+  historyVisible.value = false
+  selectHistory(date)
+}
+
+function openGallery(index = 0) {
+  if (allMedia.value.length) {
+    openMediaViewer(allMedia.value, Number(index || 0))
   }
 }
 
-function openCommentDrawer(comment = null, entryId = '', focus = false) {
-  const targetEntryId = entryId || activeEntry.value?.id
-  if (!targetEntryId) return
-  replyTargetComment.value = comment
-  replyEntryId.value = targetEntryId
-  commentDrawerVisible.value = true
+function openResponse() {
+  response.value.entryId ? openComment(null, response.value.entryId, true) : goAddEntry()
+}
+
+function openComment(comment = null, entryId = '', focus = false) {
+  const id = entryId || activeEntry.value?.id
+  if (!id) {
+    return
+  }
+  activeEntryId.value = id
+  replyTo.value = comment
+  replyEntryId.value = id
+  commentVisible.value = true
   commentFocus.value = false
   if (focus) {
     nextTick(() => {
@@ -466,1134 +432,324 @@ function openCommentDrawer(comment = null, entryId = '', focus = false) {
   }
 }
 
-function openCommentComposer(comment = null, entryId = '') {
-  openCommentDrawer(comment, entryId, true)
-}
-
-async function handleSubmitComment() {
-  const rawContent = String(commentForm.content || '').trim()
-  const targetEntryId = replyEntryId.value || activeEntry.value?.id
-  if (!rawContent) {
-    uni.showToast({ title: TEXT.commentEmptyError, icon: 'none' })
-    return
-  }
-  if (!summary.id || !targetEntryId || submittingComment.value) return
-
-  const targetName = replyTargetComment.value ? getCommentDisplayName(replyTargetComment.value) : ''
-  const content = targetName ? `${TEXT.commentReplyPrefix}${targetName}${TEXT.commentReplyDivider}${rawContent}` : rawContent
-
-  try {
-    submittingComment.value = true
-    await createDailySummaryEntryComment(summary.id, targetEntryId, { content })
-    commentForm.content = ''
-    closeCommentDrawer()
-    await loadSummary(activeDate.value)
-  } catch (error) {
-    uni.showToast({ title: error?.message || TEXT.commentFailed, icon: 'none' })
-  } finally {
-    submittingComment.value = false
-  }
-}
-
-function handleCommentTap(entry, comment) {
-  if (!entry?.id || !comment) return
-  if (String(comment.commenterUsername || '').trim() === currentUsername.value) {
-    selectedComment.value = comment
-    selectedCommentEntryId.value = entry.id
-    commentActionSheetVisible.value = true
-    return
-  }
-  openCommentComposer(comment, entry.id)
-}
-
-async function handleDeleteSelectedComment() {
-  if (!summary.id || !selectedComment.value?.id || !selectedCommentEntryId.value || deletingComment.value) return
-  try {
-    deletingComment.value = true
-    await deleteDailySummaryEntryComment(summary.id, selectedCommentEntryId.value, selectedComment.value.id)
-    if (replyTargetComment.value?.id === selectedComment.value.id) {
-      replyTargetComment.value = null
-      replyEntryId.value = ''
-    }
-    closeCommentActionSheet()
-    uni.showToast({ title: TEXT.commentDeleted, icon: 'success' })
-    await loadSummary(activeDate.value)
-  } catch (error) {
-    uni.showToast({ title: error?.message || TEXT.commentDeleteFailed, icon: 'none' })
-  } finally {
-    deletingComment.value = false
-  }
-}
-
-function closeCommentActionSheet() {
-  commentActionSheetVisible.value = false
-  selectedComment.value = null
-  selectedCommentEntryId.value = ''
-}
-
-function clearReplyTarget() {
-  replyTargetComment.value = null
-  replyEntryId.value = activeEntry.value?.id || ''
-}
-
-function closeCommentDrawer() {
-  commentDrawerVisible.value = false
+function closeComment() {
+  commentVisible.value = false
   commentFocus.value = false
-  clearReplyTarget()
-}
-
-function closeTransientState() {
-  closeCommentActionSheet()
-  closeCommentDrawer()
+  clearReply()
   commentForm.content = ''
 }
 
-function copyText(value, successTitle = TEXT.copySuccess) {
-  const content = String(value || '').trim()
-  if (!content) return
+function clearReply() {
+  replyTo.value = null
+  replyEntryId.value = activeEntry.value?.id || ''
+}
+
+async function submitComment() {
+  const raw = String(commentForm.content || '').trim()
+  const targetId = replyEntryId.value || activeEntry.value?.id
+  if (!raw) {
+    return uni.showToast({ title: '请先写下评论内容', icon: 'none' })
+  }
+  if (!summary.id || !targetId || commentSubmitting.value) {
+    return
+  }
+  const content = replyTo.value ? `回复 ${commentName(replyTo.value)}：${raw}` : raw
+  try {
+    commentSubmitting.value = true
+    await createDailySummaryEntryComment(summary.id, targetId, { content })
+    closeComment()
+    await loadSummary(activeDate.value)
+  } catch (error) {
+    uni.showToast({ title: error?.message || '评论失败，请稍后再试', icon: 'none' })
+  } finally {
+    commentSubmitting.value = false
+  }
+}
+
+function tapComment(entry, comment) {
+  if (!entry?.id || !comment) {
+    return
+  }
+  if (comment.commenterUsername === currentUsername.value) {
+    pickedComment.value = comment
+    pickedCommentEntryId.value = entry.id
+    commentActionVisible.value = true
+    return
+  }
+  openComment(comment, entry.id, true)
+}
+
+function closeCommentAction() {
+  commentActionVisible.value = false
+  pickedComment.value = null
+  pickedCommentEntryId.value = ''
+}
+
+async function deleteComment() {
+  if (!summary.id || !pickedComment.value?.id || !pickedCommentEntryId.value) {
+    return
+  }
+  try {
+    await deleteDailySummaryEntryComment(summary.id, pickedCommentEntryId.value, pickedComment.value.id)
+    closeCommentAction()
+    uni.showToast({ title: '评论已删除', icon: 'success' })
+    await loadSummary(activeDate.value)
+  } catch (error) {
+    uni.showToast({ title: error?.message || '删除评论失败', icon: 'none' })
+  }
+}
+
+function copyText(value) {
+  const text = String(value || '').trim()
+  if (!text) {
+    return
+  }
   uni.setClipboardData({
-    data: content,
-    success: () => {
-      uni.showToast({ title: successTitle, icon: 'success' })
-    }
+    data: text,
+    success: () => uni.showToast({ title: '内容已复制', icon: 'success' })
   })
-}
-
-function hasEntryInteraction(entry) {
-  return (Array.isArray(entry?.likeUsers) && entry.likeUsers.length > 0) || (Array.isArray(entry?.commentList) && entry.commentList.length > 0)
-}
-
-function getEntryLikeUserSummary(entry) {
-  return (entry.likeUsers || []).map((item) => item?.nickname || item?.username || '未命名').join('、')
-}
-
-function getEntryInteractionSummary(entry) {
-  if (!entry) return '暂无留言'
-  const likeCount = Array.isArray(entry.likeUsers) ? entry.likeUsers.length : 0
-  const commentCount = Array.isArray(entry.commentList) ? entry.commentList.length : 0
-  if (!likeCount && !commentCount) {
-    return '发布内容后可继续互动'
-  }
-  if (likeCount && commentCount) {
-    return `${likeCount} 个爱心和 ${commentCount} 条留言，已经把这页日常接住了。`
-  }
-  if (likeCount) {
-    return `${likeCount} 次点赞 · 可继续留言`
-  }
-  return `${commentCount} 条留言`
-}
-
-function getCommentDisplayName(comment) {
-  return comment?.commenterNickname || comment?.commenterUsername || '未命名'
-}
-
-function formatCommentTime(value) {
-  const source = String(value || '').replace('T', ' ').trim()
-  if (!source) return ''
-  return source.length >= 16 ? source.slice(5, 16) : source
-}
-
-function getIdentityBadgeText(username) {
-  return String(username || '').trim() === currentUsername.value ? '我写的' : 'TA写的'
-}
-
-function getIdentityBadgeClass(username) {
-  return getAuthorToneClass(username)
-}
-
-function getEntryMeta(entry) {
-  const nickname = getAuthorDisplayName(entry.creatorNickname, entry.creatorUsername)
-  const time = formatCommentTime(entry.updatedAt || entry.createdAt)
-  return time ? `${nickname} · ${time}` : nickname
-}
-
-function getEntryCardClass(username) {
-  return getAuthorToneClass(username)
-}
-
-function getHistoryAuthorKey(item) {
-  return String(item?.authorUsername || item?.updaterUsername || item?.creatorUsername || item?.authorNickname || item?.updaterNickname || item?.creatorNickname || '').trim()
-}
-
-function getHistoryAuthorName(item) {
-  return getAuthorDisplayName(
-    item?.authorNickname || item?.updaterNickname || item?.creatorNickname,
-    item?.authorUsername || item?.updaterUsername || item?.creatorUsername
-  )
-}
-
-function getHistoryMeta(item) {
-  const time = formatCommentTime(item?.updatedAt || '')
-  const name = getHistoryAuthorName(item)
-  return time ? `${name} · ${time}` : name
-}
-
-function getHistoryItemClass(item) {
-  return getAuthorToneClass(getHistoryAuthorKey(item))
-}
-
-function getAuthorDisplayName(nickname, username) {
-  const name = String(nickname || '').trim() || String(username || '').trim()
-  return name || '未命名'
-}
-
-function getAuthorToneClass(username) {
-  const key = String(username || '').trim()
-  if (!key) {
-    return 'author-tone-unknown'
-  }
-  if (key === currentUsername.value) {
-    return 'author-tone-mine'
-  }
-  return 'author-tone-partner'
 }
 
 function resolveMedia(path) {
   return resolveMediaUrl(path)
 }
 
-function openEntryViewer(mediaList, index) {
-  openMediaViewer(mediaList, index)
+function interactionSummary(entry) {
+  if (!entry) {
+    return '暂无留言'
+  }
+  const likes = (entry.likeUsers || []).length
+  const comments = (entry.commentList || []).length
+  if (!likes && !comments) {
+    return '发布内容后可继续互动'
+  }
+  if (likes && comments) {
+    return `${likes} 个爱心和 ${comments} 条留言，已经把这页日常接住了`
+  }
+  if (likes) {
+    return `${likes} 次点赞 · 可继续留言`
+  }
+  return `${comments} 条留言`
 }
 
-function formatPrettyDate(value) {
-  if (!value) return '今天'
-  const date = new Date(`${value}T00:00:00`)
-  if (Number.isNaN(date.getTime())) return value
-  return `${date.getMonth() + 1}月${date.getDate()}日`
+function likeUsers(entry) {
+  return (entry?.likeUsers || []).map((item) => item.nickname || item.username || '未命名').join('、')
 }
 
-function formatHistoryDate(value) {
-  if (!value) return ''
-  const date = new Date(`${value}T00:00:00`)
-  if (Number.isNaN(date.getTime())) return value
-  return `${date.getMonth() + 1}月${date.getDate()}日`
+function commentName(item) {
+  return String(item?.commenterNickname || item?.commenterUsername || '未命名').trim() || '未命名'
+}
+
+function historyMeta(item) {
+  const name = String(item?.authorNickname || item?.updaterNickname || item?.creatorNickname || item?.authorUsername || item?.updaterUsername || item?.creatorUsername || '未命名').trim() || '未命名'
+  const time = clock(item?.updatedAt || '')
+  return time ? `${name} · ${time}` : name
+}
+
+function historyTone(item) {
+  const user = String(item?.authorUsername || item?.updaterUsername || item?.creatorUsername || '').trim()
+  return user && user === currentUsername.value ? 'mine' : user ? 'partner' : ''
+}
+
+function clock(value) {
+  const s = String(value || '').replace('T', ' ').trim()
+  return s.length >= 16 ? s.slice(11, 16) : ''
+}
+
+function stamp(value) {
+  const t = new Date(String(value || '').trim().replace(' ', 'T')).getTime()
+  return Number.isFinite(t) ? t : 0
+}
+
+function cut(value, limit = 40) {
+  const s = String(value || '').trim()
+  return s.length > limit ? `${s.slice(0, limit)}...` : s
+}
+
+function shortText(value, n = 2) {
+  return String(value || '').trim().slice(0, n) || 'TA'
+}
+
+function onlyDate(value) {
+  const s = String(value || '').trim()
+  if (!s) {
+    return null
+  }
+  const d = new Date(`${s}T00:00:00`)
+  return Number.isNaN(d.getTime()) ? null : d
+}
+
+function dayStart(date) {
+  const d = new Date(date)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+function pretty(value) {
+  const d = onlyDate(value)
+  return d ? `${d.getMonth() + 1}月${d.getDate()}日` : '今天'
+}
+
+function shortDate(value) {
+  const d = onlyDate(value)
+  return d ? `${d.getMonth() + 1}/${d.getDate()}` : '--'
+}
+
+function fullDate(value) {
+  const d = onlyDate(value)
+  return d ? `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${WEEK[d.getDay()]}` : '今天'
+}
+
+function same(a, b) {
+  return String(a || '').trim() === String(b || '').trim()
+}
+
+function today() {
+  const d = new Date()
+  const m = `${d.getMonth() + 1}`.padStart(2, '0')
+  const day = `${d.getDate()}`.padStart(2, '0')
+  return `${d.getFullYear()}-${m}-${day}`
+}
+
+function relative(value, base) {
+  const d = onlyDate(value)
+  const b = onlyDate(base) || dayStart(new Date())
+  if (!d) {
+    return '--'
+  }
+  const diff = Math.round((dayStart(b).getTime() - dayStart(d).getTime()) / DAY)
+  if (diff === 1) {
+    return '昨天'
+  }
+  if (diff === 2) {
+    return '前天'
+  }
+  return WEEK[d.getDay()].replace('星期', '周')
 }
 </script>
-
 <style scoped>
-.daily-detail-page {
-  min-height: 100vh;
-  padding-bottom: 188rpx;
-  background: var(--app-page-gradient-main);
-  overflow-x: hidden;
-}
-
-.daily-detail-content {
-  width: 100%;
-  min-width: 0;
-  overflow-x: hidden;
-}
-
-.daily-hero-topline,
-.daily-hero-row,
-.daily-hero-meta,
-.daily-entry-topline,
-.daily-entry-actions,
-.daily-stage-actions,
-.interaction-comment-head,
-.history-main,
-.comment-composer-actions {
-  display: flex;
-  align-items: center;
-}
-
-.daily-hero-topline,
-.daily-hero-row,
-.daily-entry-topline,
-.daily-entry-actions,
-.history-main {
-  justify-content: space-between;
-}
-
-.daily-hero-topline {
-  gap: 24rpx;
-}
-
-.daily-history-entry {
-  display: inline-flex;
-  align-items: center;
-  gap: 10rpx;
-  flex-shrink: 0;
-  min-height: 58rpx;
-  padding: 0 20rpx;
-  border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.7);
-  color: var(--app-color-primary-strong);
-  font-size: 24rpx;
-  font-weight: 700;
-  box-shadow: inset 0 0 0 2rpx rgba(255, 255, 255, 0.46);
-}
-
-.daily-history-entry.stage {
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow:
-    inset 0 0 0 2rpx rgba(255, 255, 255, 0.58),
-    0 10rpx 20rpx rgba(83, 148, 138, 0.1);
-}
-
-.daily-history-entry-dot {
-  width: 12rpx;
-  height: 12rpx;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-.daily-hero-row {
-  margin-top: 18rpx;
-  gap: 16rpx;
-}
-
-.daily-hero-meta {
-  flex-wrap: wrap;
-  gap: 12rpx;
-  margin-top: 18rpx;
-}
-
-.daily-mood-pill,
-.entry-mood-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 52rpx;
-  padding: 0 18rpx;
-  border-radius: 999rpx;
-  font-size: 22rpx;
-  font-weight: 700;
-}
-
-.daily-mood-pill-gentle,
-.entry-mood-pill-gentle {
-  background: rgba(255, 241, 245, 0.95);
-  color: #c66e89;
-}
-
-.daily-mood-pill-sweet,
-.entry-mood-pill-sweet {
-  background: rgba(255, 240, 231, 0.95);
-  color: #cc815d;
-}
-
-.daily-mood-pill-calm,
-.entry-mood-pill-calm {
-  background: rgba(238, 247, 239, 0.95);
-  color: #70936a;
-}
-
-.daily-mood-pill-missing,
-.entry-mood-pill-missing {
-  background: rgba(246, 239, 255, 0.95);
-  color: #8f78ba;
-}
-
-.daily-mood-pill-busy,
-.entry-mood-pill-busy {
-  background: rgba(255, 246, 229, 0.95);
-  color: #bf8c45;
-}
-
-.daily-mood-pill-closer,
-.entry-mood-pill-closer {
-  background: rgba(237, 246, 251, 0.95);
-  color: #5a8dae;
-}
-
-.daily-hero-updated,
-.daily-stage-count,
-.daily-entry-time,
-.daily-entry-meta,
-.history-count,
-.interaction-comment-time,
-.comment-limit {
-  font-size: 22rpx;
-  color: var(--app-color-text-muted);
-}
-.daily-stage {
-  padding: 30rpx;
-  border-radius: 34rpx;
-  background: rgba(255, 255, 255, 0.78);
-  box-shadow: var(--app-card-shadow);
-  overflow: hidden;
-}
-
-.daily-stage-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20rpx;
-}
-
-.daily-stage-actions {
-  flex-shrink: 0;
-  gap: 14rpx;
-}
-
-.daily-stage-title {
-  font-size: 34rpx;
-  font-weight: 700;
-  color: var(--app-color-text-strong);
-}
-
-.daily-stage-desc {
-  margin-top: 10rpx;
-  font-size: 24rpx;
-  line-height: 1.8;
-  color: var(--app-color-text-muted);
-}
-
-.daily-swiper-shell {
-  width: 100%;
-  min-width: 0;
-  overflow: hidden;
-  margin-top: 24rpx;
-}
-
-.daily-swiper {
-  width: 100%;
-  height: 980rpx;
-}
-
-.daily-entry-card {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  min-width: 0;
-  overflow: hidden;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  padding: 28rpx;
-  border-radius: 30rpx;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98), var(--author-surface, rgba(255, 255, 255, 0.98))),
-    var(--author-surface, rgba(255, 255, 255, 0.98));
-  box-shadow:
-    inset 0 0 0 2rpx var(--author-outline, rgba(67, 122, 118, 0.08)),
-    0 18rpx 34rpx rgba(67, 122, 118, 0.08);
-}
-
-.daily-entry-card::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 24rpx;
-  bottom: 24rpx;
-  width: 10rpx;
-  border-radius: 0 999rpx 999rpx 0;
-  background: var(--author-accent, var(--app-color-primary-strong));
-}
-
-.daily-entry-left {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-  min-width: 0;
-  flex-wrap: wrap;
-}
-
-.daily-entry-page-index {
-  min-height: 44rpx;
-  padding: 0 16rpx;
-  border-radius: 999rpx;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--author-accent, var(--app-color-primary-strong));
-  font-size: 20rpx;
-  font-weight: 700;
-}
-
-.identity-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8rpx;
-  min-height: 46rpx;
-  padding: 0 16rpx;
-  border-radius: 999rpx;
-  font-size: 22rpx;
-  font-weight: 700;
-  background: var(--author-badge-bg, rgba(255, 255, 255, 0.95));
-  color: var(--author-accent, var(--app-color-primary-strong));
-}
-
-.identity-badge-dot {
-  width: 10rpx;
-  height: 10rpx;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-.author-tone-mine {
-  --author-surface: #e9f4ff;
-  --author-surface-active: #d9ecff;
-  --author-surface-soft: rgba(228, 242, 255, 0.9);
-  --author-badge-bg: #ffffff;
-  --author-accent: #2f7bdc;
-  --author-outline: rgba(47, 123, 220, 0.24);
-}
-
-.author-tone-partner {
-  --author-surface: #ffeaf1;
-  --author-surface-active: #ffdce7;
-  --author-surface-soft: rgba(255, 233, 241, 0.9);
-  --author-badge-bg: #ffffff;
-  --author-accent: #d85b87;
-  --author-outline: rgba(216, 91, 135, 0.24);
-}
-
-.author-tone-unknown {
-  --author-surface: #f3f5f7;
-  --author-surface-active: #ebeff3;
-  --author-surface-soft: rgba(243, 245, 247, 0.9);
-  --author-badge-bg: #ffffff;
-  --author-accent: #6b7280;
-  --author-outline: rgba(107, 114, 128, 0.18);
-}
-
-.daily-entry-meta {
-  margin-top: 12rpx;
-}
-
-.daily-entry-paper {
-  position: relative;
-  overflow: hidden;
-  padding: 28rpx 24rpx 30rpx;
-  border-radius: 26rpx;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 252, 246, 0.96));
-  box-shadow:
-    inset 0 0 0 2rpx rgba(255, 255, 255, 0.82),
-    0 10rpx 24rpx rgba(95, 113, 112, 0.05);
-}
-
-.daily-entry-paper::after {
-  content: '';
-  position: absolute;
-  inset: 24rpx 22rpx 24rpx auto;
-  width: 2rpx;
-  background: linear-gradient(180deg, rgba(228, 220, 202, 0), rgba(228, 220, 202, 0.92) 20%, rgba(228, 220, 202, 0.92) 80%, rgba(228, 220, 202, 0));
-  opacity: 0.42;
-}
-
-.daily-entry-paper-label {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  min-height: 42rpx;
-  padding: 0 14rpx;
-  border-radius: 999rpx;
-  background: rgba(243, 237, 225, 0.88);
-  color: #a27d57;
-  font-size: 20rpx;
-  font-weight: 700;
-  letter-spacing: 1rpx;
-}
-
-.daily-entry-paper-label.media-label {
-  grid-column: 1 / -1;
-  margin-bottom: -2rpx;
-}
-
-.daily-entry-content {
-  margin-top: 16rpx;
-  font-size: 30rpx;
-  line-height: 1.9;
-  color: var(--app-color-text-strong);
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.daily-entry-scroll {
-  flex: 1;
-  min-height: 0;
-  margin-top: 22rpx;
-}
-
-.daily-media-grid {
-  margin-top: 22rpx;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14rpx;
-}
-
-.daily-media-card {
-  position: relative;
-  overflow: hidden;
-  border-radius: 24rpx;
-  aspect-ratio: 1 / 1;
-  background: rgba(255, 255, 255, 0.72);
-}
-
-.daily-media-thumb {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.daily-media-fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, rgba(255, 244, 247, 0.85), rgba(238, 247, 239, 0.85));
-}
-
-.daily-play-icon {
-  width: 0;
-  height: 0;
-  border-top: 14rpx solid transparent;
-  border-bottom: 14rpx solid transparent;
-  border-left: 22rpx solid rgba(90, 141, 174, 0.9);
-  margin-left: 8rpx;
-}
-
-.daily-media-tag {
-  position: absolute;
-  right: 10rpx;
-  bottom: 10rpx;
-  padding: 6rpx 12rpx;
-  border-radius: 999rpx;
-  background: rgba(0, 0, 0, 0.42);
-  color: #fff;
-  font-size: 20rpx;
-}
-
-.daily-entry-actions {
-  margin-top: 22rpx;
-}
-
-.daily-entry-edit {
-  min-height: 52rpx;
-  padding: 0 18rpx;
-  border-radius: 999rpx;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.8);
-  color: var(--app-color-primary-strong);
-  font-size: 24rpx;
-  font-weight: 700;
-}
-
-.daily-entry-stamp {
-  min-height: 52rpx;
-  padding: 0 18rpx;
-  border-radius: 18rpx;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--author-accent, var(--app-color-primary-strong));
-  font-size: 22rpx;
-  font-weight: 700;
-  box-shadow: inset 0 0 0 2rpx rgba(255, 255, 255, 0.68);
-}
-
-.daily-entry-footer {
-  margin-top: 20rpx;
-}
-
-.daily-entry-summary-card {
-  padding: 20rpx 22rpx;
-  border-radius: 24rpx;
-  background: var(--author-surface-soft, rgba(255, 255, 255, 0.64));
-  box-shadow: inset 0 0 0 2rpx rgba(255, 255, 255, 0.56);
-}
-
-.daily-entry-summary-kicker {
-  font-size: 20rpx;
-  font-weight: 700;
-  letter-spacing: 1rpx;
-  color: var(--author-accent, var(--app-color-primary-strong));
-}
-
-.daily-entry-summary-text {
-  margin-top: 10rpx;
-  font-size: 24rpx;
-  line-height: 1.75;
-  color: var(--app-color-text-strong);
-}
-
-.daily-entry-footer-actions {
-  margin-top: 16rpx;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14rpx;
-}
-
-.daily-inline-action {
-  min-height: 78rpx;
-  padding: 0 18rpx;
-  border-radius: 22rpx;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10rpx;
-  background: rgba(255, 255, 255, 0.82);
-  color: var(--author-accent, var(--app-color-primary-strong));
-  font-size: 24rpx;
-  font-weight: 700;
-  box-shadow:
-    inset 0 0 0 2rpx rgba(255, 255, 255, 0.7),
-    0 10rpx 20rpx rgba(95, 113, 112, 0.06);
-}
-
-.daily-inline-action.primary {
-  background: linear-gradient(180deg, rgba(255, 249, 239, 0.98), rgba(255, 255, 255, 0.96));
-  color: #a36e55;
-}
-
-.daily-inline-action-heart {
-  font-size: 26rpx;
-  line-height: 1;
-  color: #ef728d;
-}
-
-.entry-empty-tip,
-.detail-empty {
-  font-size: 24rpx;
-  line-height: 1.8;
-  color: var(--app-color-text-muted);
-}
-
-.entry-empty-tip {
-  padding: 20rpx 22rpx;
-}
-
-.entry-strip {
-  width: 100%;
-  min-width: 0;
-  margin-top: 20rpx;
-  white-space: nowrap;
-}
-
-.entry-strip-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 12rpx;
-  margin-right: 14rpx;
-  padding: 14rpx 18rpx;
-  border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.74);
-  color: #6b8a89;
-  font-size: 22rpx;
-}
-
-.entry-strip-chip.active {
-  background: linear-gradient(135deg, rgba(233, 248, 244, 0.98), rgba(246, 255, 252, 0.98));
-  color: var(--app-color-primary-strong);
-  box-shadow: 0 10rpx 20rpx rgba(83, 148, 138, 0.12);
-}
-
-.entry-strip-mood {
-  font-weight: 700;
-}
-.history-drawer-mask {
-  position: fixed;
-  inset: 0;
-  z-index: 28;
-  background: rgba(17, 18, 22, 0.18);
-  display: flex;
-  align-items: flex-end;
-}
-
-.history-drawer-card {
-  width: 100%;
-  max-width: 750rpx;
-  padding: 18rpx 24rpx calc(env(safe-area-inset-bottom) + 28rpx);
-  border-radius: 32rpx 32rpx 0 0;
-  background: rgba(255, 255, 255, 0.96);
-  box-sizing: border-box;
-  box-shadow: 0 -18rpx 36rpx rgba(0, 0, 0, 0.12);
-}
-
-.history-drawer-handle {
-  width: 88rpx;
-  height: 8rpx;
-  border-radius: 999rpx;
-  background: rgba(153, 174, 171, 0.55);
-  margin: 0 auto 20rpx;
-}
-
-.history-drawer-title {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: var(--app-color-text-strong);
-}
-
-.history-drawer-subtitle {
-  margin-top: 8rpx;
-  font-size: 24rpx;
-  line-height: 1.7;
-  color: var(--app-color-text-muted);
-}
-
-.history-drawer-scroll {
-  width: 100%;
-  max-height: 58vh;
-  margin-top: 20rpx;
-}
-
-.history-list {
-  display: grid;
-  gap: 14rpx;
-}
-
-.history-item {
-  position: relative;
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-  padding: 20rpx 22rpx 20rpx 30rpx;
-  border-radius: 24rpx;
-  background: var(--author-surface, rgba(243, 250, 248, 0.96));
-  box-shadow: inset 0 0 0 2rpx var(--author-outline, rgba(255, 255, 255, 0.46));
-}
-
-.history-item::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 18rpx;
-  bottom: 18rpx;
-  width: 10rpx;
-  border-radius: 0 999rpx 999rpx 0;
-  background: var(--author-accent, var(--app-color-primary-strong));
-}
-
-.history-item.active {
-  background: var(--author-surface-active, rgba(243, 250, 248, 0.96));
-  box-shadow:
-    inset 0 0 0 2rpx var(--author-outline, rgba(255, 255, 255, 0.78)),
-    0 12rpx 24rpx rgba(83, 148, 138, 0.08);
-}
-
-.history-date {
-  font-size: 28rpx;
-  font-weight: 700;
-  color: var(--app-color-primary-strong);
-}
-
-.history-author {
-  margin-top: 10rpx;
-  font-size: 22rpx;
-  line-height: 1.6;
-  color: var(--author-accent, var(--app-color-text-muted));
-}
-
-.history-preview {
-  margin-top: 8rpx;
-  font-size: 24rpx;
-  line-height: 1.7;
-  color: var(--app-color-text-muted);
-  white-space: normal;
-  word-break: break-word;
-}
-
-.comment-drawer-mask {
-  position: fixed;
-  inset: 0;
-  z-index: 32;
-  background: rgba(17, 18, 22, 0.18);
-  display: flex;
-  align-items: flex-end;
-}
-
-.comment-drawer-card {
-  width: 100%;
-  max-width: 750rpx;
-  height: 76vh;
-  max-height: 76vh;
-  min-height: 560rpx;
-  padding: 18rpx 24rpx calc(env(safe-area-inset-bottom) + 24rpx);
-  border-radius: 32rpx 32rpx 0 0;
-  background: rgba(255, 255, 255, 0.97);
-  box-sizing: border-box;
-  box-shadow: 0 -18rpx 36rpx rgba(0, 0, 0, 0.12);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.comment-drawer-handle {
-  width: 88rpx;
-  height: 8rpx;
-  border-radius: 999rpx;
-  background: rgba(153, 174, 171, 0.55);
-  margin: 0 auto 20rpx;
-}
-
-.comment-drawer-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20rpx;
-}
-
-.comment-drawer-title {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: var(--app-color-text-strong);
-}
-
-.comment-drawer-subtitle {
-  margin-top: 8rpx;
-  font-size: 24rpx;
-  line-height: 1.7;
-  color: var(--app-color-text-muted);
-}
-
-.comment-drawer-badge {
-  flex-shrink: 0;
-  min-height: 52rpx;
-  padding: 0 18rpx;
-  border-radius: 999rpx;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(243, 250, 248, 0.96);
-  color: var(--app-color-primary-strong);
-  font-size: 22rpx;
-  font-weight: 700;
-}
-
-.comment-drawer-scroll {
-  width: 100%;
-  flex: 1;
-  height: 0;
-  min-height: 0;
-  margin-top: 20rpx;
-}
-
-.comment-overview-card {
-  padding: 22rpx 22rpx 20rpx;
-  border-radius: 24rpx;
-  background: rgba(246, 251, 249, 0.96);
-  box-shadow: inset 0 0 0 2rpx rgba(229, 242, 239, 0.96);
-}
-
-.comment-overview-title {
-  font-size: 22rpx;
-  font-weight: 700;
-  color: var(--app-color-primary-strong);
-}
-
-.comment-overview-copy {
-  margin-top: 10rpx;
-  font-size: 24rpx;
-  line-height: 1.75;
-  color: var(--app-color-text-strong);
-}
-
-.comment-like-strip {
-  margin-top: 16rpx;
-  padding: 18rpx 20rpx;
-  border-radius: 22rpx;
-  display: flex;
-  align-items: center;
-  gap: 10rpx;
-  background: rgba(255, 244, 247, 0.92);
-}
-
-.comment-like-strip-heart {
-  font-size: 26rpx;
-  color: #ef728d;
-}
-
-.comment-like-strip-text {
-  font-size: 24rpx;
-  line-height: 1.7;
-  color: var(--app-color-text-strong);
-}
-
-.comment-thread-list {
-  margin-top: 16rpx;
-  display: grid;
-  gap: 14rpx;
-}
-
-.comment-thread-card {
-  padding: 20rpx 22rpx;
-  border-radius: 24rpx;
-  background: rgba(243, 248, 255, 0.92);
-  box-shadow: inset 0 0 0 2rpx rgba(222, 234, 249, 0.96);
-}
-
-.comment-thread-card.mine {
-  background: rgba(255, 242, 247, 0.94);
-  box-shadow: inset 0 0 0 2rpx rgba(249, 225, 234, 0.98);
-}
-
-.comment-thread-topline {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18rpx;
-}
-
-.comment-thread-name {
-  font-size: 24rpx;
-  font-weight: 700;
-  color: var(--app-color-text-strong);
-}
-
-.comment-thread-time {
-  font-size: 22rpx;
-  color: var(--app-color-text-muted);
-}
-
-.comment-thread-content {
-  margin-top: 10rpx;
-  font-size: 25rpx;
-  line-height: 1.75;
-  color: var(--app-color-text-strong);
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.comment-thread-empty {
-  margin-top: 16rpx;
-  padding: 28rpx 24rpx;
-  border-radius: 24rpx;
-  background: rgba(247, 249, 250, 0.96);
-  font-size: 24rpx;
-  line-height: 1.75;
-  color: var(--app-color-text-muted);
-  text-align: center;
-}
-
-.comment-composer {
-  padding: 20rpx;
-  border-radius: 28rpx;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 18rpx 34rpx rgba(83, 148, 138, 0.12);
-  box-sizing: border-box;
-}
-
-.drawer-composer {
-  margin-top: 18rpx;
-  padding: 18rpx;
-  border-radius: 26rpx;
-  background: rgba(250, 252, 251, 0.96);
-  box-shadow: inset 0 0 0 2rpx rgba(234, 241, 239, 0.96);
-}
-
-.comment-reply-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18rpx;
-  margin-bottom: 12rpx;
-  padding: 0 6rpx;
-}
-
-.comment-reply-text {
-  font-size: 22rpx;
-  color: var(--app-color-primary-strong);
-  font-weight: 700;
-}
-
-.comment-reply-clear {
-  font-size: 22rpx;
-  color: var(--app-color-text-muted);
-}
-
-.comment-input {
-  width: 100%;
-  min-height: 120rpx;
-  padding: 18rpx 22rpx;
-  border-radius: 22rpx;
-  box-sizing: border-box;
-  background: rgba(242, 250, 248, 0.96);
-  font-size: 28rpx;
-  line-height: 1.7;
-  color: var(--app-color-text-strong);
-}
-
-.comment-textarea {
-  max-height: 260rpx;
-}
-
-.comment-composer-actions {
-  justify-content: space-between;
-  gap: 20rpx;
-  margin-top: 14rpx;
-}
-
-.comment-send-btn {
-  min-width: 128rpx;
-  height: 64rpx;
-  line-height: 64rpx;
-  padding: 0 28rpx;
-  border: none;
-  border-radius: 999rpx;
-  background: var(--app-gradient-primary);
-  color: #fff;
-  font-size: 24rpx;
-  font-weight: 700;
-}
-
-.comment-sheet-mask {
-  position: fixed;
-  inset: 0;
-  z-index: 35;
-  background: rgba(17, 18, 22, 0.16);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 0 28rpx calc(env(safe-area-inset-bottom) + 24rpx);
-  box-sizing: border-box;
-}
-
-.comment-sheet-card {
-  width: 100%;
-  max-width: 460rpx;
-  border-radius: 28rpx;
-  background: rgba(255, 255, 255, 0.97);
-  overflow: hidden;
-  box-shadow: 0 22rpx 42rpx rgba(0, 0, 0, 0.12);
-}
-
-.comment-sheet-title,
-.comment-sheet-action {
-  min-height: 84rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28rpx;
-}
-
-.comment-sheet-title {
-  color: var(--app-color-text-muted);
-  border-bottom: 1px solid rgba(220, 231, 228, 0.9);
-}
-
-.comment-sheet-action {
-  color: var(--app-color-text-strong);
-}
-
-.comment-sheet-action + .comment-sheet-action {
-  border-top: 1px solid rgba(220, 231, 228, 0.9);
-}
-
-.comment-sheet-action.danger {
-  color: #d85c7c;
-  font-weight: 700;
-}
-
-.daily-add-btn {
-  position: fixed;
-  left: 24rpx;
-  right: 24rpx;
-  bottom: calc(env(safe-area-inset-bottom) + 20rpx);
-  z-index: 20;
-  width: auto;
-  max-width: calc(100vw - 48rpx);
-  height: 92rpx;
-  line-height: 92rpx;
-  font-size: 28rpx;
-  box-sizing: border-box;
-}
+.daily-page { min-height: 100vh; padding: var(--app-shell-padding-top) 20rpx 190rpx; background: linear-gradient(134deg, #fdf4ee 8%, #fceae0 46%, #f8d9ce 92%); position: relative; overflow-x: hidden }
+.bg.blob { position: absolute; border-radius: 999rpx; filter: blur(90rpx); opacity: .24; pointer-events: none }
+.bg.a { width: 420rpx; height: 420rpx; top: -90rpx; right: -40rpx; background: rgba(244,190,175,.62) }
+.bg.b { width: 360rpx; height: 360rpx; top: 320rpx; left: -110rpx; background: rgba(240,208,196,.48) }
+.bg.c { width: 320rpx; height: 320rpx; top: 900rpx; right: -30rpx; background: rgba(232,196,160,.4) }
+.topbar,.love-line,.overview-top,.chips,.section-head,.response-top,.response-foot,.history-main,.comment-head,.composer-foot,.reply-tip { display: flex; align-items: center }
+.topbar,.section-head,.response-foot,.history-main,.comment-head,.composer-foot,.reply-tip { justify-content: space-between }
+.topbar,.head-copy,.content,.bottom-bar { position: relative; z-index: 2 }
+.icon-btn { width: 68rpx; height: 68rpx; border-radius: 32rpx; display: flex; align-items: center; justify-content: center; background: rgba(255,250,246,.84); box-shadow: 0 4rpx 20rpx rgba(180,80,60,.07); border: 2rpx solid rgba(220,160,130,.2) }
+.icon { width: 28rpx; height: 28rpx }
+.edit-icon { width: 26rpx; height: 26rpx }
+.title { font-family: 'Times New Roman', serif; font-size: 36rpx; letter-spacing: 4rpx; color: #6b3f32 }
+.head-copy { padding: 26rpx 0 8rpx }
+.date { text-align: center; font-size: 20rpx; letter-spacing: 3rpx; color: rgba(184,137,110,.82) }
+.love-line { justify-content: center; gap: 16rpx; margin-top: 10rpx; color: #c9a87a; font-size: 18rpx; letter-spacing: 2rpx }
+.line { width: 44rpx; height: 2rpx; background: linear-gradient(90deg, rgba(201,168,122,0), #c9a87a) }
+.line.right { background: linear-gradient(270deg, rgba(201,168,122,0), #c9a87a) }
+.content { margin-top: 16rpx }
+.card { box-sizing: border-box; background: rgba(255,248,242,.9); border: 2rpx solid rgba(220,160,130,.14); box-shadow: 0 20rpx 50rpx rgba(180,80,60,.08) }
+.overview { border-radius: 52rpx; overflow: hidden }
+.overview-strip { height: 8rpx; background: linear-gradient(90deg, #e07b6a 0%, #e8967e 52%, #c9a87a 100%) }
+.overview-body { padding: 28rpx 30rpx 32rpx }
+.duo { position: relative; display: flex; align-items: center }
+.duo-badge { width: 76rpx; height: 76rpx; border-radius: 38rpx; display: flex; align-items: center; justify-content: center; font-family: 'Times New Roman', serif; font-size: 32rpx; color: #fff8f4; border: 2rpx solid rgba(255,248,244,.94) }
+.duo-badge.main { background: linear-gradient(140deg, #e8877a 4%, #d4635a 96%) }
+.duo-badge.partner { margin-left: 26rpx; background: linear-gradient(140deg, #d4a87a 4%, #b88860 96%) }
+.duo-heart { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40rpx; height: 40rpx; border-radius: 20rpx; display: flex; align-items: center; justify-content: center; background: linear-gradient(140deg, #f8d4cc 4%, #f0c0b0 96%); border: 2rpx solid rgba(255,248,244,.94); color: #e07b6a; font-size: 18rpx }
+.status,.chip,.like-pill { display: inline-flex; align-items: center; gap: 8rpx; min-height: 48rpx; padding: 0 18rpx; border-radius: 24rpx; font-size: 18rpx }
+.status { background: rgba(156,184,144,.14); border: 2rpx solid rgba(156,184,144,.25); color: #7aaa88 }
+.status.muted { background: rgba(217,195,176,.18); border-color: rgba(201,168,122,.2); color: #b8896e }
+.mini-icon { width: 20rpx; height: 20rpx }
+.mood { position: relative; padding-top: 30rpx; text-align: center }
+.mood-glow { position: absolute; left: 50%; top: 34rpx; width: 160rpx; height: 160rpx; transform: translateX(-50%); background: radial-gradient(circle, rgba(224,123,106,.14), rgba(224,123,106,0)); filter: blur(16rpx) }
+.flower { width: 118rpx; height: 118rpx; display: block; margin: 0 auto }
+.mood-title { margin-top: 10rpx; font-family: 'Times New Roman', serif; font-size: 68rpx; letter-spacing: 8rpx; color: #6b3f32 }
+.mood-desc { margin-top: 10rpx; font-size: 22rpx; letter-spacing: 2rpx; color: rgba(184,137,110,.92) }
+.divider { height: 2rpx; margin-top: 26rpx; background: rgba(201,168,122,.18) }
+.summary-text,.note-text,.quote-text,.history-preview,.comment-body { white-space: pre-wrap; word-break: break-word }
+.summary-text { margin-top: 22rpx; font-size: 28rpx; line-height: 1.7; color: #6b3f32 }
+.chips { flex-wrap: wrap; gap: 14rpx; margin-top: 24rpx }
+.chip { background: rgba(252,236,224,.62); border: 2rpx solid rgba(220,160,130,.18); color: #9b7060 }
+.note-card,.row,.response-card,.photo-strip,.sheet,.action-sheet { border-radius: 34rpx }
+.note-card { margin-top: 24rpx; padding: 28rpx 30rpx }
+.section-label { display: inline-flex; align-items: center; gap: 10rpx; color: #6b3f32; font-size: 24rpx; letter-spacing: 2rpx }
+.bar { width: 6rpx; height: 24rpx; border-radius: 999rpx; background: rgba(201,168,122,.62) }
+.note-text { margin-top: 24rpx; font-size: 30rpx; line-height: 1.95; color: #6b3f32 }
+.expand,.response-action { display: inline-flex; align-items: center; gap: 8rpx; margin-top: 16rpx; color: #c9a87a; font-size: 22rpx }
+.expand-icon { width: 20rpx; height: 20rpx; transition: transform .2s ease }
+.expand-icon.open { transform: rotate(180deg) }
+.note-foot { margin-top: 24rpx; padding-top: 18rpx; border-top: 2rpx solid rgba(201,168,122,.18); display: flex; align-items: center; gap: 12rpx; color: rgba(184,137,110,.82); font-size: 20rpx }
+.note-line { width: 24rpx; height: 2rpx; background: rgba(201,168,122,.4) }
+.section-head,.response-head { margin-top: 24rpx }
+.section-count { font-size: 20rpx; color: rgba(201,168,122,.9) }
+.list { margin-top: 14rpx; display: grid; gap: 14rpx }
+.row { padding: 22rpx 22rpx 22rpx 28rpx; gap: 18rpx; display: flex; align-items: center }
+.time { min-width: 70rpx; font-size: 22rpx; color: #d49a71 }
+.row-text { flex: 1; min-width: 0; font-size: 28rpx; line-height: 1.55; color: #6b3f32 }
+.action { width: 48rpx; height: 48rpx; border-radius: 24rpx; background: rgba(252,236,224,.64); display: flex; align-items: center; justify-content: center }
+.empty { margin-top: 14rpx; padding: 26rpx 28rpx; font-size: 24rpx; color: rgba(107,63,50,.66) }
+.photo-block { margin-top: 22rpx }
+.photo-strip { margin-top: 14rpx; padding: 24rpx 22rpx; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16rpx }
+.thumb { position: relative; height: 144rpx; overflow: hidden; border-radius: 22rpx; background: rgba(250,235,224,.72) }
+.thumb-img,.thumb-fallback,.thumb-mask { position: absolute; inset: 0 }
+.thumb-img { width: 100%; height: 100% }
+.thumb-fallback,.thumb-mask { display: flex; align-items: center; justify-content: center }
+.thumb-fallback-icon { width: 40rpx; height: 40rpx; opacity: .8 }
+.thumb-mask { flex-direction: column; color: #fff8f4; background: rgba(107,63,50,.42) }
+.thumb-more { font-size: 34rpx; font-weight: 700 }
+.thumb-see { margin-top: 8rpx; font-size: 20rpx }
+.response-card { margin-top: 14rpx; padding: 24rpx }
+.response-copy { flex: 1; min-width: 0; margin-left: 18rpx }
+.avatar { width: 72rpx; height: 72rpx; border-radius: 36rpx; display: flex; align-items: center; justify-content: center; font-family: 'Times New Roman', serif; font-size: 30rpx; color: #fff8f4; background: linear-gradient(140deg, #d4a87a 4%, #b88860 96%) }
+.response-name { font-size: 24rpx; color: #6b3f32 }
+.response-meta,.history-meta,.sheet-sub,.comment-head text:last-child,.composer-foot text,.bottom-note { font-size: 20rpx; color: rgba(107,63,50,.6) }
+.like-pill { background: rgba(252,236,224,.55); border: 2rpx solid rgba(220,160,130,.18); color: #b8896e }
+.quote { position: relative; margin-top: 18rpx; padding: 24rpx 24rpx 24rpx 26rpx; min-height: 120rpx; border-radius: 22rpx; background: rgba(252,240,230,.52); border: 2rpx solid rgba(201,168,122,.14) }
+.quote-mark { position: absolute; right: 18rpx; top: 6rpx; font-family: 'Times New Roman', serif; font-size: 58rpx; line-height: 1; color: rgba(201,168,122,.16) }
+.quote-text { position: relative; z-index: 1; font-size: 26rpx; line-height: 1.75; color: #6b3f32 }
+.history-scroll { margin-top: 14rpx; white-space: nowrap }
+.history-chip { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 108rpx; height: 112rpx; margin-right: 12rpx; border-radius: 28rpx; background: rgba(255,250,246,.8); border: 2rpx solid rgba(220,160,130,.16); box-sizing: border-box }
+.history-chip.active { background: rgba(236,226,216,.94); box-shadow: inset 0 0 0 2rpx rgba(255,255,255,.5) }
+.history-chip-top { font-size: 18rpx; color: rgba(184,137,110,.84) }
+.history-chip-date { margin-top: 8rpx; font-family: 'Times New Roman', serif; font-size: 28rpx; color: #6b3f32 }
+.history-chip.calendar { background: rgba(252,240,232,.5); border-style: dashed; border-color: rgba(201,168,122,.3) }
+.calendar-icon { width: 28rpx; height: 28rpx }
+.calendar-text { margin-top: 6rpx; font-size: 18rpx; color: #c9a87a }
+.sheet-mask { position: fixed; inset: 0; z-index: 30; display: flex; align-items: flex-end; background: rgba(17,18,22,.16) }
+.small-mask { justify-content: center; padding: 0 28rpx calc(env(safe-area-inset-bottom) + 24rpx); box-sizing: border-box }
+.sheet { width: 100%; max-width: 750rpx; max-height: 78vh; padding: 18rpx 24rpx calc(env(safe-area-inset-bottom) + 24rpx); background: rgba(255,251,247,.98); box-shadow: 0 -18rpx 36rpx rgba(0,0,0,.12); border-radius: 32rpx 32rpx 0 0; display: flex; flex-direction: column }
+.handle { width: 88rpx; height: 8rpx; border-radius: 999rpx; background: rgba(153,174,171,.55); margin: 0 auto 20rpx }
+.sheet-title { font-size: 32rpx; color: #6b3f32 }
+.sheet-scroll { width: 100%; flex: 1; min-height: 0; margin-top: 20rpx }
+.history-item,.comment-summary,.comment-item,.composer,.action-sheet { box-sizing: border-box }
+.history-item { position: relative; margin-bottom: 14rpx; padding: 20rpx 22rpx 20rpx 30rpx; border-radius: 24rpx; background: rgba(255,248,242,.95) }
+.history-item.mine { background: #e9f4ff }
+.history-item.partner { background: #ffeaf1 }
+.history-title { font-size: 28rpx; color: #6b3f32 }
+.history-num { font-size: 22rpx; color: rgba(107,63,50,.56) }
+.history-meta { margin-top: 10rpx }
+.history-preview { margin-top: 8rpx; font-size: 24rpx; line-height: 1.7; color: rgba(107,63,50,.72) }
+.comment-summary { padding: 22rpx; border-radius: 24rpx; background: rgba(246,251,249,.96); box-shadow: inset 0 0 0 2rpx rgba(229,242,239,.96); font-size: 24rpx; line-height: 1.75; color: #6b3f32 }
+.likes { margin-top: 16rpx; padding: 18rpx 20rpx; border-radius: 22rpx; background: rgba(255,244,247,.92); font-size: 24rpx; line-height: 1.7; color: #6b3f32 }
+.comment-list { margin-top: 16rpx; display: grid; gap: 14rpx }
+.comment-item { padding: 20rpx 22rpx; border-radius: 24rpx; background: rgba(243,248,255,.92) }
+.comment-item.mine { background: rgba(255,242,247,.94) }
+.comment-head text:first-child { font-size: 24rpx; color: #6b3f32 }
+.comment-body { margin-top: 10rpx; font-size: 24rpx; line-height: 1.75; color: #6b3f32 }
+.comment-empty { margin-top: 16rpx }
+.composer { margin-top: 18rpx; padding: 18rpx; border-radius: 26rpx; background: rgba(250,252,251,.96); box-shadow: inset 0 0 0 2rpx rgba(234,241,239,.96) }
+.reply-tip { margin-bottom: 12rpx }
+.reply-tip text:first-child { font-size: 22rpx; color: #6b3f32 }
+.comment-input { width: 100%; min-height: 120rpx; padding: 18rpx 22rpx; border-radius: 22rpx; box-sizing: border-box; background: rgba(242,250,248,.96); font-size: 28rpx; line-height: 1.7; color: #6b3f32; max-height: 260rpx }
+.composer-foot { gap: 20rpx; margin-top: 14rpx }
+.send-btn { min-width: 128rpx; height: 64rpx; line-height: 64rpx; padding: 0 28rpx; border: none; border-radius: 999rpx; background: linear-gradient(172deg, #e8877a 4%, #d4635a 96%); color: #fff; font-size: 24rpx }
+.action-sheet { width: 100%; max-width: 460rpx; background: rgba(255,255,255,.97); overflow: hidden; box-shadow: 0 22rpx 42rpx rgba(0,0,0,.12) }
+.action-row { min-height: 84rpx; display: flex; align-items: center; justify-content: center; font-size: 28rpx; color: #6b3f32 }
+.title-row { color: rgba(107,63,50,.6); border-bottom: 1px solid rgba(220,231,228,.9) }
+.action-row + .action-row { border-top: 1px solid rgba(220,231,228,.9) }
+.action-row.danger { color: #d85c7c }
+.bottom-bar { position: fixed; left: 20rpx; right: 20rpx; bottom: calc(env(safe-area-inset-bottom) + 20rpx); z-index: 20 }
+.primary-btn { width: 100%; height: 96rpx; border: none; border-radius: 40rpx; display: flex; align-items: center; justify-content: center; gap: 12rpx; background: linear-gradient(172deg, #e8877a 4%, #d4635a 96%); box-shadow: 0 16rpx 30rpx rgba(224,123,106,.38); color: #fff8f4; font-size: 30rpx; letter-spacing: 4rpx }
+.primary-btn::after { border: none }
+.btn-icon { width: 28rpx; height: 28rpx }
+.bottom-note { margin-top: 12rpx; text-align: center }
 </style>

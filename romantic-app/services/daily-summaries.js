@@ -1,12 +1,12 @@
 import { request } from '@/utils/request.js'
 
 export const DAILY_SUMMARY_MOODS = [
-  { key: 'gentle', label: '温柔', caption: '今天适合留下一句轻轻的话。' },
-  { key: 'sweet', label: '很甜', caption: '普通的一天，也被喜欢认真照亮。' },
-  { key: 'calm', label: '平静', caption: '把安稳和舒服悄悄留在今天。' },
-  { key: 'missing', label: '想念', caption: '见不到的时候，也想把心意留下来。' },
-  { key: 'busy', label: '忙碌', caption: '在忙碌里，也想给彼此留一页温柔。' },
-  { key: 'closer', label: '更靠近一点', caption: '今天也在慢慢向彼此靠近。' }
+  { key: 'gentle', label: '温柔', caption: '今天适合留下一句轻轻的话' },
+  { key: 'sweet', label: '很甜', caption: '普通的一天，也被喜欢认真照亮' },
+  { key: 'calm', label: '平静', caption: '把安稳和舒服悄悄留在今天' },
+  { key: 'missing', label: '想念', caption: '见不到的时候，也想把心意留下来' },
+  { key: 'busy', label: '忙碌', caption: '在忙碌里，也想给彼此留一页温柔' },
+  { key: 'closer', label: '更靠近一点', caption: '今天也在慢慢向彼此靠近' }
 ]
 
 function ensureSuccess(response, fallbackMessage) {
@@ -88,6 +88,25 @@ function normalizeHistoryItem(item = {}) {
   }
 }
 
+function normalizePageView(item = null) {
+  if (!item || typeof item !== 'object') {
+    return null
+  }
+  return {
+    selfDisplayName: String(item.selfDisplayName || '').trim(),
+    partnerDisplayName: String(item.partnerDisplayName || '').trim(),
+    relationshipDays: Number(item.relationshipDays || 0),
+    relationshipText: String(item.relationshipText || '').trim(),
+    mediaCount: Number(item.mediaCount || 0),
+    responseState: String(item.responseState || '').trim(),
+    responseDisplayName: String(item.responseDisplayName || '').trim(),
+    responseMetaText: String(item.responseMetaText || '').trim(),
+    responseContent: String(item.responseContent || '').trim(),
+    responseEntryId: item.responseEntryId || '',
+    responseLikeCount: Number(item.responseLikeCount || 0)
+  }
+}
+
 function normalizeSummary(item = {}) {
   const mood = String(item.mood || 'gentle').trim() || 'gentle'
   return {
@@ -106,7 +125,8 @@ function normalizeSummary(item = {}) {
     likeUsers: (Array.isArray(item.likeUsers) ? item.likeUsers : []).map(normalizeLikeUser),
     commentList: (Array.isArray(item.commentList) ? item.commentList : []).map(normalizeComment),
     entryList: (Array.isArray(item.entryList) ? item.entryList : []).map(normalizeEntry),
-    historyList: (Array.isArray(item.historyList) ? item.historyList : []).map(normalizeHistoryItem)
+    historyList: (Array.isArray(item.historyList) ? item.historyList : []).map(normalizeHistoryItem),
+    pageView: normalizePageView(item.pageView)
   }
 }
 
