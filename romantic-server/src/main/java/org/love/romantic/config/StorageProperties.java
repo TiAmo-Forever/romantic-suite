@@ -32,6 +32,8 @@ public class StorageProperties {
 
     private String romanticPlanDirectory = "romantic-plans";
 
+    private String mealDirectory = "meals";
+
     public Path getRootDirectory() {
         return Paths.get(rootPath).toAbsolutePath().normalize();
     }
@@ -58,6 +60,10 @@ public class StorageProperties {
 
     public Path getRomanticPlanStorageDirectory() {
         return getRootDirectory().resolve(normalizeSegment(romanticPlanDirectory)).normalize();
+    }
+
+    public Path getMealStorageDirectory() {
+        return getRootDirectory().resolve(normalizeSegment(mealDirectory)).normalize();
     }
 
     public String getPublicPathPrefixNormalized() {
@@ -87,6 +93,10 @@ public class StorageProperties {
 
     public String buildRomanticPlanRelativePath(String fileName) {
         return getPublicPathPrefixNormalized() + "/" + normalizeSegment(romanticPlanDirectory) + "/" + fileName;
+    }
+
+    public String buildMealRelativePath(String fileName) {
+        return getPublicPathPrefixNormalized() + "/" + normalizeSegment(mealDirectory) + "/" + fileName;
     }
 
     private String normalizeSegment(String value) {

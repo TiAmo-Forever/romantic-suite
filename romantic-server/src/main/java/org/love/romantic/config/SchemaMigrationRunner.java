@@ -34,6 +34,7 @@ public class SchemaMigrationRunner {
         ensureNotificationTable();
         ensureAlbumTables();
         ensureRomanticPlanTables();
+        ensureMealTables();
         ensureColumns();
         migrateAccountTypes();
         ensureAvatarImageColumnType();
@@ -282,6 +283,59 @@ public class SchemaMigrationRunner {
                 + ")");
     }
 
+    private void ensureMealTables() {
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS meal_dish ("
+                + "id BIGINT PRIMARY KEY AUTO_INCREMENT,"
+                + "name VARCHAR(80) NOT NULL,"
+                + "category VARCHAR(16) NOT NULL DEFAULT 'hot',"
+                + "preference VARCHAR(16) NOT NULL DEFAULT 'none',"
+                + "cover_url VARCHAR(255) NOT NULL DEFAULT '',"
+                + "memory VARCHAR(255) NOT NULL DEFAULT '',"
+                + "description VARCHAR(1000) NOT NULL DEFAULT '',"
+                + "recipe TEXT NOT NULL,"
+                + "creator_username VARCHAR(64) NOT NULL,"
+                + "updated_by VARCHAR(64) NOT NULL,"
+                + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+                + "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+                + "KEY idx_meal_dish_category (category),"
+                + "KEY idx_meal_dish_preference (preference),"
+                + "KEY idx_meal_dish_updated_at (updated_at)"
+                + ")");
+
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS meal_daily_plan ("
+                + "id BIGINT PRIMARY KEY AUTO_INCREMENT,"
+                + "plan_date DATE NOT NULL,"
+                + "remark VARCHAR(500) NOT NULL DEFAULT '',"
+                + "creator_username VARCHAR(64) NOT NULL,"
+                + "updated_by VARCHAR(64) NOT NULL,"
+                + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+                + "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+                + "UNIQUE KEY uk_meal_daily_plan_date (plan_date),"
+                + "KEY idx_meal_daily_plan_updated_at (updated_at)"
+                + ")");
+
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS meal_daily_plan_item ("
+                + "id BIGINT PRIMARY KEY AUTO_INCREMENT,"
+                + "plan_id BIGINT NOT NULL,"
+                + "dish_id BIGINT NOT NULL,"
+                + "sort_order INT NOT NULL DEFAULT 0,"
+                + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+                + "KEY idx_meal_daily_plan_item_plan_id (plan_id),"
+                + "KEY idx_meal_daily_plan_item_dish_id (dish_id)"
+                + ")");
+
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS meal_weekly_dish ("
+                + "id BIGINT PRIMARY KEY AUTO_INCREMENT,"
+                + "week_start_date DATE NOT NULL,"
+                + "dish_id BIGINT NOT NULL,"
+                + "sort_order INT NOT NULL DEFAULT 0,"
+                + "creator_username VARCHAR(64) NOT NULL,"
+                + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+                + "UNIQUE KEY uk_meal_weekly_dish (week_start_date, dish_id),"
+                + "KEY idx_meal_weekly_dish_week (week_start_date)"
+                + ")");
+    }
+
     private void migrateAlbumInteractionTables() {
         if (tableExists("album_memory_like")) {
             jdbcTemplate.execute("INSERT INTO biz_like_record (biz_type, biz_id, username, created_at) "
@@ -463,6 +517,10 @@ public class SchemaMigrationRunner {
         executeCommentSql("ALTER TABLE romantic_plan COMMENT = '浪漫计划主表'");
         executeCommentSql("ALTER TABLE romantic_plan_item COMMENT = '浪漫计划条目表'");
         executeCommentSql("ALTER TABLE romantic_plan_feedback COMMENT = '浪漫计划反馈表'");
+        executeCommentSql("ALTER TABLE meal_dish COMMENT = '情侣点菜菜谱表'");
+        executeCommentSql("ALTER TABLE meal_daily_plan COMMENT = '情侣点菜每日菜单表'");
+        executeCommentSql("ALTER TABLE meal_daily_plan_item COMMENT = '情侣点菜每日菜单条目表'");
+        executeCommentSql("ALTER TABLE meal_weekly_dish COMMENT = '情侣点菜本周精选表'");
         executeCommentSql("ALTER TABLE countdown_plan MODIFY COLUMN note VARCHAR(1000) NOT NULL DEFAULT '' COMMENT '计划说明'");
         executeCommentSql("ALTER TABLE improvement_note MODIFY COLUMN description TEXT NOT NULL COMMENT '事情说明'");
         executeCommentSql("ALTER TABLE improvement_note MODIFY COLUMN latest_feedback VARCHAR(1000) NOT NULL DEFAULT '' COMMENT '最近一次反馈内容'");
@@ -575,6 +633,40 @@ public class SchemaMigrationRunner {
         executeCommentSql("ALTER TABLE daily_summary_media MODIFY COLUMN thumbnail_url VARCHAR(255) NOT NULL DEFAULT '' COMMENT '缩略图路径'");
         executeCommentSql("ALTER TABLE daily_summary_media MODIFY COLUMN sort_order INT NOT NULL DEFAULT 0 COMMENT '排序值'");
         executeCommentSql("ALTER TABLE daily_summary_media MODIFY COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'");
+
+        executeCommentSql("ALTER TABLE meal_dish MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
+        executeCommentSql("ALTER TABLE meal_dish MODIFY COLUMN name VARCHAR(80) NOT NULL COMMENT '菜名'");
+        executeCommentSql("ALTER TABLE meal_dish MODIFY COLUMN category VARCHAR(16) NOT NULL DEFAULT 'hot' COMMENT '菜品分类'");
+        executeCommentSql("ALTER TABLE meal_dish MODIFY COLUMN preference VARCHAR(16) NOT NULL DEFAULT 'none' COMMENT '偏好标签'");
+        executeCommentSql("ALTER TABLE meal_dish MODIFY COLUMN cover_url VARCHAR(255) NOT NULL DEFAULT '' COMMENT '菜品图片'");
+        executeCommentSql("ALTER TABLE meal_dish MODIFY COLUMN memory VARCHAR(255) NOT NULL DEFAULT '' COMMENT '一句话记忆'");
+        executeCommentSql("ALTER TABLE meal_dish MODIFY COLUMN description VARCHAR(1000) NOT NULL DEFAULT '' COMMENT '详情说明'");
+        executeCommentSql("ALTER TABLE meal_dish MODIFY COLUMN recipe TEXT NOT NULL COMMENT '制作方法'");
+        executeCommentSql("ALTER TABLE meal_dish MODIFY COLUMN creator_username VARCHAR(64) NOT NULL COMMENT '创建账号'");
+        executeCommentSql("ALTER TABLE meal_dish MODIFY COLUMN updated_by VARCHAR(64) NOT NULL COMMENT '最近更新账号'");
+        executeCommentSql("ALTER TABLE meal_dish MODIFY COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'");
+        executeCommentSql("ALTER TABLE meal_dish MODIFY COLUMN updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'");
+
+        executeCommentSql("ALTER TABLE meal_daily_plan MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
+        executeCommentSql("ALTER TABLE meal_daily_plan MODIFY COLUMN plan_date DATE NOT NULL COMMENT '菜单日期'");
+        executeCommentSql("ALTER TABLE meal_daily_plan MODIFY COLUMN remark VARCHAR(500) NOT NULL DEFAULT '' COMMENT '菜单备注'");
+        executeCommentSql("ALTER TABLE meal_daily_plan MODIFY COLUMN creator_username VARCHAR(64) NOT NULL COMMENT '创建账号'");
+        executeCommentSql("ALTER TABLE meal_daily_plan MODIFY COLUMN updated_by VARCHAR(64) NOT NULL COMMENT '最近更新账号'");
+        executeCommentSql("ALTER TABLE meal_daily_plan MODIFY COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'");
+        executeCommentSql("ALTER TABLE meal_daily_plan MODIFY COLUMN updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'");
+
+        executeCommentSql("ALTER TABLE meal_daily_plan_item MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
+        executeCommentSql("ALTER TABLE meal_daily_plan_item MODIFY COLUMN plan_id BIGINT NOT NULL COMMENT '每日菜单 ID'");
+        executeCommentSql("ALTER TABLE meal_daily_plan_item MODIFY COLUMN dish_id BIGINT NOT NULL COMMENT '菜品 ID'");
+        executeCommentSql("ALTER TABLE meal_daily_plan_item MODIFY COLUMN sort_order INT NOT NULL DEFAULT 0 COMMENT '排序值'");
+        executeCommentSql("ALTER TABLE meal_daily_plan_item MODIFY COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'");
+
+        executeCommentSql("ALTER TABLE meal_weekly_dish MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID'");
+        executeCommentSql("ALTER TABLE meal_weekly_dish MODIFY COLUMN week_start_date DATE NOT NULL COMMENT '周起始日期'");
+        executeCommentSql("ALTER TABLE meal_weekly_dish MODIFY COLUMN dish_id BIGINT NOT NULL COMMENT '菜品 ID'");
+        executeCommentSql("ALTER TABLE meal_weekly_dish MODIFY COLUMN sort_order INT NOT NULL DEFAULT 0 COMMENT '排序值'");
+        executeCommentSql("ALTER TABLE meal_weekly_dish MODIFY COLUMN creator_username VARCHAR(64) NOT NULL COMMENT '创建账号'");
+        executeCommentSql("ALTER TABLE meal_weekly_dish MODIFY COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'");
     }
 
     private void executeCommentSql(String sql) {

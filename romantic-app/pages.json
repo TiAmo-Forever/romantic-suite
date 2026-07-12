@@ -134,6 +134,30 @@
       }
     },
     {
+      "path": "pages/modules/meal/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/modules/meal/recipes",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/modules/meal/edit",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/modules/meal/weekly",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/modules/daily-summary/detail",
       "style": {
         "navigationStyle": "custom"

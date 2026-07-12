@@ -478,3 +478,19 @@
 - 验证：
   - 当前前端目录未提供 `package.json`，无法直接执行 `npm run build:weapp`
   - 已完成页面源码级自检与关键引用检查，建议继续在微信开发者工具或 HBuilderX 内实际预览确认
+
+### 2026-07-12
+
+- 主题：新增情侣点菜模块并按 Figma 原型完成前后端闭环
+- 主要变更：
+  - 后端新增情侣点菜接口 `/api/meals/**`，覆盖菜谱列表、菜品详情、新增、编辑、删除、今日菜单、本周精选等能力
+  - 新增 `meal_dish`、`meal_daily_plan`、`meal_daily_plan_item`、`meal_weekly_dish` 四张表，并同步维护 `schema.sql` 与启动迁移逻辑
+  - 新增点菜菜品图片上传接口 `/api/files/meal-media` 和独立本地存储目录
+  - 前端新增 `pages/modules/meal/index.vue`、`recipes.vue`、`edit.vue`、`weekly.vue` 四个页面，按 Figma 原型还原今天菜单、菜谱库、添一道菜、本周精选
+  - 新增 `services/meals.js` 和 `assets/meal/` SVG 图标资源，图标统一以图片资源引用，不再用 CSS 拼主图标
+  - 首页快速入口新增“今天吃什么”，跳转到情侣点菜首页
+  - 修复菜谱页“添一道菜”点击事件对象被误当作菜品 ID，导致请求 `/api/meals/dishes/[object Object]` 的运行时问题，并为点菜服务层路径 ID 增加参数校验
+- 验证：
+  - 后端 `mvn -q -DskipTests compile` 通过
+  - 前端页面源码巡检通过：
+    - `powershell -ExecutionPolicy Bypass -File romantic-app/tools/check-pages-source.ps1 -Root romantic-app/pages`

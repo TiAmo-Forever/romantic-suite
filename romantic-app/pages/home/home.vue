@@ -160,6 +160,10 @@
           </view>
           <view class="quick-label">改进簿</view>
         </view>
+        <view class="quick-card" hover-class="surface-press" hover-stay-time="70" @click="goMeal">
+          <image class="quick-icon-image" :src="mealEntryIcon" mode="aspectFit" />
+          <view class="quick-label">今天吃什么</view>
+        </view>
       </view>
     </view>
 
@@ -179,6 +183,7 @@ import { fetchTodayDailySummary, getDailySummaryMoodMeta } from '@/services/dail
 import { fetchAnniversaryList } from '@/services/anniversaries.js'
 import { fetchPartnerProfile, fetchRemoteProfile } from '@/services/profile.js'
 import BottomTab from '@/pages/components/BottomTab.vue'
+import mealEntryIcon from '@/assets/meal/icon-meal-entry.svg'
 
 const WEEK_LABELS = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
 const SHORT_WEEK_LABELS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
@@ -455,6 +460,7 @@ function goImprovement() { goPage('/pages/modules/improvement/index') }
 function goMemo() { goPage('/pages/modules/daily-summary/detail') }
 function goMemoEdit() { goPage('/pages/modules/daily-summary/edit') }
 function goNotifications() { goPage('/pages/modules/notifications/index') }
+function goMeal() { goPage('/pages/modules/meal/index') }
 
 onMounted(() => {
   requireAuth()
@@ -1220,6 +1226,12 @@ onShow(() => {
 
   .quick-icon.calendar .heart::before { top: -9rpx; left: 0; }
   .quick-icon.calendar .heart::after { top: 0; left: 9rpx; }
+
+  .quick-icon-image {
+    width: 48rpx;
+    height: 48rpx;
+    display: block;
+  }
 
   .quick-label {
     font-size: 28rpx;

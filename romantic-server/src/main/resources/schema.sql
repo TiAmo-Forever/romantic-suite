@@ -294,3 +294,54 @@ CREATE TABLE IF NOT EXISTS romantic_plan_feedback (
     KEY idx_romantic_plan_feedback_plan_id (plan_id),
     KEY idx_romantic_plan_feedback_date (feedback_date)
 ) COMMENT='浪漫计划反馈表';
+
+CREATE TABLE IF NOT EXISTS meal_dish (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键 ID',
+    name VARCHAR(80) NOT NULL COMMENT '菜名',
+    category VARCHAR(16) NOT NULL DEFAULT 'hot' COMMENT '菜品分类',
+    preference VARCHAR(16) NOT NULL DEFAULT 'none' COMMENT '偏好标签',
+    cover_url VARCHAR(255) NOT NULL DEFAULT '' COMMENT '菜品图片',
+    memory VARCHAR(255) NOT NULL DEFAULT '' COMMENT '一句话记忆',
+    description VARCHAR(1000) NOT NULL DEFAULT '' COMMENT '详情说明',
+    recipe TEXT NOT NULL COMMENT '制作方法',
+    creator_username VARCHAR(64) NOT NULL COMMENT '创建账号',
+    updated_by VARCHAR(64) NOT NULL COMMENT '最近更新账号',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    KEY idx_meal_dish_category (category),
+    KEY idx_meal_dish_preference (preference),
+    KEY idx_meal_dish_updated_at (updated_at)
+) COMMENT='情侣点菜菜谱表';
+
+CREATE TABLE IF NOT EXISTS meal_daily_plan (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键 ID',
+    plan_date DATE NOT NULL COMMENT '菜单日期',
+    remark VARCHAR(500) NOT NULL DEFAULT '' COMMENT '菜单备注',
+    creator_username VARCHAR(64) NOT NULL COMMENT '创建账号',
+    updated_by VARCHAR(64) NOT NULL COMMENT '最近更新账号',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    UNIQUE KEY uk_meal_daily_plan_date (plan_date),
+    KEY idx_meal_daily_plan_updated_at (updated_at)
+) COMMENT='情侣点菜每日菜单表';
+
+CREATE TABLE IF NOT EXISTS meal_daily_plan_item (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键 ID',
+    plan_id BIGINT NOT NULL COMMENT '每日菜单 ID',
+    dish_id BIGINT NOT NULL COMMENT '菜品 ID',
+    sort_order INT NOT NULL DEFAULT 0 COMMENT '排序值',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    KEY idx_meal_daily_plan_item_plan_id (plan_id),
+    KEY idx_meal_daily_plan_item_dish_id (dish_id)
+) COMMENT='情侣点菜每日菜单条目表';
+
+CREATE TABLE IF NOT EXISTS meal_weekly_dish (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键 ID',
+    week_start_date DATE NOT NULL COMMENT '周起始日期',
+    dish_id BIGINT NOT NULL COMMENT '菜品 ID',
+    sort_order INT NOT NULL DEFAULT 0 COMMENT '排序值',
+    creator_username VARCHAR(64) NOT NULL COMMENT '创建账号',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    UNIQUE KEY uk_meal_weekly_dish (week_start_date, dish_id),
+    KEY idx_meal_weekly_dish_week (week_start_date)
+) COMMENT='情侣点菜本周精选表';
