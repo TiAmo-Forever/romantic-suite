@@ -50,6 +50,9 @@ export function normalizeDish(item = {}) {
     updaterNickname: String(item.updaterNickname || '').trim(),
     addedToday: Boolean(item.addedToday),
     selectedThisWeek: Boolean(item.selectedThisWeek),
+    dailyUsedCount: Number(item.dailyUsedCount || 0),
+    weeklySelectedCount: Number(item.weeklySelectedCount || 0),
+    lastAddedDate: String(item.lastAddedDate || '').trim(),
     updatedAt: String(item.updatedAt || '').trim()
   }
 }
@@ -81,15 +84,26 @@ function normalizeWeekly(item = {}) {
   }
 }
 
-export async function fetchMealDishes({ category = 'all', preference = 'all', keyword = '' } = {}) {
-  const query = `category=${encodeURIComponent(category)}&preference=${encodeURIComponent(preference)}&keyword=${encodeURIComponent(keyword)}`
-  const response = await request({ url: `/api/meals/dishes?${query}` })
-  return (ensureSuccess(response, '获取菜谱失败') || []).map(normalizeDish)
+function normalizeDishPage(item = {}) {
+  const rawList = Array.isArray(item) ? item : item.list
+  return {
+    page: Number(item.pageNo || 1),
+    pageSize: Number(item.pageSize || 10),
+    total: Number(item.total || 0),
+    hasMore: Boolean(item.hasMore),
+    list: (Array.isArray(rawList) ? rawList : []).map(normalizeDish)
+  }
 }
 
-export async function fetchMealDishDetail(id) {
+export async function fetchMealDishes({ category = 'all', preference = 'all', keyword = '', date = '', page = 1, pageSize = 10 } = {}) {
+  const query = `category=${encodeURIComponent(category)}&preference=${encodeURIComponent(preference)}&keyword=${encodeURIComponent(keyword)}&date=${encodeURIComponent(date)}&page=${encodeURIComponent(page)}&pageSize=${encodeURIComponent(pageSize)}`
+  const response = await request({ url: `/api/meals/dishes?${query}` })
+  return normalizeDishPage(ensureSuccess(response, '获取菜谱失败'))
+}
+
+export async function fetchMealDishDetail(id, date = '') {
   const dishId = normalizePathId(id, '菜品')
-  const response = await request({ url: `/api/meals/dishes/${encodeURIComponent(dishId)}` })
+  const response = await request({ url: `/api/meals/dishes/${encodeURIComponent(dishId)}?date=${encodeURIComponent(date)}` })
   return normalizeDish(ensureSuccess(response, '获取菜品详情失败'))
 }
 
@@ -130,6 +144,17 @@ export async function removeDailyPlanItem(itemId, date = '') {
   const id = normalizePathId(itemId, '菜单项')
   const response = await request({ url: `/api/meals/daily/items/${encodeURIComponent(id)}?date=${encodeURIComponent(date)}`, method: 'DELETE' })
   return normalizeDailyPlan(ensureSuccess(response, '移除今日菜单失败'))
+}
+
+export async function replaceDailyPlanItem(itemId, date = '') {
+  const id = normalizePathId(itemId, '菜单项')
+  const response = await request({ url: `/api/meals/daily/items/${encodeURIComponent(id)}/replace?date=${encodeURIComponent(date)}`, method: 'PUT' })
+  return normalizeDailyPlan(ensureSuccess(response, '替换菜单项失败'))
+}
+
+export async function copyPreviousDailyPlan(date = '') {
+  const response = await request({ url: `/api/meals/daily/copy-previous?date=${encodeURIComponent(date)}`, method: 'POST' })
+  return normalizeDailyPlan(ensureSuccess(response, '复制昨天菜单失败'))
 }
 
 export async function fetchMealWeeklySelection(date = '') {

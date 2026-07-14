@@ -32,7 +32,7 @@
         <view class="selection-header">
           <view>
             <view class="selection-title">{{ TEXT.selectionTitle }}</view>
-            <view class="selection-desc">{{ TEXT.selectionDesc }}</view>
+            <view v-if="TEXT.selectionDesc" class="selection-desc">{{ TEXT.selectionDesc }}</view>
           </view>
           <view class="selection-chip">{{ selectedLabel }}</view>
         </view>
@@ -114,12 +114,12 @@ import AccountPanel from '@/pages/account/components/AccountPanel.vue'
 const TEXT = {
   eyebrow: '三级地点选择',
   panelTitle: '地点填写',
-  panelDesc: '支持直接手动输入，也支持从左到右选择省、市、区。选好后会尽量少打断当前页面的编辑流程。',
+  panelDesc: '',
   inputLabel: '地点名称',
   inputHint: '支持手动填写和地区检索',
   inputPlaceholder: '例如：杭州市西湖区、上海迪士尼、广州南站',
   selectionTitle: '联动选择',
-  selectionDesc: '从左到右依次选择，越往后越精确。',
+  selectionDesc: '',
   provinceLabel: '省份',
   cityLabel: '城市',
   districtLabel: '区县',

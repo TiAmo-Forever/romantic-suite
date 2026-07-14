@@ -30,11 +30,6 @@
       <view class="section-card hero-card">
         <view class="ribbon ribbon-pink">基础草稿</view>
         <view class="section-card-inner hero-card-inner">
-          <view class="hero-copy">
-            <view class="hero-copy-title">先把计划框架搭起来。</view>
-            <view class="hero-copy-desc">标题、时间、地点和步骤先定下来，后面再慢慢补细节。</view>
-          </view>
-
           <view class="hero-cover-card">
             <view v-if="coverPreviewUrl" class="hero-cover-preview" @click="previewCover">
               <image class="hero-cover-image" :src="coverPreviewUrl" mode="aspectFill" />
@@ -44,7 +39,6 @@
             <view v-else class="hero-cover-empty" @click="chooseCover">
               <view class="hero-cover-empty-icon"></view>
               <view class="hero-cover-empty-title">添加封面</view>
-              <view class="hero-cover-empty-desc">选一张图片，让这份计划更有氛围。</view>
             </view>
 
             <view class="hero-cover-actions">
@@ -74,7 +68,6 @@
 
           <view v-if="activeStep === 'basic'" class="content-block">
             <view class="block-title">基础信息</view>
-            <view class="block-desc">先写清楚这份计划是什么。</view>
 
             <view class="form-card">
               <view class="field-group">
@@ -88,7 +81,7 @@
                   v-model="form.description"
                   class="field-textarea"
                   maxlength="1000"
-                  placeholder="写下这份计划为什么做，或者想达到什么效果。"
+                  placeholder="请输入计划说明"
                   placeholder-class="textarea-placeholder"
                 ></textarea>
               </view>
@@ -131,7 +124,6 @@
 
           <view v-if="activeStep === 'schedule'" class="content-block">
             <view class="block-title">时间与地点</view>
-            <view class="block-desc">把时间和地点先定下来。</view>
 
             <view class="form-card">
               <view class="datetime-grid">
@@ -190,7 +182,6 @@
             <view class="block-head">
               <view>
                 <view class="block-title">计划条目</view>
-                <view class="block-desc">把要做的事拆成几步。</view>
               </view>
               <view class="block-action" @click="addItem">新增条目</view>
             </view>
@@ -208,7 +199,7 @@
                   v-model="item.content"
                   class="field-textarea"
                   maxlength="1000"
-                  placeholder="补充这一步要做什么，或者需要注意什么。"
+                  placeholder="请输入条目内容"
                   placeholder-class="textarea-placeholder"
                 ></textarea>
 

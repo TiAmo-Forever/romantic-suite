@@ -63,7 +63,7 @@
         </view>
         <view class="relation-divider"></view>
 
-        <view class="relation-row relation-row-intro">
+        <view v-if="relationIntroText" class="relation-row relation-row-intro">
           <view class="relation-label">我们是</view>
           <view class="relation-value relation-value-intro">{{ relationIntroText }}</view>
         </view>
@@ -93,7 +93,7 @@
           <view class="timeline-copy">
             <view class="timeline-meta">{{ item.meta }}</view>
             <view class="timeline-title">{{ item.title }}</view>
-            <view class="timeline-desc">{{ item.desc }}</view>
+            <view v-if="item.desc" class="timeline-desc">{{ item.desc }}</view>
           </view>
         </view>
       </view>
@@ -206,7 +206,7 @@ const relationshipDays = computed(() => {
 const relationshipDateLabel = computed(() => formatDotDate(parseDateOnly(profile.value?.anniversaryDate)) || '--')
 const relationshipDateText = computed(() => formatChineseDate(parseDateOnly(profile.value?.anniversaryDate)) || '待设置')
 const residentCityText = computed(() => String(profile.value?.city || profile.value?.defaultMeetingPlace || '待设置').trim() || '待设置')
-const relationIntroText = computed(() => String(profile.value?.bio || '').trim() || '两个认真相爱的人，把喜欢慢慢过成了日常')
+const relationIntroText = computed(() => String(profile.value?.bio || '').trim())
 const relationCallNames = computed(() => `${getSelfCallName()} & ${getPartnerCallName()}`)
 const yearRangeLabel = computed(() => {
   const now = new Date()
@@ -233,7 +233,7 @@ const recentNodes = computed(() => {
       id: 'empty_node',
       title: '还没有最近节点',
       meta: '现在',
-      desc: '去纪念日里记录属于你们的下一段故事',
+      desc: '',
       detailId: ''
     }
   ]
@@ -252,7 +252,7 @@ const albumDisplayList = computed(() => {
   while (list.length < 4) {
     list.push({
       id: `placeholder_${list.length}`,
-      title: '等待新回忆',
+      title: '暂无回忆',
       countLabel: '0 张',
       coverUrl: '',
       symbol: ['✈', '☽', '✦', '♡'][list.length % 4],
@@ -352,7 +352,7 @@ function getPartnerCallName() {
 
 function buildTimelineMeta(item) {
   const date = parseDateOnly(item.eventDate)
-  const dateLabel = formatDotDate(date) || '待补充'
+  const dateLabel = formatDotDate(date) || '--'
   return `${getTimelineTypeLabel(item.type)} · ${dateLabel}`
 }
 
@@ -361,7 +361,7 @@ function buildTimelineDesc(item) {
   const location = String(item.location || '').trim()
   if (description) return description
   if (location) return `一起去过 ${location}`
-  return '把这一天记下来，留给以后慢慢回看'
+  return ''
 }
 
 function pickAlbumCover(item) {

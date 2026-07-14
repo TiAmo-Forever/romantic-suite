@@ -8,7 +8,6 @@
     <view class="hero-card app-fade-up">
       <view class="hero-badge app-pill app-pill-glass">{{ TEXT.heroBadge }}</view>
       <view class="hero-title">{{ TEXT.heroTitle }}</view>
-      <view class="hero-desc">{{ TEXT.heroDesc }}</view>
       <view class="hero-actions">
         <button class="hero-btn app-primary-btn app-primary-btn-shadow" @click="goCreate">{{ TEXT.createButton }}</button>
       </view>
@@ -60,7 +59,7 @@
           </view>
           <view class="event-date">{{ item.eventDate }}</view>
           <view class="event-status">{{ formatStatus(item) }}</view>
-          <view class="event-summary" @longpress.stop="copyText(item.description || item.location || TEXT.cardFallback)">{{ item.description || item.location || TEXT.cardFallback }}</view>
+          <view v-if="item.description || item.location" class="event-summary" @longpress.stop="copyText(item.description || item.location)">{{ item.description || item.location }}</view>
 
           <view class="event-footer">
             <view class="event-location">{{ item.location || TEXT.locationFallback }}</view>
@@ -81,7 +80,6 @@
     <view v-else class="empty-card app-card-soft app-fade-up app-delay-2">
       <view class="empty-icon">{{ HEART }}</view>
       <view class="empty-title">{{ TEXT.emptyTitle }}</view>
-      <view class="empty-desc">{{ TEXT.emptyDesc }}</view>
     </view>
   </view>
 </template>
@@ -115,13 +113,10 @@ const TEXT = {
   eyebrow: '重要日子',
   heroBadge: '恋爱纪念日',
   heroTitle: '纪念日列表',
-  heroDesc: '查看和管理重要日期',
   createButton: '新增纪念日',
   defaultType: '纪念日',
-  cardFallback: '暂无说明',
   locationFallback: '未设置地点',
   emptyTitle: '还没有纪念日',
-  emptyDesc: '暂无纪念日',
   loadError: '纪念日加载失败',
   creatorPrefix: '由 ',
   creatorSuffix: ' 创建',

@@ -14,9 +14,6 @@
         <view class="notification-hero-copy">
           <view class="notification-hero-kicker">daily stream</view>
           <view class="notification-hero-title">消息中心</view>
-          <view class="notification-hero-desc">
-            登录、纪念日、相册、倒计时、今日小计、改进簿、浪漫计划提醒
-          </view>
         </view>
         <view class="notification-stat-grid">
           <view class="notification-stat-card notification-stat-card-strong">
@@ -41,7 +38,6 @@
           <view class="notification-toolbar-head">
             <view>
               <view class="notification-toolbar-title">{{ toolbarTitle }}</view>
-              <view class="notification-toolbar-subtitle">{{ toolbarSubtitle }}</view>
             </view>
             <view
               class="toolbar-action"
@@ -135,7 +131,6 @@
         <view class="notification-empty-card">
           <view class="notification-empty-kicker">正在整理提醒</view>
           <view class="notification-empty-title">暂无提醒</view>
-          <view class="notification-empty-desc">当前条件下没有可显示的提醒</view>
         </view>
       </view>
 
@@ -143,14 +138,13 @@
         <view class="notification-empty-card">
           <view class="notification-empty-kicker">{{ activeFilterLabel }}</view>
           <view class="notification-empty-title">{{ emptyState.title }}</view>
-          <view class="notification-empty-desc">{{ emptyState.desc }}</view>
         </view>
       </view>
 
       <view v-if="notificationList.length" class="pagination-state">
-        <view v-if="loadingMore" class="pagination-copy">正在继续整理更早的提醒...</view>
-        <view v-else-if="hasMore" class="pagination-copy">上滑继续翻看更早的消息</view>
-        <view v-else class="pagination-copy pagination-copy-finished">已经翻到这页最早的提醒了</view>
+        <view v-if="loadingMore" class="pagination-copy">加载中</view>
+        <view v-else-if="hasMore" class="pagination-copy">继续加载</view>
+        <view v-else class="pagination-copy pagination-copy-finished">没有更多了</view>
       </view>
 
     </view>
@@ -188,7 +182,8 @@ const TYPE_FILTER_OPTIONS = [
   { key: 'improvement', label: '改进' },
   { key: 'countdown', label: '倒计时' },
   { key: 'auth', label: '登录提醒' },
-  { key: 'plan', label: '浪漫计划' }
+  { key: 'plan', label: '浪漫计划' },
+  { key: 'meal', label: '朝夕同味' }
 ]
 
 const { themeStyle } = useThemePage()
@@ -279,24 +274,18 @@ const emptyState = computed(() => {
   if (activeFilter.value === 'unread') {
     return {
       title: activeBizType.value === 'all' ? '当前没有未读提醒' : `当前没有未读的${activeBizTypeLabel.value}提醒`,
-      desc: activeBizType.value === 'all'
-        ? '暂无新提醒'
-        : `暂无${activeBizTypeLabel.value}提醒`
+      desc: ''
     }
   }
   if (activeFilter.value === 'read') {
     return {
       title: activeBizType.value === 'all' ? '还没有已读记录' : `还没有已读的${activeBizTypeLabel.value}记录`,
-      desc: activeBizType.value === 'all'
-        ? '暂无已读提醒'
-        : `暂无已读${activeBizTypeLabel.value}提醒`
+      desc: ''
     }
   }
   return {
     title: activeBizType.value === 'all' ? '还没有新的提醒' : `还没有${activeBizTypeLabel.value}提醒`,
-    desc: activeBizType.value === 'all'
-      ? '暂无可显示的提醒'
-      : `暂无${activeBizTypeLabel.value}提醒`
+    desc: ''
   }
 })
 
@@ -424,6 +413,8 @@ function resolveBizLabel(bizType) {
       return '今日小计'
     case 'romantic_plan':
       return '浪漫计划'
+    case 'meal':
+      return '朝夕同味'
     default:
       return '共享动态'
   }
@@ -448,6 +439,8 @@ function resolveBizThemeKey(bizType) {
       return 'daily'
     case 'romantic_plan':
       return 'plan'
+    case 'meal':
+      return 'meal'
     default:
       return 'shared'
   }
@@ -469,6 +462,8 @@ function resolveBizGlyph(bizType) {
       return '今'
     case 'plan':
       return '浪'
+    case 'meal':
+      return '味'
     default:
       return '新'
   }
@@ -534,6 +529,11 @@ function resolveNotificationRoute(item) {
       return payload.planId
         ? `/pages/modules/romantic-plan/detail?id=${encodeURIComponent(payload.planId)}`
         : (bizId ? `/pages/modules/romantic-plan/detail?id=${encodeURIComponent(bizId)}` : '/pages/modules/romantic-plan/index')
+    case 'meal':
+      if (type === 'meal_weekly_updated') {
+        return `/pages/modules/meal/weekly?date=${encodeURIComponent(payload.date || '')}`
+      }
+      return `/pages/modules/meal/index?date=${encodeURIComponent(payload.date || '')}`
     default:
       return ''
   }
@@ -1297,6 +1297,11 @@ onUnload(() => {
 .theme-plan {
   --notification-accent: #6f8a79;
   --notification-accent-soft: rgba(221, 234, 226, 0.92);
+}
+
+.theme-meal {
+  --notification-accent: #d08a4f;
+  --notification-accent-soft: rgba(250, 231, 209, 0.92);
 }
 
 .theme-shared {

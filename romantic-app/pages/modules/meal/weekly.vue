@@ -11,12 +11,11 @@
 
     <view class="weekly-hero">
       <text class="weekly-title">这一周，想和你吃这些</text>
-      <text class="weekly-subtitle">不用急着安排满，留几道特别想吃的就好。</text>
       <view class="weekly-count">本周想吃的 {{ weekly.dishCount || 0 }} 道菜</view>
     </view>
 
     <view v-if="weekly.dishList.length" class="weekly-list">
-      <view v-for="dish in weekly.dishList" :key="dish.id" class="weekly-row glass-card">
+      <view v-for="dish in weekly.dishList" :key="dish.id" class="weekly-row glass-card" @click="goDishDetail(dish.id)">
         <view class="dish-cover" :class="`cover-${dish.category}`">
           <image v-if="dish.coverUrl" class="dish-image" :src="resolveMediaUrl(dish.coverUrl)" mode="aspectFill" />
         </view>
@@ -28,8 +27,8 @@
           </view>
         </view>
         <view class="row-tools">
-          <view class="remove-icon" @click="removeWeekly(dish.id)"><image :src="iconRemove" mode="aspectFit" /></view>
-          <view class="today-btn" :class="{ done: dish.addedToday }" @click="addToday(dish)">
+          <view class="remove-icon" @click.stop="removeWeekly(dish.id)"><image :src="iconRemove" mode="aspectFit" /></view>
+          <view class="today-btn" :class="{ done: dish.addedToday }" @click.stop="addToday(dish)">
             {{ dish.addedToday ? '✓ 今天' : '加到今天' }}
           </view>
         </view>
@@ -81,6 +80,7 @@ async function loadWeekly() {
 async function removeWeekly(dishId) {
   try {
     weekly.value = await removeDishFromWeeklySelection(dishId, date.value)
+    uni.$emit('meal:changed')
   } catch (error) {
     uni.showToast({ title: error?.message || '移出失败', icon: 'none' })
   }
@@ -91,6 +91,7 @@ async function addToday(dish) {
   try {
     await addDishToDailyPlan(dish.id, date.value)
     dish.addedToday = true
+    uni.$emit('meal:changed')
     uni.showToast({ title: '已加到今天', icon: 'success' })
   } catch (error) {
     uni.showToast({ title: error?.message || '加入失败', icon: 'none' })
@@ -99,6 +100,11 @@ async function addToday(dish) {
 
 function goRecipes() {
   goPage(`/pages/modules/meal/recipes?date=${encodeURIComponent(date.value)}&weekly=1`)
+}
+
+function goDishDetail(id) {
+  if (!id) return
+  goPage(`/pages/modules/meal/detail?id=${encodeURIComponent(id)}&date=${encodeURIComponent(date.value)}&weekly=1`)
 }
 
 function goBack() {
@@ -124,13 +130,6 @@ function goBack() {
   line-height: 1.3;
   letter-spacing: 2rpx;
   color: #6b3f32;
-}
-
-.weekly-subtitle {
-  margin-top: 12rpx;
-  font-size: 22rpx;
-  line-height: 1.5;
-  color: #b8896e;
 }
 
 .weekly-count {

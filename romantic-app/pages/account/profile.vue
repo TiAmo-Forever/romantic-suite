@@ -9,10 +9,9 @@
 				<AccountIntroCard
 					eyebrow="个人档案"
 					title="个人资料"
-					description="管理当前账号的个人资料"
 					:tags="introTags"
 				/>
-				<AccountPanel title="基础资料" description="用于个人资料展示">
+				<AccountPanel title="基础资料">
 				<AccountField label="当前头像">
 					<view class="profile-avatar-entry app-field" @click="goAvatarSettings">
 						<view class="profile-avatar-copy">
@@ -50,7 +49,6 @@
 				<view class="app-account-action-bar">
 					<view class="app-account-action-note">
 						<view class="app-account-action-note-title">保存当前账号资料</view>
-						<view class="app-account-action-note-desc">城市、邮箱和签名会同步更新</view>
 					</view>
 					<button class="save-btn app-primary-btn app-primary-btn-shadow app-account-save-btn" @click="handleSave">保存资料</button>
 				</view>

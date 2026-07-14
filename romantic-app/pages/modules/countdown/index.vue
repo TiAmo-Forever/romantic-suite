@@ -28,13 +28,12 @@
 					<view class="hero-chip app-pill app-pill-glass">📍 {{ meetingPlan.place || '地点待设置' }}</view>
 				</view>
 				<view class="hero-title">{{ heroTitle }}</view>
-				<view class="hero-desc" @longpress.stop="copyText(heroDesc)">{{ heroDesc }}</view>
+				<view v-if="heroDesc" class="hero-desc" @longpress.stop="copyText(heroDesc)">{{ heroDesc }}</view>
 			</view>
 
 			<view class="countdown-card app-card app-card-gradient">
 				<view class="app-section-kicker">倒计时</view>
 				<view class="app-section-title">距离这次见面</view>
-				<view class="app-section-desc">下次见面倒计时</view>
 				<view class="countdown-grid">
 					<view v-for="item in countdownItems" :key="item.label" class="time-box app-card-soft">
 						<view class="time-cap"></view>
@@ -71,7 +70,7 @@
 					</view>
 					<view class="section-tip">{{ meetingPlan.isAllDay ? '全天安排' : nextMeetingClockText }}</view>
 				</view>
-				<view class="plan-summary-note" @longpress.stop="copyText(meetingPlan.note || '暂无安排说明')">{{ meetingPlan.note || '暂无安排说明' }}</view>
+				<view v-if="meetingPlan.note" class="plan-summary-note" @longpress.stop="copyText(meetingPlan.note)">{{ meetingPlan.note }}</view>
 				<view class="plan-summary-meta">
 					<view class="plan-meta-chip app-pill app-pill-soft">📍 {{ meetingPlan.place || '地点待设置' }}</view>
 					<view class="plan-meta-chip app-pill app-pill-soft">💌 {{ meetingPlan.loverName || '宝贝' }}</view>
@@ -102,7 +101,6 @@
 					</view>
 					<view class="sheet-close" @click.stop="closeEditorSheet">取消</view>
 				</view>
-				<view class="editor-desc">修改见面时间、地点和安排说明</view>
 
 				<view class="form-item">
 					<view class="label">称呼</view>
@@ -195,7 +193,7 @@ const nextMeetingClockText = computed(() => formatTimeText(nextMeetingDate.value
 const lastMeetingText = computed(() => formatDateText(lastMeetingDate.value))
 const heroBadge = computed(() => ({ waiting: '待进行', soon: '即将见面', today: '今天见面', passed: '已结束', unknown: '待设置' }[meetingStatus.value]))
 const heroTitle = computed(() => meetingStatus.value === 'today' ? '今天见面' : meetingStatus.value === 'passed' ? '请设置下次见面' : `${meetingPlan.loverName || 'TA'}的见面安排`)
-const heroDesc = computed(() => meetingPlan.note || '请填写见面计划')
+const heroDesc = computed(() => String(meetingPlan.note || '').trim())
 const countdownItems = computed(() => [{ label: '天', value: countdown.days }, { label: '时', value: countdown.hours }, { label: '分', value: countdown.minutes }, { label: '秒', value: countdown.seconds }])
 const daysSinceLast = computed(() => {
 	const lastDate = startOfDay(lastMeetingDate.value)

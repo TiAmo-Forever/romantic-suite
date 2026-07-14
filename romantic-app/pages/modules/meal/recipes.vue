@@ -9,8 +9,6 @@
       <view class="top-spacer"></view>
     </view>
 
-    <view class="intro-copy">把每一道喜欢，都收进我们的菜谱。</view>
-
     <view class="search-card glass-card">
       <image class="search-icon" :src="iconSearch" mode="aspectFit" />
       <input
@@ -19,7 +17,7 @@
         placeholder="搜一搜想吃的菜"
         placeholder-class="meal-placeholder"
         confirm-type="search"
-        @confirm="loadDishes"
+        @confirm="searchDishes"
       />
     </view>
 
@@ -41,16 +39,16 @@
 
     <view v-if="dishList.length" class="dish-grid">
       <view v-for="dish in dishList" :key="dish.id" class="dish-card glass-card">
-        <view class="dish-photo" :class="`cover-${dish.category}`" @click="openDish(dish)">
+        <view class="dish-photo" :class="`cover-${dish.category}`" @click="previewDishImage(dish)">
           <image v-if="dish.coverUrl" class="dish-image" :src="resolveMediaUrl(dish.coverUrl)" mode="aspectFill" />
           <text class="cat-tag" :class="`cat-${dish.category}`">{{ dish.categoryLabel }}</text>
         </view>
         <view class="dish-info">
           <text class="dish-name">{{ dish.name }}</text>
           <text v-if="dish.preferenceLabel" class="pref-tag" :class="`pref-${dish.preference}`">{{ dish.preferenceLabel }}</text>
-          <text class="dish-memory">{{ dish.memory || '把这道菜补充得更完整一点' }}</text>
+          <text v-if="dish.memory" class="dish-memory">{{ dish.memory }}</text>
           <view class="dish-actions">
-            <text class="link-btn" @click="openDish(dish)">{{ dish.recipe ? '看看怎么做' : '查看详情' }}</text>
+            <text class="link-btn" @click="goDishDetail(dish.id)">{{ dish.recipe ? '看看怎么做' : '查看详情' }}</text>
             <view class="add-today-btn" :class="{ done: isPrimaryDone(dish) }" @click="handlePrimary(dish)">
               {{ primaryButtonText(dish) }}
             </view>
@@ -58,36 +56,23 @@
         </view>
       </view>
     </view>
-    <view v-else class="empty-card glass-card">还没有收藏菜品</view>
+    <view v-else class="empty-card glass-card">
+      <text class="empty-title">{{ emptyTitle }}</text>
+      <view class="empty-actions">
+        <view v-if="hasActiveFilter" class="empty-action" @click="resetFilters">换个筛选</view>
+        <view class="empty-action primary" @click="goEdit()">添一道菜</view>
+      </view>
+    </view>
+
+    <view v-if="dishList.length" class="pagination-state">
+      <text v-if="loadingMore">正在继续加载...</text>
+      <text v-else-if="hasMore">上滑继续看更多菜</text>
+      <text v-else>已经看到全部菜品</text>
+    </view>
 
     <view class="create-fixed" @click="goEdit()">
       <image :src="iconAdd" mode="aspectFit" />
       <text>添一道菜</text>
-    </view>
-
-    <view v-if="activeDish" class="sheet-mask" @click="activeDish = null">
-      <view class="dish-sheet" @click.stop>
-        <view class="sheet-head">
-          <view>
-            <text class="sheet-title">{{ activeDish.name }}</text>
-            <view class="sheet-tags">
-              <text class="cat-tag" :class="`cat-${activeDish.category}`">{{ activeDish.categoryLabel }}</text>
-              <text v-if="activeDish.preferenceLabel" class="pref-tag" :class="`pref-${activeDish.preference}`">{{ activeDish.preferenceLabel }}</text>
-            </view>
-          </view>
-          <view class="sheet-close" @click="activeDish = null"><image :src="iconClose" mode="aspectFit" /></view>
-        </view>
-        <text class="sheet-copy">{{ activeDish.description || activeDish.memory || '这道菜还没有补充说明。' }}</text>
-        <view class="recipe-toggle" @click="recipeExpanded = !recipeExpanded">
-          <text>制作方法</text>
-          <image :class="{ expanded: recipeExpanded }" :src="iconChevron" mode="aspectFit" />
-        </view>
-        <text v-if="recipeExpanded" class="recipe-content">{{ activeDish.recipe || '还没有记录制作方法。' }}</text>
-        <view class="sheet-actions">
-          <view class="sheet-secondary" @click="goEdit(activeDish.id)">调整一下</view>
-          <view class="sheet-primary" @click="handlePrimary(activeDish)">{{ primaryButtonText(activeDish, true) }}</view>
-        </view>
-      </view>
     </view>
 
     <view class="page-bottom"></view>
@@ -95,18 +80,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { onLoad, onShow } from '@dcloudio/uni-app'
+import { computed, ref } from 'vue'
+import { onLoad, onReachBottom, onShow } from '@dcloudio/uni-app'
 import { addDishToDailyPlan, addDishToWeeklySelection, fetchMealDishes, MEAL_CATEGORIES, MEAL_PREFERENCES } from '@/services/meals.js'
 import { requireAuth } from '@/utils/auth.js'
+import { previewImages } from '@/utils/image-preview.js'
 import { resolveMediaUrl } from '@/utils/media-upload.js'
 import { backPage, goPage } from '@/utils/nav.js'
 import { useThemePage } from '@/utils/useThemePage.js'
 import iconBack from '@/assets/meal/icon-back.svg'
 import iconSearch from '@/assets/meal/icon-search.svg'
 import iconAdd from '@/assets/meal/icon-add.svg'
-import iconClose from '@/assets/meal/icon-close.svg'
-import iconChevron from '@/assets/meal/icon-chevron-down.svg'
 
 const { themeStyle } = useThemePage()
 const categories = MEAL_CATEGORIES
@@ -117,8 +101,17 @@ const category = ref('all')
 const preference = ref('all')
 const keyword = ref('')
 const dishList = ref([])
-const activeDish = ref(null)
-const recipeExpanded = ref(false)
+const page = ref(1)
+const hasMore = ref(false)
+const loadingInitial = ref(false)
+const loadingMore = ref(false)
+const PAGE_SIZE = 10
+
+const hasActiveFilter = computed(() => {
+  return category.value !== 'all' || preference.value !== 'all' || Boolean(keyword.value.trim())
+})
+
+const emptyTitle = computed(() => hasActiveFilter.value ? '没有找到合适的菜' : '还没有收藏菜品')
 
 onLoad((options) => {
   date.value = String(options?.date || '').trim()
@@ -127,26 +120,52 @@ onLoad((options) => {
 
 onShow(async () => {
   if (!requireAuth()) return
-  await loadDishes()
+  await loadDishes({ reset: true })
 })
 
-async function loadDishes() {
+onReachBottom(() => {
+  loadDishes()
+})
+
+async function loadDishes(options = {}) {
+  const reset = Boolean(options.reset)
+  if (loadingInitial.value || loadingMore.value) return
+  if (!reset && !hasMore.value) return
+  if (reset) {
+    loadingInitial.value = true
+  } else {
+    loadingMore.value = true
+  }
+  const targetPage = reset ? 1 : page.value + 1
   try {
-    dishList.value = await fetchMealDishes({ category: category.value, preference: preference.value, keyword: keyword.value })
+    const pageData = await fetchMealDishes({
+      category: category.value,
+      preference: preference.value,
+      keyword: keyword.value,
+      date: date.value,
+      page: targetPage,
+      pageSize: PAGE_SIZE
+    })
+    dishList.value = reset ? pageData.list : dishList.value.concat(pageData.list)
+    page.value = pageData.page
+    hasMore.value = pageData.hasMore
   } catch (error) {
     uni.showToast({ title: error?.message || '菜谱加载失败', icon: 'none' })
+  } finally {
+    loadingInitial.value = false
+    loadingMore.value = false
   }
 }
 
 async function changeCategory(value) {
   if (category.value === value) return
   category.value = value
-  await loadDishes()
+  await loadDishes({ reset: true })
 }
 
 async function changePreference(value) {
   preference.value = preference.value === value ? 'all' : value
-  await loadDishes()
+  await loadDishes({ reset: true })
 }
 
 async function handlePrimary(dish) {
@@ -159,10 +178,7 @@ async function handlePrimary(dish) {
       await addDishToDailyPlan(dish.id, date.value)
       dish.addedToday = true
     }
-    if (activeDish.value && activeDish.value.id === dish.id) {
-      activeDish.value.addedToday = dish.addedToday
-      activeDish.value.selectedThisWeek = dish.selectedThisWeek
-    }
+    uni.$emit('meal:changed')
     uni.showToast({ title: weeklyMode.value ? '已加入本周' : '已加到今天', icon: 'success' })
   } catch (error) {
     uni.showToast({ title: error?.message || '加入失败', icon: 'none' })
@@ -180,9 +196,33 @@ function primaryButtonText(dish, expanded = false) {
   return isPrimaryDone(dish) ? (expanded ? '已经在今天' : '✓ 已加') : '加到今天'
 }
 
-function openDish(dish) {
-  activeDish.value = dish
-  recipeExpanded.value = false
+function goDishDetail(id) {
+  if (!id) return
+  const query = [
+    `id=${encodeURIComponent(id)}`,
+    `date=${encodeURIComponent(date.value)}`,
+    weeklyMode.value ? 'weekly=1' : ''
+  ].filter(Boolean).join('&')
+  goPage(`/pages/modules/meal/detail?${query}`)
+}
+
+function previewDishImage(dish) {
+  const url = resolveMediaUrl(dish?.coverUrl)
+  if (!url) {
+    return
+  }
+  previewImages([url], url)
+}
+
+function searchDishes() {
+  loadDishes({ reset: true })
+}
+
+function resetFilters() {
+  category.value = 'all'
+  preference.value = 'all'
+  keyword.value = ''
+  loadDishes({ reset: true })
 }
 
 function goEdit(id = '') {
@@ -201,16 +241,6 @@ function goBack() {
 
 .recipe-page {
   padding-bottom: 120rpx;
-}
-
-.intro-copy {
-  position: relative;
-  z-index: 1;
-  margin: 16rpx 40rpx 0;
-  font-size: 22rpx;
-  line-height: 1.5;
-  color: #b8896e;
-  letter-spacing: 1rpx;
 }
 
 .search-card {
@@ -366,6 +396,49 @@ function goBack() {
   text-align: center;
   color: #b8896e;
   font-size: 24rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18rpx;
+}
+
+.empty-title {
+  color: #6b3f32;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.empty-actions {
+  margin-top: 8rpx;
+  display: flex;
+  justify-content: center;
+  gap: 16rpx;
+}
+
+.empty-action {
+  min-width: 138rpx;
+  height: 58rpx;
+  border-radius: 24rpx;
+  background: rgba(245, 235, 228, 0.72);
+  color: #9b7060;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22rpx;
+}
+
+.empty-action.primary {
+  color: #fff8f4;
+  background: linear-gradient(165deg, #e8877a 4%, #d4635a 96%);
+}
+
+.pagination-state {
+  position: relative;
+  z-index: 1;
+  margin: 28rpx 40rpx 0;
+  text-align: center;
+  font-size: 21rpx;
+  color: rgba(107, 63, 50, 0.55);
 }
 
 .create-fixed {
@@ -390,112 +463,5 @@ function goBack() {
 .create-fixed image {
   width: 28rpx;
   height: 28rpx;
-}
-
-.sheet-mask {
-  position: fixed;
-  inset: 0;
-  z-index: 99;
-  background: rgba(63, 42, 36, 0.18);
-  display: flex;
-  align-items: flex-end;
-}
-
-.dish-sheet {
-  width: 100%;
-  padding: 34rpx 40rpx 44rpx;
-  border-radius: 40rpx 40rpx 0 0;
-  background: #fffaf6;
-  box-shadow: 0 -18rpx 46rpx rgba(180, 80, 60, 0.12);
-}
-
-.sheet-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24rpx;
-}
-
-.sheet-title {
-  font-size: 36rpx;
-  color: #6b3f32;
-  font-weight: 600;
-}
-
-.sheet-tags {
-  margin-top: 14rpx;
-  display: flex;
-  gap: 10rpx;
-}
-
-.sheet-close {
-  width: 56rpx;
-  height: 56rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.sheet-close image {
-  width: 28rpx;
-  height: 28rpx;
-}
-
-.sheet-copy,
-.recipe-content {
-  margin-top: 26rpx;
-  display: block;
-  font-size: 26rpx;
-  line-height: 1.75;
-  color: #8a6255;
-  white-space: pre-wrap;
-}
-
-.recipe-toggle {
-  margin-top: 24rpx;
-  padding: 22rpx 0;
-  border-top: 1rpx solid rgba(201, 168, 122, 0.16);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: #9b7060;
-  font-size: 24rpx;
-}
-
-.recipe-toggle image {
-  width: 26rpx;
-  height: 26rpx;
-  transition: transform 0.2s ease;
-}
-
-.recipe-toggle image.expanded {
-  transform: rotate(180deg);
-}
-
-.sheet-actions {
-  margin-top: 30rpx;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18rpx;
-}
-
-.sheet-secondary,
-.sheet-primary {
-  height: 82rpx;
-  border-radius: 28rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26rpx;
-}
-
-.sheet-secondary {
-  color: #9b7060;
-  background: rgba(245, 235, 228, 0.68);
-}
-
-.sheet-primary {
-  color: #fff8f4;
-  background: linear-gradient(165deg, #e8877a 4%, #d4635a 96%);
 }
 </style>

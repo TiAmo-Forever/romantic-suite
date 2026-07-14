@@ -9,10 +9,9 @@
 				<AccountIntroCard
 					eyebrow="共享信息"
 					title="关系信息"
-					description="管理双方共享的关系资料"
 					:tags="introTags"
 				/>
-			<AccountPanel title="关系设定" description="保存后同步到共享资料">
+			<AccountPanel title="关系设定">
 				<view class="app-account-form-row">
 					<view class="app-account-form-col">
 						<AccountField label="对方对你的称呼">
@@ -40,7 +39,6 @@
 				<view class="app-account-action-bar">
 					<view class="app-account-action-note">
 						<view class="app-account-action-note-title">保存共享资料</view>
-						<view class="app-account-action-note-desc">纪念日、地点和称呼会同步更新</view>
 					</view>
 					<button class="save-btn app-primary-btn app-primary-btn-shadow app-account-save-btn" @click="handleSave">保存并同步</button>
 				</view>

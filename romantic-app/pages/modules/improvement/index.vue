@@ -7,7 +7,6 @@
 
     <view class="hero-card app-fade-up">
       <view class="hero-chip">恋爱改进簿</view>
-      <view class="hero-title">把每一次认真靠近，都留成可以回看的记录</view>
       <button class="hero-btn app-primary-btn app-primary-btn-shadow" @click="goCreate">新增记录</button>
     </view>
 
@@ -55,7 +54,7 @@
             <view class="note-meta-chip note-meta-chip-feedback">{{ resolveTotalFeedbackValue(item) }}</view>
           </view>
 
-          <view class="note-desc">{{ item.latestFeedback || '还没有反馈记录' }}</view>
+          <view class="note-desc">{{ item.latestFeedback || '暂无反馈' }}</view>
 
           <view v-if="item.mediaList?.length" class="media-summary">
             <view class="media-preview">
@@ -77,7 +76,6 @@
             </view>
             <view class="media-summary-text">
               <view class="media-summary-title">已附媒体 {{ mediaText(item.mediaList) }}</view>
-              <view class="media-summary-desc">点开查看这条记录里的照片和视频</view>
             </view>
           </view>
 
@@ -92,7 +90,6 @@
     <view v-else class="empty-card app-card-soft app-fade-up app-delay-2">
       <view class="empty-icon">记</view>
       <view class="empty-title">还没有记录</view>
-      <view class="empty-desc">把想认真改善的小事写下来，就从第一条记录开始。</view>
     </view>
   </view>
 </template>

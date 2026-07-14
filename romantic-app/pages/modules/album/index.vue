@@ -14,7 +14,7 @@
         </view>
         <view class="album-title">{{ featuredMemory?.title || TEXT.albumTitle }}</view>
         <view class="album-meta">{{ featuredMetaText }}</view>
-        <view class="album-summary" @longpress.stop="copyText(featuredMemory?.summary || TEXT.heroSummary)">{{ featuredMemory?.summary || TEXT.heroSummary }}</view>
+        <view v-if="featuredMemory?.summary" class="album-summary" @longpress.stop="copyText(featuredMemory.summary)">{{ featuredMemory.summary }}</view>
         <button class="album-create-btn app-primary-btn app-primary-btn-shadow" @click="handleCreate">
           {{ TEXT.createButton }}
         </button>
@@ -114,7 +114,6 @@
     <view v-else class="empty-card app-card-soft app-fade-up app-delay-2">
       <view class="empty-icon">{{ TEXT.emptyIcon }}</view>
       <view class="empty-title">{{ TEXT.emptyTitle }}</view>
-      <view class="empty-desc">{{ TEXT.emptyDesc }}</view>
     </view>
   </view>
 </template>
@@ -146,7 +145,6 @@ const TEXT = {
   albumTitle: '甜蜜相册',
   albumEyebrow: '回忆收藏',
   heroKicker: '最近记录',
-  heroSummary: '把见面、旅行、生日和纪念日都认真收进一本相册里。',
   createButton: '新建回忆',
   groupUnit: '段回忆',
   memoryWord: '回忆',
@@ -154,17 +152,16 @@ const TEXT = {
   videoCountSuffix: '个视频',
   emptyIcon: '相册',
   emptyTitle: '还没有回忆记录',
-  emptyDesc: '先创建一段属于你们的甜蜜回忆吧。',
   all: '全部',
   month: '本月',
   year: '今年',
-  heroFallbackMeta: '把每一次相处都认真放进时间里',
+  heroFallbackMeta: '暂无记录',
   countSeparator: ' · ',
   ungrouped: '未分组',
   loadError: '甜蜜相册加载失败',
   creatorPrefix: '由 ',
   creatorSuffix: ' 收进相册',
-  creatorFallback: '这段回忆已经被认真收进相册了',
+  creatorFallback: '已收录',
   identityMine: '我',
   identityOther: 'TA'
 }

@@ -25,17 +25,15 @@
         </view>
         <view class="hero-title">{{ coupleTitle }}</view>
         <view class="hero-days">{{ togetherDaysText }}</view>
-        <view class="hero-desc">{{ coupleMoodLine }}</view>
+        <view v-if="coupleMoodLine" class="hero-desc">{{ coupleMoodLine }}</view>
         <view class="hero-bottom-line"></view>
-        <view class="hero-hint">可在下方管理资料与关系信息</view>
       </view>
 
       <view class="hero-intro app-fade-up app-delay-1">
         <view class="hero-intro-title">账号与关系设置</view>
-        <view class="hero-intro-desc">管理个人资料、关系信息、账号安全和本地数据</view>
       </view>
 
-      <AccountPanel title="资料与外观" description="管理个人资料和头像">
+      <AccountPanel title="资料与外观">
         <view class="menu-list menu-list-tight app-fade-up app-delay-2">
           <view class="menu-card app-card-soft" hover-class="menu-card-active" hover-stay-time="70" @click="goPage('/pages/account/profile')">
             <view class="menu-accent accent-profile"></view>
@@ -78,7 +76,7 @@
         </view>
       </AccountPanel>
 
-      <AccountPanel title="关系与安全" description="管理关系信息和账号安全">
+      <AccountPanel title="关系与安全">
         <view class="menu-list menu-list-tight app-fade-up app-delay-3">
           <view class="menu-card app-card-soft" hover-class="menu-card-active" hover-stay-time="70" @click="goPage('/pages/account/relationship')">
             <view class="menu-accent accent-relationship"></view>
@@ -122,7 +120,7 @@
         </view>
       </AccountPanel>
 
-      <AccountPanel title="数据管理" description="管理资料同步与重置">
+      <AccountPanel title="数据管理">
         <view class="menu-list menu-list-tight app-fade-up app-delay-4">
           <view class="menu-card app-card-soft" hover-class="menu-card-active" hover-stay-time="70" @click="goPage('/pages/account/data')">
             <view class="menu-accent accent-data"></view>
@@ -138,7 +136,7 @@
               <view class="menu-preview-card data-preview">
                 <view class="preview-kicker">同步状态</view>
                 <view class="preview-value">账号资料</view>
-                <view class="preview-sub">服务端主数据，本地缓存兜底</view>
+                <view class="preview-sub">账号资料</view>
               </view>
               <view class="menu-arrow" aria-hidden="true"></view>
             </view>

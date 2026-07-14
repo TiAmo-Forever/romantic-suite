@@ -4,6 +4,7 @@
   overflow-x: hidden;
   background: linear-gradient(134deg, #fdf4ee 8%, #fceae0 46%, #f8d9ce 92%);
   color: #6b3f32;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
 .meal-bg {
@@ -69,8 +70,8 @@
 .pref-tag {
   width: fit-content;
   border-radius: 14rpx;
-  padding: 4rpx 14rpx;
-  font-size: 18rpx;
+  padding: 5rpx 16rpx;
+  font-size: 20rpx;
   line-height: 1.5;
 }
 

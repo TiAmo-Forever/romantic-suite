@@ -44,6 +44,7 @@ public class UserNotificationServiceImpl implements UserNotificationService {
     private static final String BIZ_FILTER_DAILY = "daily";
     private static final String BIZ_FILTER_IMPROVEMENT = "improvement";
     private static final String BIZ_FILTER_PLAN = "plan";
+    private static final String BIZ_FILTER_MEAL = "meal";
     private static final String LEGACY_LOGIN_BIZ_TYPE = "login";
 
     private final UserNotificationMapper userNotificationMapper;
@@ -330,6 +331,8 @@ public class UserNotificationServiceImpl implements UserNotificationService {
                 countNotifications(username, "all", NotificationBizTypeConstants.AUTH, createdAtStart, createdAtEnd));
         counts.put(BIZ_FILTER_PLAN,
                 countNotifications(username, "all", BIZ_FILTER_PLAN, createdAtStart, createdAtEnd));
+        counts.put(BIZ_FILTER_MEAL,
+                countNotifications(username, "all", BIZ_FILTER_MEAL, createdAtStart, createdAtEnd));
         return counts;
     }
 
@@ -375,6 +378,8 @@ public class UserNotificationServiceImpl implements UserNotificationService {
             case BIZ_FILTER_PLAN:
             case NotificationBizTypeConstants.ROMANTIC_PLAN:
                 return Collections.singletonList(NotificationBizTypeConstants.ROMANTIC_PLAN);
+            case NotificationBizTypeConstants.MEAL:
+                return Collections.singletonList(NotificationBizTypeConstants.MEAL);
             default:
                 return Collections.singletonList(safeBizType);
         }

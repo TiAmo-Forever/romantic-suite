@@ -9,14 +9,13 @@
       <view class="app-account-intro-card app-card">
         <view class="app-account-intro-kicker">{{ activeDateLabel }}</view>
         <view class="app-account-intro-title">{{ introTitle }}</view>
-        <view class="app-account-intro-desc">{{ moodMeta.caption }}</view>
         <view class="app-account-intro-meta">
           <view class="app-account-intro-chip">{{ TEXT.sharedWord }}</view>
           <view class="app-account-intro-chip">{{ mediaCountText }}</view>
         </view>
       </view>
 
-      <AccountPanel title="今天的氛围" description="选择今日状态">
+      <AccountPanel title="今天的氛围">
         <view class="mood-grid">
           <view
             v-for="item in moodOptions"
@@ -30,7 +29,7 @@
         </view>
       </AccountPanel>
 
-      <AccountPanel title="今天的一句话" description="记录今日内容">
+      <AccountPanel title="今天的一句话">
         <textarea
           v-model="form.content"
           maxlength="1000"
@@ -41,7 +40,7 @@
         <view class="content-meta">{{ form.content.length }}/1000</view>
       </AccountPanel>
 
-      <AccountPanel title="图片与视频" description="上传图片或视频">
+      <AccountPanel title="图片与视频">
         <view class="media-toolbar">
           <view class="media-entry-btn media-entry-photo" @click="chooseImages">
             <view class="media-entry-dot"></view>
@@ -52,8 +51,6 @@
             <view class="media-entry-title">{{ TEXT.addVideo }}</view>
           </view>
         </view>
-
-        <view class="media-tips">{{ mediaCountText }}</view>
 
         <view v-if="mediaList.length" class="media-grid">
           <view v-for="(item, index) in mediaList" :key="item.localId" class="media-card">
@@ -126,7 +123,7 @@ const TEXT = {
   remove: '×',
   imageLimit: '图片最多 9 张',
   videoLimit: '视频最多 1 个',
-  contentRequired: '请先写下一句今天的小计',
+  contentRequired: '请输入今日内容',
   loadFailed: '今日小计加载失败',
   saveFailed: '保存失败',
   saved: '今日小计已保存'

@@ -47,7 +47,6 @@
           <view class="pin-setting-row app-field">
             <view class="pin-setting-copy">
               <view class="pin-setting-title">置顶到首页摘要</view>
-              <view class="pin-setting-desc">只有置顶的纪念日，才会显示在首页纪念日板块。</view>
             </view>
             <switch :checked="form.pinned" color="#ff7ea6" @change="handlePinnedChange" />
           </view>
@@ -59,8 +58,6 @@
           <button class="compact-media-btn" @click="chooseImages">添加图片</button>
           <button class="compact-media-btn" @click="chooseVideo">添加视频</button>
         </view>
-        <view class="media-tips">已选 {{ imageCount }} 张图片，{{ videoCount }} 个视频</view>
-
         <view
           v-if="mediaList.length"
           class="sort-list"
@@ -89,11 +86,7 @@
                 <view class="sort-order">第 {{ index + 1 }} 项</view>
                 <view v-if="index === 0" class="cover-badge">封面</view>
               </view>
-              <view class="sort-desc">
-                {{ item.mediaType === 'image' ? '长按排序' : '视频排序' }}
-              </view>
               <view class="sort-actions">
-                <view class="drag-hint">长按排序</view>
                 <view class="media-remove media-remove-inline" @click.stop="removeMedia(index)">x</view>
               </view>
             </view>

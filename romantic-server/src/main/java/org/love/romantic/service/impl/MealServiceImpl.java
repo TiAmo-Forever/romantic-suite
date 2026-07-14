@@ -1,7 +1,9 @@
 package org.love.romantic.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.love.romantic.auth.AuthContext;
+import org.love.romantic.common.NotificationBizTypeConstants;
 import org.love.romantic.entity.CoupleProfile;
 import org.love.romantic.entity.MealDailyPlan;
 import org.love.romantic.entity.MealDailyPlanItem;
@@ -16,11 +18,13 @@ import org.love.romantic.mapper.MealWeeklyDishMapper;
 import org.love.romantic.model.MealDailyPlanItemResponse;
 import org.love.romantic.model.MealDailyPlanRequest;
 import org.love.romantic.model.MealDailyPlanResponse;
+import org.love.romantic.model.MealDishPageResponse;
 import org.love.romantic.model.MealDishRequest;
 import org.love.romantic.model.MealDishResponse;
 import org.love.romantic.model.MealWeeklyRequest;
 import org.love.romantic.model.MealWeeklyResponse;
 import org.love.romantic.service.MealService;
+import org.love.romantic.service.UserNotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -31,6 +35,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -50,26 +55,32 @@ public class MealServiceImpl implements MealService {
     private final MealDailyPlanItemMapper mealDailyPlanItemMapper;
     private final MealWeeklyDishMapper mealWeeklyDishMapper;
     private final CoupleProfileMapper coupleProfileMapper;
+    private final UserNotificationService userNotificationService;
 
     public MealServiceImpl(MealDishMapper mealDishMapper,
                            MealDailyPlanMapper mealDailyPlanMapper,
                            MealDailyPlanItemMapper mealDailyPlanItemMapper,
                            MealWeeklyDishMapper mealWeeklyDishMapper,
-                           CoupleProfileMapper coupleProfileMapper) {
+                           CoupleProfileMapper coupleProfileMapper,
+                           UserNotificationService userNotificationService) {
         this.mealDishMapper = mealDishMapper;
         this.mealDailyPlanMapper = mealDailyPlanMapper;
         this.mealDailyPlanItemMapper = mealDailyPlanItemMapper;
         this.mealWeeklyDishMapper = mealWeeklyDishMapper;
         this.coupleProfileMapper = coupleProfileMapper;
+        this.userNotificationService = userNotificationService;
     }
 
     @Override
-    public List<MealDishResponse> listDishes(String category, String preference, String keyword) {
-        LocalDate today = LocalDate.now();
-        LocalDate weekStart = resolveWeekStart(today);
-        Set<Long> todayDishIds = listDailyDishIds(today);
+    public MealDishPageResponse listDishes(String category, String preference, String keyword, String date, long pageNo, long pageSize) {
+        LocalDate targetDate = parseDateOrToday(date);
+        LocalDate weekStart = resolveWeekStart(targetDate);
+        Set<Long> todayDishIds = listDailyDishIds(targetDate);
         Set<Long> weeklyDishIds = listWeeklyDishIds(weekStart);
         Map<String, String> nicknameMap = buildNicknameMap();
+        long safePageNo = Math.max(1L, pageNo);
+        long safePageSize = Math.min(Math.max(1L, pageSize), 30L);
+        Page<MealDish> page = new Page<>(safePageNo, safePageSize);
         LambdaQueryWrapper<MealDish> queryWrapper = new LambdaQueryWrapper<>();
         String safeCategory = defaultIfBlank(category, "all").trim().toLowerCase(Locale.ROOT);
         String safePreference = defaultIfBlank(preference, "all").trim().toLowerCase(Locale.ROOT);
@@ -89,15 +100,25 @@ public class MealServiceImpl implements MealService {
                     .like(MealDish::getDescription, safeKeyword));
         }
         queryWrapper.orderByDesc(MealDish::getUpdatedAt).orderByDesc(MealDish::getId);
-        return mealDishMapper.selectList(queryWrapper).stream()
+        Page<MealDish> result = mealDishMapper.selectPage(page, queryWrapper);
+        List<MealDishResponse> list = result.getRecords().stream()
                 .map(dish -> toDishResponse(dish, nicknameMap, todayDishIds, weeklyDishIds))
                 .collect(Collectors.toList());
+        long total = result.getTotal();
+        return MealDishPageResponse.builder()
+                .pageNo(safePageNo)
+                .pageSize(safePageSize)
+                .total(total)
+                .hasMore(safePageNo * safePageSize < total)
+                .list(list)
+                .build();
     }
 
     @Override
-    public MealDishResponse getDish(Long id) {
+    public MealDishResponse getDish(Long id, String date) {
         MealDish dish = requireDish(id);
-        return toDishResponse(dish, buildNicknameMap(), listDailyDishIds(LocalDate.now()), listWeeklyDishIds(resolveWeekStart(LocalDate.now())));
+        LocalDate targetDate = parseDateOrToday(date);
+        return toDishResponse(dish, buildNicknameMap(), listDailyDishIds(targetDate), listWeeklyDishIds(resolveWeekStart(targetDate)));
     }
 
     @Override
@@ -113,7 +134,7 @@ public class MealServiceImpl implements MealService {
                 .build();
         applyDishRequest(dish, request);
         mealDishMapper.insert(dish);
-        return getDish(dish.getId());
+        return getDish(dish.getId(), "");
     }
 
     @Override
@@ -129,7 +150,7 @@ public class MealServiceImpl implements MealService {
         dish.setUpdatedBy(operator);
         dish.setUpdatedAt(LocalDateTime.now());
         mealDishMapper.updateById(dish);
-        return getDish(id);
+        return getDish(id, "");
     }
 
     @Override
@@ -154,20 +175,32 @@ public class MealServiceImpl implements MealService {
         String operator = AuthContext.getRequiredUsername();
         LocalDate planDate = parseDateOrToday(date);
         MealDailyPlan plan = ensureDailyPlan(planDate, operator);
-        plan.setRemark(defaultIfBlank(request == null ? "" : request.getRemark(), "").trim());
+        String oldRemark = defaultIfBlank(plan.getRemark(), "").trim();
+        String nextRemark = defaultIfBlank(request == null ? "" : request.getRemark(), "").trim();
+        plan.setRemark(nextRemark);
         plan.setUpdatedBy(operator);
         plan.setUpdatedAt(LocalDateTime.now());
         mealDailyPlanMapper.updateById(plan);
 
         mealDailyPlanItemMapper.delete(new LambdaQueryWrapper<MealDailyPlanItem>().eq(MealDailyPlanItem::getPlanId, plan.getId()));
         replaceDailyItems(plan.getId(), request == null ? new ArrayList<>() : request.getDishIds());
+        if (!oldRemark.equals(nextRemark)) {
+            notifyMealChange(
+                    operator,
+                    "meal_remark_updated",
+                    "菜单备注更新",
+                    formatMealDate(planDate) + "的菜单备注更新了",
+                    plan.getId(),
+                    Map.of("date", DATE_FORMATTER.format(planDate), "planId", plan.getId(), "remark", nextRemark)
+            );
+        }
         return getDailyPlan(DATE_FORMATTER.format(planDate));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public MealDailyPlanResponse addDishToDailyPlan(String date, Long dishId) {
-        requireDish(dishId);
+        MealDish dish = requireDish(dishId);
         String operator = AuthContext.getRequiredUsername();
         LocalDate planDate = parseDateOrToday(date);
         MealDailyPlan plan = ensureDailyPlan(planDate, operator);
@@ -183,6 +216,14 @@ public class MealServiceImpl implements MealService {
                     .createdAt(LocalDateTime.now())
                     .build());
             touchDailyPlan(plan, operator);
+            notifyMealChange(
+                    operator,
+                    "meal_daily_updated",
+                    "今日菜单更新",
+                    "把「" + dish.getName() + "」加进了" + formatMealDate(planDate) + "菜单",
+                    plan.getId(),
+                    Map.of("date", DATE_FORMATTER.format(planDate), "planId", plan.getId(), "dishId", dish.getId(), "dishName", dish.getName())
+            );
         }
         return getDailyPlan(DATE_FORMATTER.format(planDate));
     }
@@ -195,33 +236,125 @@ public class MealServiceImpl implements MealService {
         if (plan != null) {
             MealDailyPlanItem item = mealDailyPlanItemMapper.selectById(itemId);
             if (item != null && plan.getId().equals(item.getPlanId())) {
+                MealDish dish = mealDishMapper.selectById(item.getDishId());
                 mealDailyPlanItemMapper.deleteById(itemId);
-                touchDailyPlan(plan, AuthContext.getRequiredUsername());
+                String operator = AuthContext.getRequiredUsername();
+                touchDailyPlan(plan, operator);
+                notifyMealChange(
+                        operator,
+                        "meal_daily_updated",
+                        "今日菜单更新",
+                        "从" + formatMealDate(planDate) + "菜单移出了「" + resolveDishName(dish) + "」",
+                        plan.getId(),
+                        Map.of("date", DATE_FORMATTER.format(planDate), "planId", plan.getId(), "dishId", item.getDishId(), "dishName", resolveDishName(dish))
+                );
             }
         }
         return getDailyPlan(DATE_FORMATTER.format(planDate));
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public MealDailyPlanResponse replaceDailyPlanItem(String date, Long itemId) {
+        String operator = AuthContext.getRequiredUsername();
+        LocalDate planDate = parseDateOrToday(date);
+        MealDailyPlan plan = findDailyPlan(planDate);
+        if (plan == null) {
+            throw new BusinessException("今天还没有菜单");
+        }
+        MealDailyPlanItem item = mealDailyPlanItemMapper.selectById(itemId);
+        if (item == null || !plan.getId().equals(item.getPlanId())) {
+            throw new BusinessException("没有找到这道菜单项");
+        }
+        MealDish currentDish = requireDish(item.getDishId());
+        Long nextDishId = pickReplacementDish(currentDish, listDailyDishIds(planDate));
+        MealDish nextDish = requireDish(nextDishId);
+        item.setDishId(nextDishId);
+        mealDailyPlanItemMapper.updateById(item);
+        touchDailyPlan(plan, operator);
+        notifyMealChange(
+                operator,
+                "meal_daily_updated",
+                "今日菜单更新",
+                "把" + formatMealDate(planDate) + "菜单里的「" + currentDish.getName() + "」换成了「" + nextDish.getName() + "」",
+                plan.getId(),
+                Map.of("date", DATE_FORMATTER.format(planDate), "planId", plan.getId(), "oldDishId", currentDish.getId(), "oldDishName", currentDish.getName(), "dishId", nextDish.getId(), "dishName", nextDish.getName())
+        );
+        return getDailyPlan(DATE_FORMATTER.format(planDate));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public MealDailyPlanResponse copyPreviousDailyPlan(String date) {
+        String operator = AuthContext.getRequiredUsername();
+        LocalDate planDate = parseDateOrToday(date);
+        LocalDate previousDate = planDate.minusDays(1);
+        MealDailyPlan previousPlan = findDailyPlan(previousDate);
+        if (previousPlan == null) {
+            throw new BusinessException("昨天还没有菜单");
+        }
+        List<Long> dishIds = listDailyItems(previousPlan.getId()).stream()
+                .map(MealDailyPlanItem::getDishId)
+                .collect(Collectors.toList());
+        if (dishIds.isEmpty()) {
+            throw new BusinessException("昨天还没有选菜");
+        }
+        MealDailyPlan targetPlan = ensureDailyPlan(planDate, operator);
+        String currentRemark = defaultIfBlank(targetPlan.getRemark(), "").trim();
+        targetPlan.setRemark(StringUtils.hasText(currentRemark) ? currentRemark : defaultIfBlank(previousPlan.getRemark(), "").trim());
+        targetPlan.setUpdatedBy(operator);
+        targetPlan.setUpdatedAt(LocalDateTime.now());
+        mealDailyPlanMapper.updateById(targetPlan);
+        mealDailyPlanItemMapper.delete(new LambdaQueryWrapper<MealDailyPlanItem>().eq(MealDailyPlanItem::getPlanId, targetPlan.getId()));
+        replaceDailyItems(targetPlan.getId(), dishIds);
+        notifyMealChange(
+                operator,
+                "meal_daily_updated",
+                "今日菜单更新",
+                "把昨天的" + dishIds.size() + "道菜复制到了" + formatMealDate(planDate) + "菜单",
+                targetPlan.getId(),
+                Map.of("date", DATE_FORMATTER.format(planDate), "planId", targetPlan.getId(), "sourceDate", DATE_FORMATTER.format(previousDate), "dishCount", dishIds.size())
+        );
+        return getDailyPlan(DATE_FORMATTER.format(planDate));
+    }
+
+    @Override
     public MealWeeklyResponse getWeeklySelection(String date) {
-        LocalDate weekStart = resolveWeekStart(parseDateOrToday(date));
-        return toWeeklyResponse(weekStart, buildNicknameMap());
+        LocalDate targetDate = parseDateOrToday(date);
+        LocalDate weekStart = resolveWeekStart(targetDate);
+        return toWeeklyResponse(weekStart, targetDate, buildNicknameMap());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public MealWeeklyResponse saveWeeklySelection(String date, MealWeeklyRequest request) {
-        LocalDate weekStart = resolveWeekStart(parseDateOrToday(date));
+        String operator = AuthContext.getRequiredUsername();
+        LocalDate targetDate = parseDateOrToday(date);
+        LocalDate weekStart = resolveWeekStart(targetDate);
+        Set<Long> oldDishIds = listWeeklyDishIds(weekStart);
+        Set<Long> nextDishIds = new LinkedHashSet<>(distinctIds(request == null ? new ArrayList<>() : request.getDishIds()));
         mealWeeklyDishMapper.delete(new LambdaQueryWrapper<MealWeeklyDish>().eq(MealWeeklyDish::getWeekStartDate, weekStart));
         replaceWeeklyItems(weekStart, request == null ? new ArrayList<>() : request.getDishIds());
-        return getWeeklySelection(DATE_FORMATTER.format(weekStart));
+        if (!oldDishIds.equals(nextDishIds)) {
+            notifyMealChange(
+                    operator,
+                    "meal_weekly_updated",
+                    "本周精选更新",
+                    "本周想吃的菜单更新了",
+                    0L,
+                    Map.of("date", DATE_FORMATTER.format(targetDate), "weekStartDate", DATE_FORMATTER.format(weekStart), "dishCount", nextDishIds.size())
+            );
+        }
+        return getWeeklySelection(DATE_FORMATTER.format(targetDate));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public MealWeeklyResponse addDishToWeeklySelection(String date, Long dishId) {
-        requireDish(dishId);
-        LocalDate weekStart = resolveWeekStart(parseDateOrToday(date));
+        MealDish dish = requireDish(dishId);
+        String operator = AuthContext.getRequiredUsername();
+        LocalDate targetDate = parseDateOrToday(date);
+        LocalDate weekStart = resolveWeekStart(targetDate);
         Long exists = mealWeeklyDishMapper.selectCount(new LambdaQueryWrapper<MealWeeklyDish>()
                 .eq(MealWeeklyDish::getWeekStartDate, weekStart)
                 .eq(MealWeeklyDish::getDishId, dishId));
@@ -231,21 +364,42 @@ public class MealServiceImpl implements MealService {
                     .weekStartDate(weekStart)
                     .dishId(dishId)
                     .sortOrder(nextOrder)
-                    .creatorUsername(AuthContext.getRequiredUsername())
+                    .creatorUsername(operator)
                     .createdAt(LocalDateTime.now())
                     .build());
+            notifyMealChange(
+                    operator,
+                    "meal_weekly_updated",
+                    "本周精选更新",
+                    "把「" + dish.getName() + "」加入了本周精选",
+                    0L,
+                    Map.of("date", DATE_FORMATTER.format(targetDate), "weekStartDate", DATE_FORMATTER.format(weekStart), "dishId", dish.getId(), "dishName", dish.getName())
+            );
         }
-        return getWeeklySelection(DATE_FORMATTER.format(weekStart));
+        return getWeeklySelection(DATE_FORMATTER.format(targetDate));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public MealWeeklyResponse removeDishFromWeeklySelection(String date, Long dishId) {
-        LocalDate weekStart = resolveWeekStart(parseDateOrToday(date));
-        mealWeeklyDishMapper.delete(new LambdaQueryWrapper<MealWeeklyDish>()
+        String operator = AuthContext.getRequiredUsername();
+        MealDish dish = mealDishMapper.selectById(dishId);
+        LocalDate targetDate = parseDateOrToday(date);
+        LocalDate weekStart = resolveWeekStart(targetDate);
+        int deleted = mealWeeklyDishMapper.delete(new LambdaQueryWrapper<MealWeeklyDish>()
                 .eq(MealWeeklyDish::getWeekStartDate, weekStart)
                 .eq(MealWeeklyDish::getDishId, dishId));
-        return getWeeklySelection(DATE_FORMATTER.format(weekStart));
+        if (deleted > 0) {
+            notifyMealChange(
+                    operator,
+                    "meal_weekly_updated",
+                    "本周精选更新",
+                    "从本周精选移出了「" + resolveDishName(dish) + "」",
+                    0L,
+                    Map.of("date", DATE_FORMATTER.format(targetDate), "weekStartDate", DATE_FORMATTER.format(weekStart), "dishId", dishId, "dishName", resolveDishName(dish))
+            );
+        }
+        return getWeeklySelection(DATE_FORMATTER.format(targetDate));
     }
 
     private void applyDishRequest(MealDish dish, MealDishRequest request) {
@@ -289,6 +443,37 @@ public class MealServiceImpl implements MealService {
                     .build());
             index += 1;
         }
+    }
+
+    private Long pickReplacementDish(MealDish currentDish, Set<Long> excludedDishIds) {
+        List<MealDish> candidates = mealDishMapper.selectList(new LambdaQueryWrapper<MealDish>()
+                .eq(MealDish::getCategory, currentDish.getCategory())
+                .eq(StringUtils.hasText(defaultIfBlank(currentDish.getPreference(), "").trim())
+                        && !"none".equals(currentDish.getPreference()), MealDish::getPreference, currentDish.getPreference())
+                .notIn(excludedDishIds != null && !excludedDishIds.isEmpty(), MealDish::getId, excludedDishIds)
+                .ne(MealDish::getId, currentDish.getId())
+                .orderByDesc(MealDish::getUpdatedAt)
+                .orderByDesc(MealDish::getId));
+        if (candidates.isEmpty()) {
+            candidates = mealDishMapper.selectList(new LambdaQueryWrapper<MealDish>()
+                    .eq(MealDish::getCategory, currentDish.getCategory())
+                    .notIn(excludedDishIds != null && !excludedDishIds.isEmpty(), MealDish::getId, excludedDishIds)
+                    .ne(MealDish::getId, currentDish.getId())
+                    .orderByDesc(MealDish::getUpdatedAt)
+                    .orderByDesc(MealDish::getId));
+        }
+        if (candidates.isEmpty()) {
+            candidates = mealDishMapper.selectList(new LambdaQueryWrapper<MealDish>()
+                    .notIn(excludedDishIds != null && !excludedDishIds.isEmpty(), MealDish::getId, excludedDishIds)
+                    .ne(MealDish::getId, currentDish.getId())
+                    .orderByDesc(MealDish::getUpdatedAt)
+                    .orderByDesc(MealDish::getId));
+        }
+        if (candidates.isEmpty()) {
+            throw new BusinessException("暂时没有可替换的菜");
+        }
+        Collections.shuffle(candidates);
+        return candidates.get(0).getId();
     }
 
     private List<Long> distinctIds(List<Long> ids) {
@@ -360,8 +545,8 @@ public class MealServiceImpl implements MealService {
                 .build();
     }
 
-    private MealWeeklyResponse toWeeklyResponse(LocalDate weekStart, Map<String, String> nicknameMap) {
-        Set<Long> todayDishIds = listDailyDishIds(LocalDate.now());
+    private MealWeeklyResponse toWeeklyResponse(LocalDate weekStart, LocalDate targetDate, Map<String, String> nicknameMap) {
+        Set<Long> todayDishIds = listDailyDishIds(targetDate);
         List<MealDishResponse> dishes = listWeeklyItems(weekStart).stream()
                 .map(item -> mealDishMapper.selectById(item.getDishId()))
                 .filter(dish -> dish != null)
@@ -395,8 +580,35 @@ public class MealServiceImpl implements MealService {
                 .updaterNickname(resolveNickname(dish.getUpdatedBy(), nicknameMap))
                 .addedToday(todayDishIds.contains(dish.getId()))
                 .selectedThisWeek(weeklyDishIds.contains(dish.getId()))
+                .dailyUsedCount(countDailyUsage(dish.getId()))
+                .weeklySelectedCount(countWeeklyUsage(dish.getId()))
+                .lastAddedDate(resolveLastAddedDate(dish.getId()))
                 .updatedAt(dish.getUpdatedAt() == null ? "" : DATE_TIME_FORMATTER.format(dish.getUpdatedAt()))
                 .build();
+    }
+
+    private long countDailyUsage(Long dishId) {
+        return mealDailyPlanItemMapper.selectCount(new LambdaQueryWrapper<MealDailyPlanItem>()
+                .eq(MealDailyPlanItem::getDishId, dishId));
+    }
+
+    private long countWeeklyUsage(Long dishId) {
+        return mealWeeklyDishMapper.selectCount(new LambdaQueryWrapper<MealWeeklyDish>()
+                .eq(MealWeeklyDish::getDishId, dishId));
+    }
+
+    private String resolveLastAddedDate(Long dishId) {
+        List<MealDailyPlanItem> items = mealDailyPlanItemMapper.selectList(new LambdaQueryWrapper<MealDailyPlanItem>()
+                .eq(MealDailyPlanItem::getDishId, dishId)
+                .orderByDesc(MealDailyPlanItem::getCreatedAt)
+                .orderByDesc(MealDailyPlanItem::getId));
+        for (MealDailyPlanItem item : items) {
+            MealDailyPlan plan = mealDailyPlanMapper.selectById(item.getPlanId());
+            if (plan != null && plan.getPlanDate() != null) {
+                return DATE_FORMATTER.format(plan.getPlanDate());
+            }
+        }
+        return "";
     }
 
     private List<MealDailyPlanItem> listDailyItems(Long planId) {
@@ -504,6 +716,31 @@ public class MealServiceImpl implements MealService {
         if ("partner".equals(preference)) return "TA最爱";
         if ("both".equals(preference)) return "我们都爱";
         return "";
+    }
+
+    private void notifyMealChange(String operator,
+                                  String type,
+                                  String title,
+                                  String content,
+                                  Long bizId,
+                                  Map<String, Object> payload) {
+        userNotificationService.notifyPartners(
+                operator,
+                type,
+                title,
+                content,
+                NotificationBizTypeConstants.MEAL,
+                bizId,
+                payload
+        );
+    }
+
+    private String formatMealDate(LocalDate date) {
+        return date.getMonthValue() + "月" + date.getDayOfMonth() + "日";
+    }
+
+    private String resolveDishName(MealDish dish) {
+        return dish == null ? "一道菜" : defaultIfBlank(dish.getName(), "一道菜");
     }
 
     private String defaultIfBlank(String value, String fallback) {

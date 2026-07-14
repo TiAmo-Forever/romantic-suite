@@ -14,7 +14,7 @@
           <text v-else class="profile-avatar-text">{{ avatarDisplay }}</text>
         </view>
         <view class="profile-name">{{ displayName }}</view>
-        <view class="profile-bio">{{ bioText }}</view>
+        <view v-if="bioText" class="profile-bio">{{ bioText }}</view>
 
         <view class="profile-divider">
           <view class="profile-divider-line"></view>
@@ -145,7 +145,7 @@ const partnerAvatarDisplay = computed(() => {
 })
 const partnerAvatarDisplayShort = computed(() => shrinkAvatarText(partnerAvatarDisplay.value, partnerProfile.value?.nickname || partnerCallDisplay.value))
 const displayName = computed(() => String(profile.value.nickname || user.value?.nickname || '浪漫用户').trim() || '浪漫用户')
-const bioText = computed(() => String(profile.value.bio || '').trim() || '把日子过得细水长流')
+const bioText = computed(() => String(profile.value.bio || '').trim())
 const loverDisplay = computed(() => String(profile.value.loverNickname || '').trim() || 'TA')
 const partnerCallDisplay = computed(() => String(partnerProfile.value?.loverNickname || partnerProfile.value?.nickname || '').trim() || 'TA')
 const togetherDaysValue = computed(() => {
@@ -162,17 +162,17 @@ const avatarSummaryText = computed(() => {
   if (profile.value.avatarType === 'text') return `当前：${String(profile.value.avatarText || '').trim() || '字符头像'}`
   return '当前：渐变珊瑚色'
 })
-const albumCoverText = computed(() => latestAlbumTitle.value ? `当前：${latestAlbumTitle.value}` : '选择展示封面图')
-const relationshipInfoText = computed(() => profile.value.anniversaryDate ? `${formatDotDate(parseDateOnly(profile.value.anniversaryDate))} 起` : '纪念日待设置')
-const anniversaryManageText = computed(() => anniversaryCount.value > 0 ? `已添加 ${anniversaryCount.value} 个纪念日` : '还没有纪念日')
+const albumCoverText = computed(() => latestAlbumTitle.value ? `当前：${latestAlbumTitle.value}` : '暂无封面')
+const relationshipInfoText = computed(() => profile.value.anniversaryDate ? `${formatDotDate(parseDateOnly(profile.value.anniversaryDate))} 起` : '暂无纪念日')
+const anniversaryManageText = computed(() => anniversaryCount.value > 0 ? `${anniversaryCount.value} 个纪念日` : '暂无纪念日')
 const callNameText = computed(() => `${loverDisplay.value} · ${partnerCallDisplay.value}`)
 const accountManageText = computed(() => profile.value.email ? '邮箱已绑定' : `登录账号：${user.value?.username || '未登录'}`)
-const privacyText = computed(() => isAdminUser(user.value) ? '基础信息模块已开放' : '控制内容可见范围')
+const privacyText = computed(() => isAdminUser(user.value) ? '基础信息模块' : '内容可见范围')
 const loginBindingText = computed(() => {
   const passwordReady = Boolean(profile.value.passwordConfigured) || String(profile.value.password || '').length >= 4
   return `${user.value?.username || '未登录'} · ${passwordReady ? '已设置密码' : '待设置密码'}`
 })
-const syncText = computed(() => '恢复默认与重新同步资料')
+const syncText = computed(() => '恢复默认 / 同步资料')
 
 const sections = computed(() => [
   {
@@ -206,8 +206,8 @@ const sections = computed(() => [
     key: 'data',
     title: '数据管理',
     items: [
-      { key: 'data-sync', title: '资料同步', desc: syncText.value, iconType: 'image', icon: iconData, tone: 'tone-mint', badge: '建议同步' },
-      { key: 'export', title: '导出手帐', desc: '导出为 PDF 或图片集', iconType: 'text', icon: '🗂', tone: 'tone-soft' },
+      { key: 'data-sync', title: '资料同步', desc: syncText.value, iconType: 'image', icon: iconData, tone: 'tone-mint' },
+      { key: 'export', title: '导出手帐', desc: 'PDF / 图片集', iconType: 'text', icon: '🗂', tone: 'tone-soft' },
       { key: 'clear-cache', title: '清空本地缓存', desc: `释放 ${cacheSizeText.value}`, iconType: 'text', icon: '🧹', tone: 'tone-warm' }
     ]
   },
@@ -215,9 +215,9 @@ const sections = computed(() => [
     key: 'other',
     title: '其他',
     items: [
-      { key: 'about', title: '爱意成笺', desc: `v ${APP_VERSION} · 更新日志`, iconType: 'text', icon: '✦', tone: 'tone-peach' },
-      { key: 'notifications', title: '消息中心', desc: '查看提醒与互动消息', iconType: 'text', icon: '🔔', tone: 'tone-soft' },
-      { key: 'help', title: '帮助与反馈', desc: '遇到问题？来这里', iconType: 'text', icon: '💌', tone: 'tone-soft' }
+      { key: 'about', title: '爱意成笺', desc: `v ${APP_VERSION}`, iconType: 'text', icon: '✦', tone: 'tone-peach' },
+      { key: 'notifications', title: '消息中心', desc: '提醒与互动', iconType: 'text', icon: '🔔', tone: 'tone-soft' },
+      { key: 'help', title: '帮助与反馈', desc: '问题反馈', iconType: 'text', icon: '💌', tone: 'tone-soft' }
     ]
   }
 ])

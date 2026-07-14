@@ -55,7 +55,7 @@
           <view v-if="detail.mediaList?.length" class="detail-chip">{{ detail.mediaList.length }} {{ TEXT.mediaUnit }}</view>
         </view>
 
-        <view class="detail-desc" @longpress.stop="copyText(detail.description || TEXT.emptyDesc)">{{ detail.description || TEXT.emptyDesc }}</view>
+        <view v-if="detail.description" class="detail-desc" @longpress.stop="copyText(detail.description)">{{ detail.description }}</view>
 
         <view class="interaction-row">
           <view class="interaction-time">{{ detail.eventDate }}</view>
@@ -200,7 +200,6 @@ const TEXT = {
   mediaUnit: '份媒体',
   mediaTitle: '图片与视频',
   emptyMedia: '暂无媒体内容',
-  emptyDesc: '暂无说明',
   editButton: '编辑纪念日',
   deleteButton: '删除纪念日',
   pinButton: '置顶到首页',
@@ -218,11 +217,11 @@ const TEXT = {
   likeAction: '点赞',
   unlikeAction: '取消点赞',
   commentAction: '评论',
-  commentPlaceholder: '写下一句想留给这一天的话',
+  commentPlaceholder: '请输入评论内容',
   commentSend: '发送',
   commentSending: '发送中',
   commentFailed: '评论失败，请稍后再试',
-  commentEmptyError: '请先写下评论内容',
+  commentEmptyError: '请输入评论内容',
   commentSuccess: '评论已发送',
   commentDeleted: '评论已删除',
   commentDeleteFailed: '删除评论失败',

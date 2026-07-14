@@ -109,10 +109,6 @@
           </view>
         </view>
 
-        <view class="media-tips">
-          {{ TEXT.selectedPrefix }} {{ imageCount }} {{ TEXT.imageUnit }}{{ TEXT.countJoin }}{{ videoCount }} {{ TEXT.videoUnit }}
-        </view>
-
         <view v-if="mediaList.length" class="media-grid">
           <view v-for="(item, index) in mediaList" :key="item.localId" class="media-card">
             <image
@@ -190,7 +186,7 @@ const TEXT = {
   imageWord: '图片',
   videoWord: '视频',
   cover: '封面',
-  emptyMedia: '暂时还没有媒体',
+  emptyMedia: '暂无媒体',
   save: '保存回忆',
   createPage: '新建回忆',
   editPage: '编辑回忆',

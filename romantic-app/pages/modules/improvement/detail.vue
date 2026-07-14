@@ -6,7 +6,7 @@
     </view>
 
     <view v-if="detail" class="app-account-content detail-content">
-      <AccountPanel :title="detail.title" :description="detail.description || '把这件在意的小事认真记下来，后续的每次推进都会留在这里。'">
+      <AccountPanel :title="detail.title" :description="detail.description || ''">
         <view class="record-head">
           <view class="record-head-main">
             <view class="identity-badge" :class="identityBadgeClass(detail)">
@@ -33,7 +33,6 @@
 
         <view class="status-banner" :class="`status-banner-${currentStatusKey}`">
           <view class="status-banner-title">当前整体状态 · {{ currentStatusText }}</view>
-          <view class="status-banner-desc">{{ currentStatusHint }}</view>
         </view>
 
         <view v-if="detail.mediaList?.length" class="fold-card" @click="toggleNoteMedia">
@@ -59,7 +58,7 @@
         </view>
       </AccountPanel>
 
-      <AccountPanel title="最新进展" :description="latestFeedback ? '先看最近一次更新，再决定要不要继续翻历史记录。' : '这里会展示最近一次反馈，方便一进来就知道这件事推进到了哪里。'">
+      <AccountPanel title="最新进展">
         <view v-if="latestFeedback" class="focus-card" :class="feedbackCardClass(latestFeedback)">
           <view class="feedback-top">
             <view class="feedback-leading">
@@ -173,13 +172,12 @@
 
         <view v-else class="empty-block">
           <view class="empty-title">还没有新的反馈</view>
-          <view class="empty-desc">先记录第一条反馈，让这条改进真正开始往前推进。</view>
         </view>
       </AccountPanel>
 
-      <AccountPanel title="历史反馈" :description="historyPanelDescription">
+      <AccountPanel title="历史反馈">
         <view v-if="historyFeedbackList.length" class="history-head">
-          <view class="history-summary">{{ showAllFeedback ? '已展开全部历史反馈' : `先展示最近 ${visibleHistoryFeedbackList.length} 条` }}</view>
+          <view class="history-summary">{{ showAllFeedback ? '全部历史反馈' : `最近 ${visibleHistoryFeedbackList.length} 条` }}</view>
           <view v-if="historyFeedbackList.length > collapsedFeedbackCount" class="history-toggle" @click="toggleFeedbackHistory">
             {{ showAllFeedback ? '收起历史反馈' : `查看全部反馈（${historyFeedbackList.length}）` }}
           </view>
@@ -306,8 +304,7 @@
         </view>
 
         <view v-else class="empty-block">
-          <view class="empty-title">最近还没有更早的历史反馈</view>
-          <view class="empty-desc">等你们继续记录下去，这里会慢慢沉淀成一条更清楚的进展脉络。</view>
+          <view class="empty-title">暂无历史反馈</view>
         </view>
       </AccountPanel>
 
@@ -322,7 +319,6 @@
         <view class="feedback-sheet-head">
           <view>
             <view class="feedback-sheet-title">{{ feedbackSheetTitle }}</view>
-            <view class="feedback-sheet-desc">{{ feedbackSheetDesc }}</view>
           </view>
           <view class="feedback-sheet-close" @click="closeFeedbackSheet">×</view>
         </view>
@@ -348,15 +344,12 @@
 
         <view class="status-banner mini" :class="`status-banner-${sheetForm.status}`">
           <view class="status-banner-title">当前状态 · {{ statusLabelMap[sheetForm.status] || '跟进中' }}</view>
-          <view class="status-banner-desc">{{ statusHintMap[sheetForm.status] }}</view>
         </view>
 
         <view class="action-row">
           <button class="mini-btn" @click="chooseSheetImages">{{ feedbackSheetMode === 'edit' ? '调整图片' : '添加图片' }}</button>
           <button class="mini-btn" @click="chooseSheetVideo">{{ feedbackSheetMode === 'edit' ? '调整视频' : '添加视频' }}</button>
         </view>
-        <view class="media-tips">当前已选 {{ sheetImageCount }} 张图片，{{ sheetVideoCount }} 个视频</view>
-
         <view v-if="sheetMediaList.length" class="media-grid compact">
           <view v-for="(item, index) in sheetMediaList" :key="item.localId" class="media-card">
             <image
@@ -420,9 +413,9 @@ const statusOptions = [
 const targetLabelMap = { me: '我自己', lover: '对方感受', both: '共同努力' }
 const statusLabelMap = { resolved: '已改善', improving: '跟进中', pending: '待开始' }
 const statusHintMap = {
-  resolved: '已经能明显感觉到变化了，这次努力可以先温柔地收在这里。',
-  improving: '还在持续靠近更好的状态，每一次反馈都会让变化更清楚。',
-  pending: '准备开始行动，把第一步认真写下来就已经很重要。'
+  resolved: '已改善',
+  improving: '跟进中',
+  pending: '待开始'
 }
 
 const TEXT = {
@@ -439,11 +432,11 @@ const TEXT = {
   feedbackLikeAction: '点赞',
   feedbackUnlikeAction: '取消点赞',
   feedbackCommentAction: '评论',
-  feedbackCommentPlaceholder: '写下一句想留给这条反馈的话',
+  feedbackCommentPlaceholder: '请输入评论内容',
   feedbackCommentSend: '发送',
   feedbackCommentSending: '发送中',
   feedbackCommentFailed: '反馈评论失败',
-  feedbackCommentEmptyError: '请先写下评论内容',
+  feedbackCommentEmptyError: '请输入评论内容',
   feedbackCommentSuccess: '评论已发送',
   feedbackCommentDeleted: '评论已删除',
   feedbackCommentDeleteFailed: '删除反馈评论失败',
@@ -454,10 +447,10 @@ const TEXT = {
   commentFallbackUser: '未命名',
   commentLengthSuffix: '/500',
   sheetCreateTitle: '记录新反馈',
-  sheetCreateDesc: '把这次新的变化认真记下来。',
+  sheetCreateDesc: '',
   sheetEditTitle: '编辑反馈',
-  sheetEditDesc: '调整这条反馈的状态、内容和媒体。',
-  emptyFeedbackContent: '请先写一点反馈内容',
+  sheetEditDesc: '',
+  emptyFeedbackContent: '请输入反馈内容',
   imageLimit: '图片最多上传 9 张',
   videoLimit: '视频最多上传 1 个'
 }
@@ -506,9 +499,9 @@ const feedbackSheetDesc = computed(() => (feedbackSheetMode.value === 'edit' ? T
 const feedbackSheetSubmitText = computed(() => (feedbackSheetMode.value === 'edit' ? '保存反馈' : '记录反馈'))
 const feedbackCommentLengthText = computed(() => `${String(feedbackCommentForm.content || '').length}${TEXT.commentLengthSuffix}`)
 const historyPanelDescription = computed(() => {
-  if (!latestFeedback.value) return '还没有反馈时，这里会保持干净，等第一条记录出现后再慢慢展开。'
-  if (!historyFeedbackList.value.length) return '最近这次已经是当前唯一的一条反馈，后续的推进会继续叠在这里。'
-  return `除最新进展外，这里还收着 ${historyFeedbackList.value.length} 条更早的反馈记录。`
+  if (!latestFeedback.value) return '暂无反馈'
+  if (!historyFeedbackList.value.length) return '暂无历史反馈'
+  return `${historyFeedbackList.value.length} 条历史反馈`
 })
 
 onLoad(async (options) => {

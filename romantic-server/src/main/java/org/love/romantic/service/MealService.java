@@ -2,18 +2,17 @@ package org.love.romantic.service;
 
 import org.love.romantic.model.MealDailyPlanRequest;
 import org.love.romantic.model.MealDailyPlanResponse;
+import org.love.romantic.model.MealDishPageResponse;
 import org.love.romantic.model.MealDishRequest;
 import org.love.romantic.model.MealDishResponse;
 import org.love.romantic.model.MealWeeklyRequest;
 import org.love.romantic.model.MealWeeklyResponse;
 
-import java.util.List;
-
 public interface MealService {
 
-    List<MealDishResponse> listDishes(String category, String preference, String keyword);
+    MealDishPageResponse listDishes(String category, String preference, String keyword, String date, long pageNo, long pageSize);
 
-    MealDishResponse getDish(Long id);
+    MealDishResponse getDish(Long id, String date);
 
     MealDishResponse createDish(MealDishRequest request);
 
@@ -28,6 +27,10 @@ public interface MealService {
     MealDailyPlanResponse addDishToDailyPlan(String date, Long dishId);
 
     MealDailyPlanResponse removeDailyPlanItem(String date, Long itemId);
+
+    MealDailyPlanResponse replaceDailyPlanItem(String date, Long itemId);
+
+    MealDailyPlanResponse copyPreviousDailyPlan(String date);
 
     MealWeeklyResponse getWeeklySelection(String date);
 

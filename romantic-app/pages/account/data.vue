@@ -9,19 +9,14 @@
         <AccountIntroCard
           eyebrow="谨慎操作"
           title="资料同步与重置"
-          description="管理当前账号资料同步与重置"
           :tags="['仅影响当前账号', '不会直接删除共享模块内容']"
         />
-        <AccountPanel title="资料操作" description="恢复默认或重新同步当前账号资料">
+        <AccountPanel title="资料操作">
           <view class="app-account-action-row data-action-row">
             <button class="ghost-btn app-account-flat-btn app-account-flat-btn-soft" @click="handleResetProfile">恢复默认资料</button>
             <button class="ghost-btn warn app-account-flat-btn app-account-flat-btn-warn" @click="handleSyncRemoteProfile">重新同步资料</button>
           </view>
         </AccountPanel>
-        <view class="app-account-action-note">
-          <view class="app-account-action-note-title">操作说明</view>
-          <view class="app-account-action-note-desc">头像、昵称、邮箱和关系信息请在对应页面修改</view>
-        </view>
       </view>
     </view>
   </view>

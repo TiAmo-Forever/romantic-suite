@@ -47,7 +47,6 @@
 
         <view class="status-preview" :class="`status-preview-${form.status}`">
           <view class="status-preview-title">{{ statusPreviewMap[form.status]?.title }}</view>
-          <view class="status-preview-desc">{{ statusPreviewMap[form.status]?.desc }}</view>
         </view>
 
         <AccountField label="最近反馈摘要">
@@ -60,8 +59,6 @@
           <button class="compact-media-btn" @click="chooseImages">选择图片</button>
           <button class="compact-media-btn" @click="chooseVideo">选择视频</button>
         </view>
-        <view class="media-tips">当前已选 {{ imageCount }} 张图片，{{ videoCount }} 个视频</view>
-
         <view v-if="mediaList.length" class="media-grid">
           <view v-for="(item, index) in mediaList" :key="item.localId" class="media-card">
             <image
@@ -76,7 +73,7 @@
             <view class="media-remove" @click.stop="removeMedia(index)">×</view>
           </view>
         </view>
-        <view v-else class="media-empty">还没有添加媒体</view>
+        <view v-else class="media-empty">暂无媒体</view>
       </AccountPanel>
 
       <button class="save-btn app-primary-btn app-primary-btn-shadow app-account-save-btn" @click="handleSave">保存记录</button>
@@ -111,16 +108,13 @@ const statusOptions = [
 
 const statusPreviewMap = {
   resolved: {
-    title: '已改善',
-    desc: '状态会更新为已经明显好转。'
+    title: '已改善'
   },
   improving: {
-    title: '跟进中',
-    desc: '状态会更新为还在持续努力。'
+    title: '跟进中'
   },
   pending: {
-    title: '待开始',
-    desc: '状态会更新为准备开始行动。'
+    title: '待开始'
   }
 }
 

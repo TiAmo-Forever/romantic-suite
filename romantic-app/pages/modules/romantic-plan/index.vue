@@ -30,9 +30,6 @@
       <view class="section-card intro-card">
         <view class="ribbon ribbon-pink">共同安排</view>
         <view class="section-card-inner">
-          <view class="intro-title">把想完成的事，慢慢排进你们的日常。</view>
-          <view class="intro-desc" @longpress.stop="copyText('先定计划，再跟着节奏推进，反馈也能随手补上。')">先定计划，再跟着节奏推进，反馈也能随手补上。</view>
-
           <view class="intro-bottom">
             <view class="stat-row">
               <view class="stat-chip">
@@ -56,8 +53,6 @@
       <view class="section-card list-card">
         <view class="ribbon ribbon-green">计划列表</view>
         <view class="section-card-inner">
-          <view class="list-intro" @longpress.stop="copyText('先把最想一起完成的一件事排进去。')">先把最想一起完成的一件事排进去。</view>
-
           <scroll-view class="filter-scroll" scroll-x enable-flex show-scrollbar="false">
             <view class="filter-row">
               <view
@@ -110,7 +105,7 @@
                 </view>
 
                 <view class="plan-item-title">{{ item.title || '未命名计划' }}</view>
-                <view class="plan-item-desc" @longpress.stop="copyText(item.description || '先把目标写下来，后面再慢慢补细节。')">{{ item.description || '先把目标写下来，后面再慢慢补细节。' }}</view>
+                <view v-if="item.description" class="plan-item-desc" @longpress.stop="copyText(item.description)">{{ item.description }}</view>
 
                 <view class="plan-highlight-row">
                   <view class="plan-highlight-card">
@@ -160,7 +155,6 @@
               </view>
             </view>
 
-            <view class="empty-copy">从小目标开始，把未来慢慢排进日常里。</view>
           </view>
         </view>
       </view>

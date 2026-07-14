@@ -146,6 +146,12 @@
       }
     },
     {
+      "path": "pages/modules/meal/detail",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/modules/meal/edit",
       "style": {
         "navigationStyle": "custom"

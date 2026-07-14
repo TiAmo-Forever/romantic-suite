@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiParam;
 import org.love.romantic.common.ApiResponse;
 import org.love.romantic.model.MealDailyPlanRequest;
 import org.love.romantic.model.MealDailyPlanResponse;
+import org.love.romantic.model.MealDishPageResponse;
 import org.love.romantic.model.MealDishRequest;
 import org.love.romantic.model.MealDishResponse;
 import org.love.romantic.model.MealWeeklyRequest;
@@ -22,8 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @Api(tags = "情侣点菜")
 @RestController
 @RequestMapping("/api/meals")
@@ -37,17 +36,21 @@ public class MealController {
 
     @ApiOperation("查询菜谱列表")
     @GetMapping("/dishes")
-    public ApiResponse<List<MealDishResponse>> listDishes(
+    public ApiResponse<MealDishPageResponse> listDishes(
             @ApiParam("分类：all、cold、hot、soup、staple") @RequestParam(defaultValue = "all") String category,
             @ApiParam("偏好：all、me、partner、both、none") @RequestParam(defaultValue = "all") String preference,
-            @ApiParam("关键词") @RequestParam(required = false, defaultValue = "") String keyword) {
-        return ApiResponse.ok("查询成功", mealService.listDishes(category, preference, keyword));
+            @ApiParam("关键词") @RequestParam(required = false, defaultValue = "") String keyword,
+            @ApiParam("日期，格式 yyyy-MM-dd") @RequestParam(required = false, defaultValue = "") String date,
+            @ApiParam("页码") @RequestParam(defaultValue = "1") long page,
+            @ApiParam("每页条数") @RequestParam(defaultValue = "10") long pageSize) {
+        return ApiResponse.ok("查询成功", mealService.listDishes(category, preference, keyword, date, page, pageSize));
     }
 
     @ApiOperation("查询菜品详情")
     @GetMapping("/dishes/{id}")
-    public ApiResponse<MealDishResponse> getDish(@ApiParam("菜品 ID") @PathVariable Long id) {
-        return ApiResponse.ok("查询成功", mealService.getDish(id));
+    public ApiResponse<MealDishResponse> getDish(@ApiParam("菜品 ID") @PathVariable Long id,
+                                                 @ApiParam("日期，格式 yyyy-MM-dd") @RequestParam(required = false, defaultValue = "") String date) {
+        return ApiResponse.ok("查询成功", mealService.getDish(id, date));
     }
 
     @ApiOperation("新增菜品")
@@ -99,6 +102,21 @@ public class MealController {
             @ApiParam("日期，格式 yyyy-MM-dd") @RequestParam(required = false, defaultValue = "") String date,
             @ApiParam("菜单条目 ID") @PathVariable Long itemId) {
         return ApiResponse.ok("已移除", mealService.removeDailyPlanItem(date, itemId));
+    }
+
+    @ApiOperation("替换指定日期菜单条目")
+    @PutMapping("/daily/items/{itemId}/replace")
+    public ApiResponse<MealDailyPlanResponse> replaceDailyPlanItem(
+            @ApiParam("日期，格式 yyyy-MM-dd") @RequestParam(required = false, defaultValue = "") String date,
+            @ApiParam("菜单条目 ID") @PathVariable Long itemId) {
+        return ApiResponse.ok("已换一道", mealService.replaceDailyPlanItem(date, itemId));
+    }
+
+    @ApiOperation("复制前一天菜单")
+    @PostMapping("/daily/copy-previous")
+    public ApiResponse<MealDailyPlanResponse> copyPreviousDailyPlan(
+            @ApiParam("日期，格式 yyyy-MM-dd") @RequestParam(required = false, defaultValue = "") String date) {
+        return ApiResponse.ok("已复制昨天菜单", mealService.copyPreviousDailyPlan(date));
     }
 
     @ApiOperation("查询本周精选")

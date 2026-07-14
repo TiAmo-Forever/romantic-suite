@@ -58,6 +58,15 @@ public class MealDishResponse {
     @ApiModelProperty("本周是否已加入精选")
     private Boolean selectedThisWeek;
 
+    @ApiModelProperty("加入每日菜单次数")
+    private Long dailyUsedCount;
+
+    @ApiModelProperty("加入本周精选次数")
+    private Long weeklySelectedCount;
+
+    @ApiModelProperty("最近加入菜单日期")
+    private String lastAddedDate;
+
     @ApiModelProperty("更新时间")
     private String updatedAt;
 }

@@ -5,7 +5,7 @@
 			<AccountHeader title="主题设置" eyebrow="视觉风格" />
 		</view>
 		<view class="app-account-content">
-			<AccountPanel title="当前主题" description="切换后会立即应用到首页、星球、我的和设置页。">
+			<AccountPanel title="当前主题">
 				<view class="theme-hero" :style="heroStyle">
 					<view class="theme-hero-glow"></view>
 					<view class="theme-hero-kicker">{{ currentPreset.name }}</view>
@@ -16,7 +16,7 @@
 				</view>
 			</AccountPanel>
 
-			<AccountPanel title="预设主题" description="第一期先提供 4 套预设主题，保证整体视觉统一。">
+			<AccountPanel title="预设主题">
 				<view class="theme-grid">
 					<view
 						v-for="item in presets"

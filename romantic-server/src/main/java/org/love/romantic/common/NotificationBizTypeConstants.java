@@ -15,6 +15,7 @@ public final class NotificationBizTypeConstants {
     public static final String DAILY_SUMMARY = "daily_summary";
     public static final String DAILY_SUMMARY_ENTRY = "daily_summary_entry";
     public static final String ROMANTIC_PLAN = "romantic_plan";
+    public static final String MEAL = "meal";
 
     private NotificationBizTypeConstants() {
     }

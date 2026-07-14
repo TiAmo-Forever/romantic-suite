@@ -97,7 +97,6 @@
           <view v-if="!upcomingAnniversaryCards.length" class="anniversary-card anniversary-card-empty" hover-class="surface-press" hover-stay-time="70" @click="goAnniversary">
             <view class="anniversary-icon">✦</view>
             <view class="anniversary-title">还没有纪念日</view>
-            <view class="anniversary-empty-copy">去补上重要日子</view>
           </view>
         </view>
       </scroll-view>
@@ -123,6 +122,37 @@
         <view class="memo-focus-meta">{{ memoFocusSummary.meta }}</view>
         <view class="memo-focus-action" @click.stop="handleMemoPrimaryAction">
           <text>{{ memoFocusSummary.actionText }}</text>
+          <view class="memo-focus-arrow"></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="meal-focus-card app-fade-up app-delay-4" hover-class="surface-press" hover-stay-time="70" @click="goMeal">
+      <view class="meal-focus-head">
+        <view class="meal-focus-title-wrap">
+          <image class="meal-focus-icon" :src="mealEntryIcon" mode="aspectFit" />
+          <view>
+            <view class="meal-focus-title">今天菜单</view>
+          </view>
+        </view>
+        <view class="meal-focus-badge">{{ mealFocusSummary.badge }}</view>
+      </view>
+      <view v-if="mealPreviewList.length" class="meal-preview-list">
+        <view v-for="dish in mealPreviewList" :key="dish.itemId || dish.dish.id" class="meal-preview-item">
+          <view class="meal-preview-cover" :class="`meal-cover-${dish.dish.category}`">
+            <image v-if="dish.dish.coverUrl" :src="resolveMediaUrl(dish.dish.coverUrl)" mode="aspectFill" />
+          </view>
+          <view class="meal-preview-main">
+            <view class="meal-preview-name">{{ dish.dish.name }}</view>
+            <view class="meal-preview-tag">{{ dish.dish.categoryLabel || resolveMealCategoryLabel(dish.dish.category) }}</view>
+          </view>
+        </view>
+      </view>
+      <view v-else class="meal-empty-line">今天还没选菜</view>
+      <view class="meal-focus-foot">
+        <view v-if="mealFocusSummary.footer" class="meal-focus-note">{{ mealFocusSummary.footer }}</view>
+        <view class="meal-focus-action">
+          <text>{{ mealFocusSummary.actionText }}</text>
           <view class="memo-focus-arrow"></view>
         </view>
       </view>
@@ -162,7 +192,7 @@
         </view>
         <view class="quick-card" hover-class="surface-press" hover-stay-time="70" @click="goMeal">
           <image class="quick-icon-image" :src="mealEntryIcon" mode="aspectFit" />
-          <view class="quick-label">今天吃什么</view>
+          <view class="quick-label">朝夕同味</view>
         </view>
       </view>
     </view>
@@ -182,6 +212,8 @@ import { fetchSharedCountdownPlan } from '@/services/countdown.js'
 import { fetchTodayDailySummary, getDailySummaryMoodMeta } from '@/services/daily-summaries.js'
 import { fetchAnniversaryList } from '@/services/anniversaries.js'
 import { fetchPartnerProfile, fetchRemoteProfile } from '@/services/profile.js'
+import { fetchMealDailyPlan } from '@/services/meals.js'
+import { resolveMediaUrl } from '@/utils/media-upload.js'
 import BottomTab from '@/pages/components/BottomTab.vue'
 import mealEntryIcon from '@/assets/meal/icon-meal-entry.svg'
 
@@ -220,13 +252,20 @@ const relationshipState = reactive({
 
 const memoState = reactive({
   mood: 'gentle',
-  content: '今天还没有留下新的记录',
+  content: '暂无记录',
   hasRecord: false,
   entryCount: 0,
   imageCount: 0,
   updatedBy: '',
   updatedAt: '',
   summaryDate: ''
+})
+
+const mealState = reactive({
+  dishCount: 0,
+  itemList: [],
+  remark: '',
+  planDate: ''
 })
 
 const upcomingAnniversaries = ref([])
@@ -280,18 +319,29 @@ const countdownProgressDotCount = computed(() => {
 const memoMiniSummary = computed(() => ({
   entryCount: memoState.entryCount,
   imageCount: memoState.imageCount,
-  footer: memoState.hasRecord ? `${resolveMemoUpdatedBy()}也记录了今天♡` : '等你们写下今天的心情'
+  footer: memoState.hasRecord ? `${resolveMemoUpdatedBy()}更新` : '暂无记录'
 }))
 
 const upcomingAnniversaryCards = computed(() => upcomingAnniversaries.value.slice(0, 3))
 
 const memoFocusSummary = computed(() => ({
-  badge: memoState.hasRecord ? `${memoState.entryCount}条记录` : '今天待记录',
-  kicker: memoState.hasRecord ? getDailySummaryMoodMeta(memoState.mood).label : '留下一句今天的话',
-  content: memoState.hasRecord ? memoState.content : '今天还没有新的今日小计，去写下你们的小日常吧',
+  badge: memoState.hasRecord ? `${memoState.entryCount}条记录` : '暂无记录',
+  kicker: memoState.hasRecord ? getDailySummaryMoodMeta(memoState.mood).label : '今日小计',
+  content: memoState.hasRecord ? memoState.content : '暂无记录',
   meta: memoState.hasRecord ? formatMemoMeta() : '今天 · 暂无记录',
-  actionText: memoState.hasRecord ? '查看详情' : '立即记录'
+  actionText: memoState.hasRecord ? '查看详情' : '记录'
 }))
+
+const mealPreviewList = computed(() => (Array.isArray(mealState.itemList) ? mealState.itemList : []).slice(0, 3))
+
+const mealFocusSummary = computed(() => {
+  const count = Number(mealState.dishCount || mealState.itemList.length || 0)
+  return {
+    badge: count ? `${count}道菜` : '待选择',
+    footer: count > 3 ? `另有 ${count - 3} 道` : (mealState.remark || ''),
+    actionText: count ? '查看菜单' : '选菜'
+  }
+})
 
 function parseDateTime(value) {
   if (!value) return null
@@ -320,6 +370,10 @@ function formatDotDate(date) {
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}.${month}.${day}`
+}
+
+function formatDateKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
 function getCurrentUsername() {
@@ -375,6 +429,13 @@ function buildUpcomingAnniversaries(list) {
   upcomingAnniversaries.value = cards
 }
 
+function resolveMealCategoryLabel(category) {
+  if (category === 'cold') return '凉菜'
+  if (category === 'soup') return '汤'
+  if (category === 'staple') return '主食'
+  return '热菜'
+}
+
 async function loadHomeSummary() {
   const localProfile = getProfile()
   profileState.currentName = resolveDisplayName(localProfile.nickname || getUser()?.nickname, '你')
@@ -383,12 +444,13 @@ async function loadHomeSummary() {
   profileState.partnerRelationName = resolveDisplayName(profileState.partnerName, countdownState.loverName || 'TA')
   profileState.anniversaryDate = String(localProfile.anniversaryDate || '').trim()
 
-  const [profileResult, countdownResult, memoResult, anniversaryResult, partnerResult] = await Promise.allSettled([
+  const [profileResult, countdownResult, memoResult, anniversaryResult, partnerResult, mealResult] = await Promise.allSettled([
     fetchRemoteProfile(),
     fetchSharedCountdownPlan(),
     fetchTodayDailySummary(),
     fetchAnniversaryList('all'),
-    fetchPartnerProfile()
+    fetchPartnerProfile(),
+    fetchMealDailyPlan(formatDateKey(new Date()))
   ])
 
   if (profileResult.status === 'fulfilled' && profileResult.value) {
@@ -426,7 +488,7 @@ async function loadHomeSummary() {
     const summary = memoResult.value
     const entryList = Array.isArray(summary.entryList) ? summary.entryList : []
     memoState.mood = summary.mood || 'gentle'
-    memoState.content = String(summary.content || '').trim() || '今天还没有留下新的记录'
+    memoState.content = String(summary.content || '').trim() || '暂无记录'
     memoState.hasRecord = Boolean(summary.hasRecord)
     memoState.entryCount = Number(summary.entryCount || entryList.length || 0)
     memoState.imageCount = entryList.reduce((total, item) => total + (Array.isArray(item.mediaList) ? item.mediaList.filter((media) => media.mediaType === 'image').length : 0), 0)
@@ -435,13 +497,25 @@ async function loadHomeSummary() {
     memoState.summaryDate = String(summary.summaryDate || '').trim()
   } else {
     memoState.mood = 'gentle'
-    memoState.content = '今天还没有留下新的记录'
+    memoState.content = '暂无记录'
     memoState.hasRecord = false
     memoState.entryCount = 0
     memoState.imageCount = 0
     memoState.updatedBy = ''
     memoState.updatedAt = ''
     memoState.summaryDate = ''
+  }
+
+  if (mealResult.status === 'fulfilled' && mealResult.value) {
+    mealState.dishCount = Number(mealResult.value.dishCount || 0)
+    mealState.itemList = Array.isArray(mealResult.value.itemList) ? mealResult.value.itemList : []
+    mealState.remark = String(mealResult.value.remark || '').trim()
+    mealState.planDate = String(mealResult.value.planDate || '').trim()
+  } else {
+    mealState.dishCount = 0
+    mealState.itemList = []
+    mealState.remark = ''
+    mealState.planDate = ''
   }
 }
 
@@ -519,6 +593,7 @@ onShow(() => {
   .dual-grid,
   .anniversary-section,
   .memo-focus-card,
+  .meal-focus-card,
   .quick-section {
     position: relative;
     z-index: 2;
@@ -743,6 +818,7 @@ onShow(() => {
   .info-card,
   .anniversary-card,
   .memo-focus-card,
+  .meal-focus-card,
   .quick-card {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 249, 246, 0.96));
     box-shadow:
@@ -1153,6 +1229,158 @@ onShow(() => {
     transform: rotate(45deg);
   }
 
+  .meal-focus-card {
+    margin-top: 28rpx;
+    padding: 28rpx;
+    border-radius: 36rpx;
+  }
+
+  .meal-focus-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18rpx;
+  }
+
+  .meal-focus-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16rpx;
+    min-width: 0;
+  }
+
+  .meal-focus-icon {
+    width: 52rpx;
+    height: 52rpx;
+    flex-shrink: 0;
+  }
+
+  .meal-focus-title {
+    font-size: 32rpx;
+    font-weight: 600;
+    color: #8f665d;
+  }
+
+  .meal-focus-subtitle {
+    margin-top: 6rpx;
+    font-size: 22rpx;
+    color: #bf988b;
+  }
+
+  .meal-focus-badge {
+    flex-shrink: 0;
+    min-width: 92rpx;
+    height: 48rpx;
+    padding: 0 18rpx;
+    border-radius: 24rpx;
+    background: rgba(255, 244, 238, 0.96);
+    color: #d06050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22rpx;
+  }
+
+  .meal-preview-list {
+    margin-top: 24rpx;
+    display: flex;
+    flex-direction: column;
+    gap: 14rpx;
+  }
+
+  .meal-preview-item {
+    min-height: 84rpx;
+    padding: 14rpx 16rpx;
+    border-radius: 26rpx;
+    background: linear-gradient(180deg, rgba(255, 250, 247, 0.98), rgba(255, 245, 240, 0.9));
+    display: flex;
+    align-items: center;
+    gap: 16rpx;
+  }
+
+  .meal-preview-cover {
+    width: 68rpx;
+    height: 68rpx;
+    border-radius: 20rpx;
+    overflow: hidden;
+    background: linear-gradient(145deg, #f0a880, #e07860);
+    flex-shrink: 0;
+  }
+
+  .meal-preview-cover image {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .meal-cover-cold { background: linear-gradient(145deg, #a8c890, #80a870); }
+  .meal-cover-hot { background: linear-gradient(145deg, #f0a880, #e07860); }
+  .meal-cover-soup { background: linear-gradient(145deg, #c0d4e8, #a0b8d0); }
+  .meal-cover-staple { background: linear-gradient(145deg, #f0d890, #d8b860); }
+
+  .meal-preview-main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .meal-preview-name {
+    font-size: 28rpx;
+    font-weight: 600;
+    color: #8f665d;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .meal-preview-tag {
+    margin-top: 6rpx;
+    font-size: 21rpx;
+    color: #c39d91;
+  }
+
+  .meal-empty-line {
+    margin-top: 24rpx;
+    padding: 28rpx 24rpx;
+    border-radius: 28rpx;
+    background: rgba(255, 250, 247, 0.82);
+    color: #bf988b;
+    font-size: 24rpx;
+    line-height: 1.7;
+  }
+
+  .meal-focus-foot {
+    margin-top: 22rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18rpx;
+  }
+
+  .meal-focus-note {
+    min-width: 0;
+    font-size: 22rpx;
+    line-height: 1.6;
+    color: #bf988b;
+  }
+
+  .meal-focus-action {
+    margin-left: auto;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 10rpx;
+    padding: 16rpx 22rpx;
+    border-radius: 999rpx;
+    color: #fff;
+    background: linear-gradient(180deg, #efb489, #d99d68);
+    box-shadow: 0 12rpx 22rpx rgba(217, 157, 104, 0.22);
+  }
+
+  .meal-focus-action text {
+    font-size: 24rpx;
+    font-weight: 600;
+  }
+
   .quick-section {
     margin-top: 28rpx;
   }
@@ -1185,6 +1413,12 @@ onShow(() => {
   .quick-icon {
     width: 48rpx;
     height: 48rpx;
+  }
+
+  .quick-icon-image {
+    width: 50rpx;
+    height: 50rpx;
+    display: block;
   }
 
   .quick-icon.calendar {
@@ -1226,12 +1460,6 @@ onShow(() => {
 
   .quick-icon.calendar .heart::before { top: -9rpx; left: 0; }
   .quick-icon.calendar .heart::after { top: 0; left: 9rpx; }
-
-  .quick-icon-image {
-    width: 48rpx;
-    height: 48rpx;
-    display: block;
-  }
 
   .quick-label {
     font-size: 28rpx;

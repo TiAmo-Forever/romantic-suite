@@ -34,7 +34,7 @@
             <image v-if="planDetail.coverUrl" class="hero-cover-image" :src="planDetail.coverUrl" mode="aspectFill" />
             <view v-else class="hero-cover-placeholder">
               <view class="hero-cover-title">{{ resolveTypeLabel(planDetail.planType) }}</view>
-              <view class="hero-cover-copy">{{ planDetail.location || '这份计划还没有补地点。' }}</view>
+              <view v-if="planDetail.location" class="hero-cover-copy">{{ planDetail.location }}</view>
             </view>
 
             <view class="hero-cover-overlay"></view>
@@ -52,7 +52,7 @@
 
           <view class="hero-main">
             <view class="hero-main-title">{{ planDetail.title || '未命名计划' }}</view>
-            <view class="hero-main-desc" @longpress.stop="copyText(planDetail.description || '先把目标定下来，再慢慢推进。')">{{ planDetail.description || '先把目标定下来，再慢慢推进。' }}</view>
+            <view v-if="planDetail.description" class="hero-main-desc" @longpress.stop="copyText(planDetail.description)">{{ planDetail.description }}</view>
 
             <view class="hero-overview-row">
               <view class="hero-overview-card">
@@ -115,7 +115,6 @@
 
           <view v-if="activeTab === 'items'" class="content-block">
             <view class="block-title">执行安排</view>
-            <view class="block-desc">把计划拆成几步，照着推进就好。</view>
 
             <view class="mini-progress-strip">
               <view class="mini-progress-track">
@@ -145,14 +144,13 @@
                 </view>
               </view>
             </view>
-            <view v-else class="sub-empty">这份计划还没拆出步骤，可以先去编辑页补上。</view>
+            <view v-else class="sub-empty">暂无条目</view>
           </view>
 
           <view v-if="activeTab === 'feedback'" class="content-block">
             <view class="block-head">
               <view>
                 <view class="block-title">反馈记录</view>
-                <view class="block-desc">执行完记一笔，回头看会更清楚。</view>
               </view>
               <view class="block-action" @click="toggleFeedbackComposer">{{ showFeedbackComposer ? '收起' : '记反馈' }}</view>
             </view>
@@ -180,7 +178,7 @@
                 v-model="feedbackContent"
                 class="feedback-textarea"
                 maxlength="1000"
-                placeholder="写写今天推进得怎么样，或者下次准备怎么继续。"
+                placeholder="请输入反馈内容"
                 placeholder-class="textarea-placeholder"
               ></textarea>
               <view class="feedback-submit" @click="submitFeedback">保存反馈</view>
@@ -193,15 +191,14 @@
                   <view class="feedback-date">{{ item.feedbackDate || item.createdAt }}</view>
                 </view>
                 <view class="feedback-status">{{ resolveFeedbackStatus(item.status) }}</view>
-                <view class="feedback-content" @longpress.stop="copyText(item.content || '这条反馈还没有补内容。')">{{ item.content || '这条反馈还没有补内容。' }}</view>
+                <view class="feedback-content" @longpress.stop="copyText(item.content || '暂无内容')">{{ item.content || '暂无内容' }}</view>
               </view>
             </view>
-            <view v-else class="sub-empty">还没有反馈，第一次执行完就可以来这里记一笔。</view>
+            <view v-else class="sub-empty">暂无反馈</view>
           </view>
 
           <view v-if="activeTab === 'social'" class="content-block">
             <view class="block-title">互动留言</view>
-            <view class="block-desc">点个赞，或者留一句小回应。</view>
 
             <view class="social-like-card" :class="{ active: planDetail.likedByCurrentUser }" @click="handleToggleLike">
               <view>
@@ -216,7 +213,7 @@
                 v-model="commentContent"
                 class="comment-textarea"
                 maxlength="500"
-                placeholder="留一句鼓励、提醒，或者补充下一步安排。"
+                placeholder="请输入评论内容"
                 placeholder-class="textarea-placeholder"
               ></textarea>
               <view class="comment-submit" @click="submitComment">发送评论</view>
@@ -228,18 +225,18 @@
                   <view class="comment-author">{{ resolveUserName(item.commenterNickname, item.commenterUsername, '共同留言') }}</view>
                   <view class="comment-time">{{ item.createdAt || item.updatedAt }}</view>
                 </view>
-                <view class="comment-content" @longpress.stop="copyText(item.content || '这条评论没有内容。')">{{ item.content || '这条评论没有内容。' }}</view>
+                <view class="comment-content" @longpress.stop="copyText(item.content || '暂无内容')">{{ item.content || '暂无内容' }}</view>
                 <view v-if="canDeleteComment(item)" class="comment-delete" @click="handleDeleteComment(item.id)">删除评论</view>
               </view>
             </view>
-            <view v-else class="sub-empty">还没有评论，给这份计划留一句话吧。</view>
+            <view v-else class="sub-empty">暂无评论</view>
           </view>
         </view>
       </view>
 
       <view v-else class="section-card loading-card">
         <view class="section-card-inner">
-          <view class="sub-empty">正在加载这份计划的详情...</view>
+          <view class="sub-empty">加载中</view>
         </view>
       </view>
     </view>
