@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 认证接口。
+ * 认证接口
  */
 @Api(tags = "认证接口")
 @RestController
@@ -34,18 +34,12 @@ public class AuthController {
         this.authTokenService = authTokenService;
     }
 
-    /**
-     * 校验账号密码并返回登录态。
-     */
     @ApiOperation("账号登录")
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@Validated @RequestBody LoginRequest request) {
         return ApiResponse.ok("登录成功", coupleProfileService.login(request));
     }
 
-    /**
-     * 主动退出当前登录态。
-     */
     @ApiOperation("退出登录")
     @PostMapping("/logout")
     public ApiResponse<Void> logout(
@@ -57,9 +51,6 @@ public class AuthController {
         return ApiResponse.ok("退出成功", null);
     }
 
-    /**
-     * 按账号重置登录密码
-     */
     @ApiOperation("重置密码")
     @PostMapping("/reset-password")
     public ApiResponse<Void> resetPassword(@Validated @RequestBody PasswordResetRequest request) {
@@ -67,9 +58,6 @@ public class AuthController {
         return ApiResponse.ok("密码重置成功", null);
     }
 
-    /**
-     * 预留注册入口，当前版本暂未开放。
-     */
     @ApiOperation("注册账号")
     @PostMapping("/register")
     public ApiResponse<Void> register() {

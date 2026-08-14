@@ -209,14 +209,6 @@ public class UserNotificationServiceImpl implements UserNotificationService {
                 .collect(Collectors.toList());
     }
 
-    private long countUnreadByUsername(String username) {
-        return countNotifications(username, "unread", BIZ_FILTER_ALL, null, null);
-    }
-
-    private long countTotalByUsername(String username) {
-        return countNotifications(username, "all", BIZ_FILTER_ALL, null, null);
-    }
-
     private UserNotification findLatestNotification(String username) {
         return userNotificationMapper.selectOne(new LambdaQueryWrapper<UserNotification>()
                 .eq(UserNotification::getRecipientUsername, username)
@@ -230,7 +222,7 @@ public class UserNotificationServiceImpl implements UserNotificationService {
             return;
         }
 
-        long unreadCount = countUnreadByUsername(username);
+        long unreadCount = countNotifications(username, "unread", BIZ_FILTER_ALL, null, null);
         UserNotification latestNotification = findLatestNotification(username);
         notificationRealtimePushService.pushToUsername(username, NotificationRealtimeEvent.builder()
                 .eventType(eventType)

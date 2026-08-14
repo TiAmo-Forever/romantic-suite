@@ -77,6 +77,7 @@
                       <text class="inline-comment-name">{{ commentName(item) }}</text>
                       <text v-if="replyPrefix(item)" class="inline-reply-prefix">{{ replyPrefix(item) }}</text>
                       <text>：{{ commentPlainText(item) }}</text>
+                      <text v-if="commentTime(item)" class="inline-comment-time">{{ commentTime(item) }}</text>
                     </view>
                   </view>
                 </view>
@@ -88,8 +89,7 @@
                   <text>✦</text>
                 </view>
                 <view class="note-like-state" :class="{ active: entry.likedByCurrentUser }">
-                  <image class="mini-icon" :src="iconHeart" mode="aspectFit"></image>
-                  <text>{{ entryLikeText(entry) }}</text>
+                  <text class="note-like-heart">{{ entry.likedByCurrentUser ? '❤️' : '♡' }}</text>
                 </view>
                 <view class="note-more-btn" @click.stop="openInteraction(entry)">...</view>
               </view>
@@ -150,13 +150,13 @@
       </view>
     </view>
 
-    <view v-if="commentVisible && activeEntry" class="sheet-mask composer-mask" @click="closeComment">
+    <view v-if="commentVisible && activeEntry" class="sheet-mask composer-mask" :style="composerMaskStyle" @click="closeComment">
       <view class="sheet card comment-sheet" @click.stop>
         <view class="handle"></view>
         <view class="sheet-title">{{ replyTo ? `回复 ${commentName(replyTo)}` : '写评论' }}</view>
         <view class="composer">
           <view v-if="replyTo" class="reply-tip"><text>{{ `正在回复 ${commentName(replyTo)}` }}</text><text @click="clearReply">取消</text></view>
-          <textarea v-model="commentForm.content" class="comment-input" :focus="commentFocus" :maxlength="500" :cursor-spacing="24" :placeholder="commentPlaceholder" auto-height :show-confirm-bar="false" :adjust-position="true" />
+          <textarea v-model="commentForm.content" class="comment-input" :focus="commentFocus" :maxlength="500" :cursor-spacing="16" :placeholder="commentPlaceholder" auto-height :show-confirm-bar="false" :adjust-position="false" @keyboardheightchange="handleTextareaKeyboardHeightChange" />
           <view class="composer-foot"><text>{{ commentForm.content.length }}/500</text><button class="send-btn" :disabled="commentSubmitting" @click="submitComment">{{ commentSubmitting ? '发送中' : '发送' }}</button></view>
         </view>
       </view>
@@ -171,7 +171,7 @@
     </view>
 
     <view class="bottom-bar">
-      <button class="primary-btn" @click="goAddEntry"><image class="btn-icon" :src="iconBottomAction" mode="aspectFit"></image><text>{{ summary.hasRecord ? '继续记录今天' : '开始记录今天' }}</text></button>
+      <button class="primary-btn" @click="goAddTodayEntry"><image class="btn-icon" :src="iconBottomAction" mode="aspectFit"></image><text>{{ summary.hasRecord ? '继续记录今天' : '开始记录今天' }}</text></button>
     </view>
   </view>
 </template>
@@ -185,6 +185,7 @@ import { resolveMediaUrl } from '@/utils/media-upload.js'
 import { openMediaViewer } from '@/utils/media-viewer.js'
 import { backPage, goPage } from '@/utils/nav.js'
 import { useThemePage } from '@/utils/useThemePage.js'
+import { useKeyboardAvoidance } from '@/utils/keyboard-avoidance.js'
 import { fetchPartnerProfile, fetchRemoteProfile } from '@/services/profile.js'
 import { getProfile } from '@/utils/profile.js'
 import iconBack from '@/assets/daily-summary/icon-back.svg'
@@ -209,6 +210,11 @@ const MOOD = {
 }
 
 const { themeStyle } = useThemePage()
+const {
+  keyboardAvoidanceStyle: composerMaskStyle,
+  handleKeyboardHeightChange: handleTextareaKeyboardHeightChange,
+  resetKeyboardHeight
+} = useKeyboardAvoidance()
 const profile = ref(getProfile())
 const partner = ref(null)
 const activeDate = ref('')
@@ -346,6 +352,10 @@ function goAddEntry() {
   goPage(`/pages/modules/daily-summary/edit?date=${encodeURIComponent(activeDate.value || summary.summaryDate)}`)
 }
 
+function goAddTodayEntry() {
+  goPage(`/pages/modules/daily-summary/edit?date=${encodeURIComponent(formatDate(new Date()))}`)
+}
+
 function goEdit(entry) {
   if (!summary.id || !entry?.id) {
     return
@@ -426,6 +436,7 @@ async function toggleActiveLike() {
 function closeComment() {
   commentVisible.value = false
   commentFocus.value = false
+  resetKeyboardHeight()
   clearReply()
   commentForm.content = ''
 }
@@ -518,14 +529,6 @@ function hasInlineInteraction(entry) {
   return Boolean((entry?.likeUsers || []).length || (entry?.commentList || []).length)
 }
 
-function entryLikeText(entry) {
-  const count = Number(entry?.likeCount || (entry?.likeUsers || []).length || 0)
-  if (entry?.likedByCurrentUser) {
-    return count > 1 ? `已赞 · ${count}` : '已赞'
-  }
-  return count ? `${count}赞` : '赞'
-}
-
 function commentParts(item) {
   const content = String(item?.content || '').trim()
   const matched = content.match(/^回复\s+(.+?)[：:]\s*(.*)$/)
@@ -539,6 +542,19 @@ function replyPrefix(item) {
 
 function commentPlainText(item) {
   return commentParts(item).text || ''
+}
+
+function commentTime(item) {
+  const raw = String(item?.createdAt || item?.updatedAt || '').replace('T', ' ').trim()
+  if (raw.length < 16) {
+    return ''
+  }
+  const commentDate = raw.slice(0, 10)
+  const currentDate = activeDate.value || summary.summaryDate
+  if (commentDate && currentDate && commentDate !== currentDate) {
+    return `${pretty(commentDate)} ${raw.slice(11, 16)}`
+  }
+  return raw.slice(11, 16)
 }
 
 function commentCopy(item) {
@@ -610,6 +626,13 @@ function shortDate(value) {
 function fullDate(value) {
   const d = onlyDate(value)
   return d ? `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${WEEK[d.getDay()]}` : '今天'
+}
+
+function formatDate(date) {
+  const d = dayStart(date)
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${month}-${day}`
 }
 
 function relative(value, base) {
@@ -690,11 +713,13 @@ function relative(value, base) {
 .inline-comment-name { color: #b56d62; font-weight: 700 }
 .inline-comment.mine .inline-comment-name { color: #d4635a }
 .inline-reply-prefix { color: rgba(107,63,50,.7) }
+.inline-comment-time { margin-left: 12rpx; font-size: 20rpx; color: rgba(107,63,50,.42); white-space: nowrap }
 .note-foot { position: absolute; left: 28rpx; right: 28rpx; bottom: 22rpx; padding-top: 16rpx; border-top: 2rpx solid rgba(201,168,122,.18); gap: 16rpx; color: rgba(184,137,110,.82); font-size: 20rpx }
 .note-foot-main { min-width: 0; gap: 12rpx; flex: 1 }
 .note-line { width: 24rpx; height: 2rpx; background: rgba(201,168,122,.4) }
-.note-like-state { height: 42rpx; padding: 0 14rpx; border-radius: 999rpx; gap: 6rpx; flex-shrink: 0; background: rgba(255,250,246,.86); color: rgba(143,102,93,.82); font-size: 20rpx; box-shadow: inset 0 0 0 2rpx rgba(201,168,122,.12) }
-.note-like-state.active { color: #d4635a; background: rgba(255,241,239,.96); box-shadow: inset 0 0 0 2rpx rgba(224,123,106,.18) }
+.note-like-state { width: 48rpx; height: 42rpx; padding: 0; border-radius: 999rpx; justify-content: center; flex-shrink: 0; background: rgba(255,250,246,.86); color: rgba(184,137,110,.9); box-shadow: inset 0 0 0 2rpx rgba(201,168,122,.12) }
+.note-like-state.active { background: rgba(255,241,239,.96); box-shadow: inset 0 0 0 2rpx rgba(224,123,106,.2), 0 8rpx 18rpx rgba(212,99,90,.12) }
+.note-like-heart { font-size: 28rpx; line-height: 1 }
 .note-more-btn { width: 58rpx; height: 42rpx; border-radius: 999rpx; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(252,236,224,.9); color: #b8896e; font-size: 28rpx; line-height: 1; letter-spacing: 2rpx; box-shadow: inset 0 0 0 2rpx rgba(201,168,122,.12) }
 .note-empty { margin: 20rpx 30rpx 0; padding: 28rpx; border-radius: 26rpx; background: rgba(255,250,246,.82); color: rgba(107,63,50,.6); font-size: 24rpx }
 .section-head { margin-top: 24rpx }

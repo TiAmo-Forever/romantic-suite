@@ -50,8 +50,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 今日小计服务实现。
- * 第二版按“按天成页、页内多条记录”设计，并支持点赞、评论、图片/视频上传和历史查看。
+ * 今日小计服务实现
+ * 第二版按“按天成页、页内多条记录”设计，并支持点赞、评论、图片/视频上传和历史查看
  */
 @Slf4j
 @Service
@@ -550,7 +550,8 @@ public class DailySummaryServiceImpl implements DailySummaryService {
                 if (!StringUtils.hasText(commenterUsername) || commenterUsername.equalsIgnoreCase(currentUsername)) {
                     continue;
                 }
-                if (latestComment == null || compareDateTime(defaultIfBlank(comment.getUpdatedAt(), comment.getCreatedAt()), defaultIfBlank(latestComment.getUpdatedAt(), latestComment.getCreatedAt())) > 0) {
+                if (latestComment == null || parseDateTimeValue(defaultIfBlank(comment.getUpdatedAt(), comment.getCreatedAt()))
+                        .compareTo(parseDateTimeValue(defaultIfBlank(latestComment.getUpdatedAt(), latestComment.getCreatedAt()))) > 0) {
                     latestComment = comment;
                     latestCommentEntry = entry;
                 }
@@ -586,7 +587,7 @@ public class DailySummaryServiceImpl implements DailySummaryService {
                 .partnerDisplayName(partnerDisplayName)
                 .relationshipDays(relationshipDays)
                 .relationshipText(relationshipText)
-                .mediaCount(countMedia(entryList))
+                .mediaCount(entryList.stream().mapToInt(item -> item.getMediaList() == null ? 0 : item.getMediaList().size()).sum())
                 .responseState(responseState)
                 .responseDisplayName(responseDisplayName)
                 .responseMetaText(responseMetaText)
@@ -643,14 +644,6 @@ public class DailySummaryServiceImpl implements DailySummaryService {
         } catch (Exception error) {
             return 0;
         }
-    }
-
-    private Integer countMedia(List<DailySummaryEntryResponse> entryList) {
-        return entryList.stream().mapToInt(item -> item.getMediaList() == null ? 0 : item.getMediaList().size()).sum();
-    }
-
-    private int compareDateTime(String left, String right) {
-        return parseDateTimeValue(left).compareTo(parseDateTimeValue(right));
     }
 
     private LocalDateTime parseDateTimeValue(String value) {

@@ -36,6 +36,8 @@
           class="app-textarea daily-textarea"
           placeholder="请输入今日内容"
           placeholder-class="app-account-input-placeholder"
+          :cursor-spacing="120"
+          :adjust-position="true"
         />
         <view class="content-meta">{{ form.content.length }}/1000</view>
       </AccountPanel>

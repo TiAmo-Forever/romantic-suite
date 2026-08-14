@@ -11,8 +11,8 @@
 				/>
 				<AccountPanel title="登录密码">
 					<view class="app-account-form-row">
-						<view class="app-account-form-col"><AccountField label="新密码"><input v-model="form.nextPassword" password class="input app-field" placeholder="请输入新密码" placeholder-class="app-account-input-placeholder" /></AccountField></view>
-						<view class="app-account-form-col"><AccountField label="确认密码"><input v-model="form.confirmPassword" password class="input app-field" placeholder="请再次输入新密码" placeholder-class="app-account-input-placeholder" /></AccountField></view>
+						<view class="app-account-form-col"><AccountField label="新密码"><input v-model="form.nextPassword" password class="input app-field" placeholder="请输入新密码" placeholder-class="app-account-input-placeholder" :cursor-spacing="120" :adjust-position="true" /></AccountField></view>
+						<view class="app-account-form-col"><AccountField label="确认密码"><input v-model="form.confirmPassword" password class="input app-field" placeholder="请再次输入新密码" placeholder-class="app-account-input-placeholder" :cursor-spacing="120" :adjust-position="true" /></AccountField></view>
 					</view>
 				</AccountPanel>
 				<view class="app-account-action-bar">

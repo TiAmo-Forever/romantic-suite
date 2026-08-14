@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 账号资料接口。
+ * 账号资料接口
  */
 @Api(tags = "账号资料")
 @RestController
@@ -31,54 +31,36 @@ public class ProfileController {
         this.coupleProfileService = coupleProfileService;
     }
 
-    /**
-     * 查询全部账号资料，仅用于开发期排查。
-     */
     @ApiOperation("查询全部资料")
     @GetMapping
     public ApiResponse<List<ProfileResponse>> listProfiles() {
         return ApiResponse.ok("资料加载成功", coupleProfileService.listProfiles());
     }
 
-    /**
-     * 查询当前登录账号资料。
-     */
     @ApiOperation("查询当前资料")
     @GetMapping("/mine")
     public ApiResponse<ProfileResponse> getCurrentProfile() {
         return ApiResponse.ok("当前资料加载成功", coupleProfileService.getCurrentProfile());
     }
 
-    /**
-     * 查询当前登录账号对应的对方资料。
-     */
     @ApiOperation("查询对方资料")
     @GetMapping("/mine/partner")
     public ApiResponse<ProfileResponse> getPartnerProfile() {
         return ApiResponse.ok("对方资料加载成功", coupleProfileService.getPartnerProfile());
     }
 
-    /**
-     * 保存当前登录账号资料。
-     */
     @ApiOperation("更新当前资料")
     @PutMapping("/mine")
     public ApiResponse<ProfileResponse> updateCurrentProfile(@RequestBody ProfileUpdateRequest request) {
         return ApiResponse.ok("资料保存成功", coupleProfileService.updateCurrentProfile(request));
     }
 
-    /**
-     * 修改当前登录账号密码。
-     */
     @ApiOperation("更新密码")
     @PutMapping("/mine/password")
     public ApiResponse<ProfileResponse> updatePassword(@Validated @RequestBody PasswordUpdateRequest request) {
         return ApiResponse.ok("密码保存成功", coupleProfileService.updatePassword(request));
     }
 
-    /**
-     * 将当前登录账号资料恢复为默认值。
-     */
     @ApiOperation("恢复默认资料")
     @PostMapping("/mine/reset")
     public ApiResponse<ProfileResponse> resetCurrentProfile() {

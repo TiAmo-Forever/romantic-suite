@@ -14,6 +14,8 @@
             maxlength="30"
             :placeholder="TEXT.titlePlaceholder"
             placeholder-class="app-account-input-placeholder"
+            :cursor-spacing="120"
+            :adjust-position="true"
           />
         </AccountField>
 
@@ -42,6 +44,8 @@
             class="textarea app-textarea"
             :placeholder="TEXT.summaryPlaceholder"
             placeholder-class="app-account-input-placeholder"
+            :cursor-spacing="120"
+            :adjust-position="true"
           />
         </AccountField>
       </AccountPanel>
@@ -78,6 +82,8 @@
               maxlength="8"
               :placeholder="TEXT.customPlaceholder"
               placeholder-class="app-account-input-placeholder"
+              :cursor-spacing="120"
+              :adjust-position="true"
             />
             <view class="tag-add-btn" @click="handleAddCustomTag">{{ TEXT.add }}</view>
           </view>

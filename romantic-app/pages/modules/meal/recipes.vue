@@ -17,6 +17,8 @@
         placeholder="搜一搜想吃的菜"
         placeholder-class="meal-placeholder"
         confirm-type="search"
+        :cursor-spacing="120"
+        :adjust-position="true"
         @confirm="searchDishes"
       />
     </view>

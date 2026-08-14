@@ -13,6 +13,8 @@
             class="input app-field"
             :placeholder="TEXT.inputPlaceholder"
             placeholder-class="app-account-input-placeholder"
+            :cursor-spacing="120"
+            :adjust-position="true"
             @input="handleManualInput"
           />
         </AccountField>

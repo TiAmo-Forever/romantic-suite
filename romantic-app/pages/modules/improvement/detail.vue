@@ -154,7 +154,8 @@
                 v-model="feedbackCommentForm.content"
                 class="comment-input"
                 :maxlength="500"
-                :cursor-spacing="24"
+                :cursor-spacing="120"
+                :adjust-position="true"
                 :placeholder="feedbackCommentPlaceholder(latestFeedback)"
                 placeholder-class="app-account-input-placeholder"
                 confirm-type="send"
@@ -285,7 +286,8 @@
                     v-model="feedbackCommentForm.content"
                     class="comment-input"
                     :maxlength="500"
-                    :cursor-spacing="24"
+                    :cursor-spacing="120"
+                    :adjust-position="true"
                     :placeholder="feedbackCommentPlaceholder(item)"
                     placeholder-class="app-account-input-placeholder"
                     confirm-type="send"
@@ -315,7 +317,7 @@
     </view>
 
     <view v-if="feedbackSheetVisible" class="feedback-sheet-mask" @click="closeFeedbackSheet">
-      <view class="feedback-sheet" @click.stop>
+      <view class="feedback-sheet" :style="feedbackSheetStyle" @click.stop>
         <view class="feedback-sheet-head">
           <view>
             <view class="feedback-sheet-title">{{ feedbackSheetTitle }}</view>
@@ -339,6 +341,9 @@
             class="textarea app-textarea"
             placeholder="请输入这次的反馈内容"
             placeholder-class="app-account-input-placeholder"
+            :cursor-spacing="16"
+            :adjust-position="false"
+            @keyboardheightchange="handleFeedbackSheetKeyboardHeightChange"
           />
         </AccountField>
 
@@ -400,6 +405,7 @@ import { prepareImageFile, resolveMediaUrl, uploadImprovementMedia } from '@/uti
 import { openMediaViewer } from '@/utils/media-viewer.js'
 import { backPage, goPage } from '@/utils/nav.js'
 import { useThemePage } from '@/utils/useThemePage.js'
+import { useKeyboardAvoidance } from '@/utils/keyboard-avoidance.js'
 import AccountField from '@/pages/account/components/AccountField.vue'
 import AccountHeader from '@/pages/account/components/AccountHeader.vue'
 import AccountPanel from '@/pages/account/components/AccountPanel.vue'
@@ -458,6 +464,11 @@ const TEXT = {
 const collapsedFeedbackCount = 2
 const FILLED_HEART = '❤'
 const { themeStyle } = useThemePage()
+const {
+  keyboardAvoidanceStyle: feedbackSheetStyle,
+  handleKeyboardHeightChange: handleFeedbackSheetKeyboardHeightChange,
+  resetKeyboardHeight
+} = useKeyboardAvoidance()
 const detail = ref(null)
 const noteId = ref('')
 const noteMediaExpanded = ref(false)
@@ -787,6 +798,7 @@ function openFeedbackSheet(mode, item = null) {
 function closeFeedbackSheet() {
   feedbackSheetVisible.value = false
   feedbackSheetTargetId.value = 0
+  resetKeyboardHeight()
   sheetForm.status = currentStatusKey.value
   sheetForm.content = ''
   syncSheetStatus(sheetForm.status)

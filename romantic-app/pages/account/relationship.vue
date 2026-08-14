@@ -15,7 +15,7 @@
 				<view class="app-account-form-row">
 					<view class="app-account-form-col">
 						<AccountField label="对方对你的称呼">
-							<input v-model="form.loverNickname" class="input app-field" placeholder="请输入称呼" placeholder-class="app-account-input-placeholder" />
+							<input v-model="form.loverNickname" class="input app-field" placeholder="请输入称呼" placeholder-class="app-account-input-placeholder" :cursor-spacing="120" :adjust-position="true" />
 						</AccountField>
 					</view>
 					<view class="app-account-form-col">

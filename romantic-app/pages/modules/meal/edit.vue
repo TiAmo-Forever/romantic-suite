@@ -19,7 +19,7 @@
 
     <view class="form-card glass-card">
       <text class="field-label">菜名</text>
-      <input v-model="form.name" maxlength="80" class="field-input" placeholder="这道菜叫什么？" placeholder-class="meal-placeholder" />
+      <input v-model="form.name" maxlength="80" class="field-input" placeholder="这道菜叫什么？" placeholder-class="meal-placeholder" :cursor-spacing="120" :adjust-position="true" />
     </view>
 
     <view class="form-card glass-card">
@@ -42,12 +42,12 @@
 
     <view class="form-card glass-card">
       <text class="field-label">一句话记忆</text>
-      <textarea v-model="form.memory" maxlength="255" auto-height class="field-textarea short" placeholder="写一句关于它的小记忆" placeholder-class="meal-placeholder" />
+      <textarea v-model="form.memory" maxlength="255" auto-height class="field-textarea short" placeholder="写一句关于它的小记忆" placeholder-class="meal-placeholder" :cursor-spacing="120" :adjust-position="true" />
     </view>
 
     <view class="form-card glass-card">
       <text class="field-label">关于这道菜</text>
-      <textarea v-model="form.description" maxlength="1000" class="field-textarea" placeholder="比如第一次做给对方吃，或者特别适合哪一天" placeholder-class="meal-placeholder" />
+      <textarea v-model="form.description" maxlength="1000" class="field-textarea" placeholder="比如第一次做给对方吃，或者特别适合哪一天" placeholder-class="meal-placeholder" :cursor-spacing="120" :adjust-position="true" />
     </view>
 
     <view class="recipe-card glass-card">
@@ -62,6 +62,8 @@
         class="field-textarea recipe-input"
         placeholder="记录步骤、火候和你们喜欢的口味"
         placeholder-class="meal-placeholder"
+        :cursor-spacing="120"
+        :adjust-position="true"
       />
     </view>
 

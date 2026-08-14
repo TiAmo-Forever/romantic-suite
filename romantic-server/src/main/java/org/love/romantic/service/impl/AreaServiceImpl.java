@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 行政区查询服务实现。
+ * 行政区查询服务实现
  */
 @Service
 public class AreaServiceImpl implements AreaService {

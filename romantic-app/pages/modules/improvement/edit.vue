@@ -8,11 +8,11 @@
     <view class="app-account-content">
       <AccountPanel title="记录信息">
         <AccountField label="问题标题">
-          <input v-model="form.title" class="input app-field" placeholder="请输入问题标题" placeholder-class="app-account-input-placeholder" />
+          <input v-model="form.title" class="input app-field" placeholder="请输入问题标题" placeholder-class="app-account-input-placeholder" :cursor-spacing="120" :adjust-position="true" />
         </AccountField>
 
         <AccountField label="详细说明">
-          <textarea v-model="form.description" maxlength="1000" class="textarea app-textarea" placeholder="请输入详细说明" placeholder-class="app-account-input-placeholder" />
+          <textarea v-model="form.description" maxlength="1000" class="textarea app-textarea" placeholder="请输入详细说明" placeholder-class="app-account-input-placeholder" :cursor-spacing="120" :adjust-position="true" />
         </AccountField>
 
         <picker class="picker-row-shell" mode="selector" :range="targetOptions" range-key="label" :value="targetIndex" @change="handleTargetChange">
@@ -50,7 +50,7 @@
         </view>
 
         <AccountField label="最近反馈摘要">
-          <input v-model="form.latestFeedback" maxlength="1000" class="input app-field" placeholder="请输入反馈摘要" placeholder-class="app-account-input-placeholder" />
+          <input v-model="form.latestFeedback" maxlength="1000" class="input app-field" placeholder="请输入反馈摘要" placeholder-class="app-account-input-placeholder" :cursor-spacing="120" :adjust-position="true" />
         </AccountField>
       </AccountPanel>
 

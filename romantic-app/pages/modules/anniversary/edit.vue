@@ -7,7 +7,7 @@
     <view class="app-account-content">
       <AccountPanel title="基础信息">
         <AccountField label="纪念日标题">
-          <input v-model="form.title" class="input app-field" placeholder="请输入标题" placeholder-class="app-account-input-placeholder" />
+          <input v-model="form.title" class="input app-field" placeholder="请输入标题" placeholder-class="app-account-input-placeholder" :cursor-spacing="120" :adjust-position="true" />
         </AccountField>
 
         <view class="app-account-form-row">
@@ -34,7 +34,7 @@
         </AccountField>
 
         <AccountField label="文字说明">
-          <textarea v-model="form.description" maxlength="1000" class="textarea app-textarea" placeholder="请输入内容" placeholder-class="app-account-input-placeholder" />
+          <textarea v-model="form.description" maxlength="1000" class="textarea app-textarea" placeholder="请输入内容" placeholder-class="app-account-input-placeholder" :cursor-spacing="120" :adjust-position="true" />
         </AccountField>
 
         <AccountField label="提醒设置">

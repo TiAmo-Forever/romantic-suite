@@ -22,8 +22,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 /**
- * 共享见面倒计时服务实现。
- * 倒计时计划属于共享内容，两端账号看到的是同一份数据。
+ * 共享见面倒计时服务实现
+ * 倒计时计划属于共享内容，两端账号看到的是同一份数据
  */
 @Slf4j
 @Service
@@ -183,19 +183,11 @@ public class CountdownPlanServiceImpl implements CountdownPlanService {
                 .loverName(plan.getLoverName())
                 .place(plan.getPlace())
                 .note(plan.getNote())
-                .nextMeetingAt(formatDateTime(plan.getNextMeetingAt()))
-                .lastMeetingAt(formatDate(plan.getLastMeetingAt()))
+                .nextMeetingAt(plan.getNextMeetingAt() == null ? "" : plan.getNextMeetingAt().format(DATE_TIME_FORMATTER))
+                .lastMeetingAt(plan.getLastMeetingAt() == null ? "" : plan.getLastMeetingAt().toLocalDate().format(DATE_FORMATTER))
                 .isAllDay(Boolean.TRUE.equals(plan.getIsAllDay()))
                 .creatorUsername(defaultIfBlank(plan.getCreatedBy(), ""))
                 .updaterUsername(defaultIfBlank(plan.getUpdatedBy(), ""))
                 .build();
-    }
-
-    private String formatDateTime(LocalDateTime value) {
-        return value == null ? "" : value.format(DATE_TIME_FORMATTER);
-    }
-
-    private String formatDate(LocalDateTime value) {
-        return value == null ? "" : value.toLocalDate().format(DATE_FORMATTER);
     }
 }

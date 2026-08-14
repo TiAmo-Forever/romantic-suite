@@ -563,6 +563,13 @@ public class MealServiceImpl implements MealService {
                                             Map<String, String> nicknameMap,
                                             Set<Long> todayDishIds,
                                             Set<Long> weeklyDishIds) {
+        // 数据库查询
+        long dailyUsedCount = mealDailyPlanItemMapper.selectCount(new LambdaQueryWrapper<MealDailyPlanItem>()
+                .eq(MealDailyPlanItem::getDishId, dish.getId()));
+        long weeklySelectedCount = mealWeeklyDishMapper.selectCount(new LambdaQueryWrapper<MealWeeklyDish>()
+                .eq(MealWeeklyDish::getDishId, dish.getId()));
+
+        // 返回对象组装
         return MealDishResponse.builder()
                 .id(dish.getId())
                 .name(dish.getName())
@@ -580,21 +587,11 @@ public class MealServiceImpl implements MealService {
                 .updaterNickname(resolveNickname(dish.getUpdatedBy(), nicknameMap))
                 .addedToday(todayDishIds.contains(dish.getId()))
                 .selectedThisWeek(weeklyDishIds.contains(dish.getId()))
-                .dailyUsedCount(countDailyUsage(dish.getId()))
-                .weeklySelectedCount(countWeeklyUsage(dish.getId()))
+                .dailyUsedCount(dailyUsedCount)
+                .weeklySelectedCount(weeklySelectedCount)
                 .lastAddedDate(resolveLastAddedDate(dish.getId()))
                 .updatedAt(dish.getUpdatedAt() == null ? "" : DATE_TIME_FORMATTER.format(dish.getUpdatedAt()))
                 .build();
-    }
-
-    private long countDailyUsage(Long dishId) {
-        return mealDailyPlanItemMapper.selectCount(new LambdaQueryWrapper<MealDailyPlanItem>()
-                .eq(MealDailyPlanItem::getDishId, dishId));
-    }
-
-    private long countWeeklyUsage(Long dishId) {
-        return mealWeeklyDishMapper.selectCount(new LambdaQueryWrapper<MealWeeklyDish>()
-                .eq(MealWeeklyDish::getDishId, dishId));
     }
 
     private String resolveLastAddedDate(Long dishId) {

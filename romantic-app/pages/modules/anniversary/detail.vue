@@ -131,16 +131,18 @@
 
     </view>
 
-    <view v-if="commentInputVisible" class="comment-composer" @click.stop>
+    <view v-if="commentInputVisible" class="comment-composer" :style="commentComposerStyle" @click.stop>
       <input
         v-model="commentForm.content"
         class="comment-input"
         :focus="commentFocus"
         :maxlength="500"
-        :cursor-spacing="24"
+        :cursor-spacing="16"
+        :adjust-position="false"
         :placeholder="commentInputPlaceholder"
         placeholder-class="app-account-input-placeholder"
         confirm-type="send"
+        @keyboardheightchange="handleCommentKeyboardHeightChange"
         @confirm="handleSubmitComment"
       />
       <view class="comment-composer-actions">
@@ -188,6 +190,7 @@ import { resolveMediaUrl } from '@/utils/media-upload.js'
 import { openMediaViewer } from '@/utils/media-viewer.js'
 import { backPage, goPage } from '@/utils/nav.js'
 import { useThemePage } from '@/utils/useThemePage.js'
+import { useKeyboardAvoidance } from '@/utils/keyboard-avoidance.js'
 import AccountHeader from '@/pages/account/components/AccountHeader.vue'
 import AccountPanel from '@/pages/account/components/AccountPanel.vue'
 
@@ -245,6 +248,11 @@ const TEXT = {
 }
 
 const { themeStyle } = useThemePage()
+const {
+  keyboardAvoidanceStyle: commentComposerStyle,
+  handleKeyboardHeightChange: handleCommentKeyboardHeightChange,
+  resetKeyboardHeight
+} = useKeyboardAvoidance()
 const detail = ref(null)
 const eventId = ref('')
 const showActionMenu = ref(false)
@@ -430,6 +438,7 @@ function openCommentComposer(targetComment = null) {
 function closeCommentComposer() {
   commentFocus.value = false
   commentInputVisible.value = false
+  resetKeyboardHeight()
   replyTargetComment.value = null
 }
 

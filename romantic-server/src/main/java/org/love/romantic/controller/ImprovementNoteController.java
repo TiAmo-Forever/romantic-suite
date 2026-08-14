@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 恋爱改进簿接口。
+ * 恋爱改进簿接口
  */
 @Api(tags = "恋爱改进簿")
 @RestController

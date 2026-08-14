@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 行政区接口。
+ * 行政区接口
  */
 @Api(tags = "行政区")
 @RestController
@@ -28,18 +28,12 @@ public class AreaController {
         this.areaService = areaService;
     }
 
-    /**
-     * 查询全国省级数据。
-     */
     @ApiOperation("查询省级列表")
     @GetMapping("/provinces")
     public ApiResponse<List<AreaOptionResponse>> listProvinces() {
         return ApiResponse.ok("查询成功", areaService.listProvinces());
     }
 
-    /**
-     * 根据父级行政代码查询下级地区。
-     */
     @ApiOperation("查询下级地区")
     @GetMapping("/children")
     public ApiResponse<List<AreaOptionResponse>> listChildren(
@@ -47,9 +41,6 @@ public class AreaController {
         return ApiResponse.ok("查询成功", areaService.listChildren(parentId));
     }
 
-    /**
-     * 根据关键字搜索行政区。
-     */
     @ApiOperation("搜索行政区")
     @GetMapping("/search")
     public ApiResponse<List<AreaOptionResponse>> searchAreas(
@@ -59,9 +50,6 @@ public class AreaController {
         return ApiResponse.ok("查询成功", areaService.searchAreas(keyword, level, limit));
     }
 
-    /**
-     * 查询行政区详情。
-     */
     @ApiOperation("查询行政区详情")
     @GetMapping("/{id}")
     public ApiResponse<AreaOptionResponse> getArea(@ApiParam("行政区编码") @PathVariable Integer id) {

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 管理员基础信息接口。
+ * 管理员基础信息接口
  */
 @Api(tags = "管理员基础信息")
 @RestController

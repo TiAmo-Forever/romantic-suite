@@ -26,7 +26,7 @@
 					</view>
 				</AccountField>
 				<AccountField label="真实姓名">
-					<input v-model="form.nickname" class="input app-field" placeholder="请输入姓名" placeholder-class="app-account-input-placeholder" />
+					<input v-model="form.nickname" class="input app-field" placeholder="请输入姓名" placeholder-class="app-account-input-placeholder" :cursor-spacing="120" :adjust-position="true" />
 				</AccountField>
 				<view class="app-account-form-row">
 					<view class="app-account-form-col">
@@ -38,12 +38,12 @@
 					</view>
 					<view class="app-account-form-col">
 						<AccountField label="邮箱">
-							<input v-model="form.email" class="input app-field" placeholder="请输入邮箱" placeholder-class="app-account-input-placeholder" />
+							<input v-model="form.email" class="input app-field" placeholder="请输入邮箱" placeholder-class="app-account-input-placeholder" :cursor-spacing="120" :adjust-position="true" />
 						</AccountField>
 					</view>
 				</view>
 				<AccountField label="个性签名">
-					<textarea v-model="form.bio" maxlength="60" class="textarea app-textarea" placeholder="请输入个性签名" placeholder-class="app-account-input-placeholder" />
+					<textarea v-model="form.bio" maxlength="60" class="textarea app-textarea" placeholder="请输入个性签名" placeholder-class="app-account-input-placeholder" :cursor-spacing="120" :adjust-position="true" />
 				</AccountField>
 			</AccountPanel>
 				<view class="app-account-action-bar">

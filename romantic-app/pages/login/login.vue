@@ -37,6 +37,8 @@
 							class="field-input"
 							placeholder="请输入邮箱或账号"
 							placeholder-class="field-placeholder"
+							:cursor-spacing="120"
+							:adjust-position="true"
 						/>
 					</view>
 				</view>
@@ -50,6 +52,8 @@
 							:password="!showPassword"
 							placeholder="请输入密码"
 							placeholder-class="field-placeholder"
+							:cursor-spacing="120"
+							:adjust-position="true"
 						/>
 						<view class="password-toggle" @click.stop="togglePassword">
 							<image class="password-eye-icon" :src="passwordEyeIconUrl" mode="aspectFit" />
@@ -73,18 +77,18 @@
 			</view>
 
 			<view v-if="resetDialogVisible" class="reset-dialog-mask" @click="closeResetDialog">
-				<view class="reset-dialog" @click.stop>
+				<view class="reset-dialog" :style="resetDialogStyle" @click.stop>
 					<view class="reset-dialog-title">重置密码</view>
 					<view class="reset-dialog-desc">输入账号和新密码后立即生效</view>
 
 					<view class="reset-field">
-						<input v-model.trim="resetForm.username" class="reset-input" placeholder="请输入账号" placeholder-class="field-placeholder" />
+						<input v-model.trim="resetForm.username" class="reset-input" placeholder="请输入账号" placeholder-class="field-placeholder" :cursor-spacing="16" :adjust-position="false" @keyboardheightchange="handleResetKeyboardHeightChange" />
 					</view>
 					<view class="reset-field">
-						<input v-model="resetForm.password" password class="reset-input" placeholder="请输入新密码" placeholder-class="field-placeholder" />
+						<input v-model="resetForm.password" password class="reset-input" placeholder="请输入新密码" placeholder-class="field-placeholder" :cursor-spacing="16" :adjust-position="false" @keyboardheightchange="handleResetKeyboardHeightChange" />
 					</view>
 					<view class="reset-field">
-						<input v-model="resetForm.confirmPassword" password class="reset-input" placeholder="请再次输入新密码" placeholder-class="field-placeholder" />
+						<input v-model="resetForm.confirmPassword" password class="reset-input" placeholder="请再次输入新密码" placeholder-class="field-placeholder" :cursor-spacing="16" :adjust-position="false" @keyboardheightchange="handleResetKeyboardHeightChange" />
 					</view>
 
 					<view class="reset-dialog-actions">
@@ -111,11 +115,17 @@ import { clearLoginState, login } from '@/utils/auth.js'
 import { resetPasswordByServer } from '@/services/auth.js'
 import { openHomePage } from '@/utils/nav.js'
 import { useThemePage } from '@/utils/useThemePage.js'
+import { useKeyboardAvoidance } from '@/utils/keyboard-avoidance.js'
 
 const REMEMBERED_LOGIN_KEY = 'romantic_remembered_login'
 const loginIllustrationUrl = '/static/login/hero.png'
 const passwordEyeIconUrl = '/static/login/eye.svg'
 const { themeStyle: pageStyle } = useThemePage()
+const {
+	keyboardAvoidanceStyle: resetDialogStyle,
+	handleKeyboardHeightChange: handleResetKeyboardHeightChange,
+	resetKeyboardHeight
+} = useKeyboardAvoidance({ extraBottom: 160 })
 
 const form = reactive({
 	username: '',
@@ -241,6 +251,7 @@ function handleForgotPassword() {
 function closeResetDialog() {
 	if (resetSubmitting.value) return
 	resetDialogVisible.value = false
+	resetKeyboardHeight()
 }
 
 async function handleResetPassword() {
@@ -276,6 +287,7 @@ async function handleResetPassword() {
 			persistRememberedUsername()
 		}
 		resetDialogVisible.value = false
+		resetKeyboardHeight()
 		uni.showToast({ title: '密码重置成功', icon: 'success' })
 	} catch (error) {
 		uni.showToast({ title: error?.message || '密码重置失败', icon: 'none' })
@@ -613,6 +625,7 @@ onUnmounted(() => {
 	}
 
 	.reset-dialog {
+		position: relative;
 		width: 100%;
 		padding: 42rpx 32rpx 32rpx;
 		border-radius: 40rpx;

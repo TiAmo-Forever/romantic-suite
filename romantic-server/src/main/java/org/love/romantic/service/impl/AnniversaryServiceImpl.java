@@ -37,6 +37,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,8 +49,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 纪念日服务实现。
- * 纪念日对两个账号共享，创建人仅用于展示来源。
+ * 纪念日服务实现
+ * 纪念日对两个账号共享，创建人仅用于展示来源
  */
 @Slf4j
 @Service
@@ -113,7 +114,13 @@ public class AnniversaryServiceImpl implements AnniversaryService {
         return events.stream()
                 .map(event -> {
                     event.setLikeCount(likeCountMap.getOrDefault(event.getId(), 0L));
-                    return toSummaryResponse(event, nicknameMap, likedEventIds.contains(event.getId()));
+                    return buildResponse(
+                            event,
+                            Collections.emptyList(),
+                            nicknameMap,
+                            Collections.emptyList(),
+                            Collections.emptyList(),
+                            likedEventIds.contains(event.getId()));
                 })
                 .collect(Collectors.toList());
     }
@@ -494,12 +501,6 @@ public class AnniversaryServiceImpl implements AnniversaryService {
                 .eq(AnniversaryMedia::getEventId, eventId)
                 .orderByAsc(AnniversaryMedia::getSortOrder)
                 .orderByAsc(AnniversaryMedia::getId));
-    }
-
-    private AnniversaryEventResponse toSummaryResponse(AnniversaryEvent event,
-                                                       Map<String, String> nicknameMap,
-                                                       boolean likedByCurrentUser) {
-        return buildResponse(event, new ArrayList<>(), nicknameMap, new ArrayList<>(), new ArrayList<>(), likedByCurrentUser);
     }
 
     private AnniversaryEventResponse toDetailResponse(AnniversaryEvent event,

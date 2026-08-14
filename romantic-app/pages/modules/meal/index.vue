@@ -95,6 +95,8 @@
         auto-height
         placeholder="给今天的菜单留句话"
         placeholder-class="meal-placeholder"
+        :cursor-spacing="120"
+        :adjust-position="true"
         @blur="saveRemark"
       />
     </view>

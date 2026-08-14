@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 import java.util.HashMap;
 
 /**
- * 管理员基础信息总览服务。
+ * 管理员基础信息总览服务
  */
 @Service
 public class AdminOverviewServiceImpl implements AdminOverviewService {

@@ -180,6 +180,8 @@
                 maxlength="1000"
                 placeholder="请输入反馈内容"
                 placeholder-class="textarea-placeholder"
+                :cursor-spacing="120"
+                :adjust-position="true"
               ></textarea>
               <view class="feedback-submit" @click="submitFeedback">保存反馈</view>
             </view>
@@ -215,6 +217,8 @@
                 maxlength="500"
                 placeholder="请输入评论内容"
                 placeholder-class="textarea-placeholder"
+                :cursor-spacing="120"
+                :adjust-position="true"
               ></textarea>
               <view class="comment-submit" @click="submitComment">发送评论</view>
             </view>

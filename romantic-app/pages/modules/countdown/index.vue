@@ -92,7 +92,7 @@
 
 		<view v-if="showEditorSheet" class="floating-layer" @click.stop="closeEditorSheet">
 			<view class="floating-mask"></view>
-			<view class="editor-sheet app-card app-card-gradient" @click.stop>
+			<view class="editor-sheet app-card app-card-gradient" :style="editorSheetStyle" @click.stop>
 				<view class="sheet-handle"></view>
 				<view class="sheet-head">
 					<view>
@@ -104,7 +104,7 @@
 
 				<view class="form-item">
 					<view class="label">称呼</view>
-					<input v-model="form.loverName" class="input app-input-shell app-field" placeholder="请输入称呼" placeholder-class="input-placeholder" />
+					<input v-model="form.loverName" class="input app-input-shell app-field" placeholder="请输入称呼" placeholder-class="input-placeholder" :cursor-spacing="16" :adjust-position="false" @keyboardheightchange="handleEditorKeyboardHeightChange" />
 				</view>
 
 				<view class="form-item">
@@ -136,7 +136,7 @@
 
 				<view class="form-item">
 					<view class="label">这次想一起做什么</view>
-					<textarea v-model="form.note" class="textarea app-input-shell app-textarea" maxlength="1000" placeholder="请输入计划内容" placeholder-class="input-placeholder" />
+					<textarea v-model="form.note" class="textarea app-input-shell app-textarea" maxlength="1000" placeholder="请输入计划内容" placeholder-class="input-placeholder" :cursor-spacing="16" :adjust-position="false" @keyboardheightchange="handleEditorKeyboardHeightChange" />
 				</view>
 
 				<view class="sheet-actions">
@@ -156,8 +156,14 @@ import { buildAreaPickerUrl, clearAreaDraft, getAreaDraft } from '@/utils/area.j
 import { backPage, goPage } from '@/utils/nav.js'
 import { fetchSharedCountdownPlan, resetSharedCountdownPlan, updateSharedCountdownPlan } from '@/services/countdown.js'
 import { useThemePage } from '@/utils/useThemePage.js'
+import { useKeyboardAvoidance } from '@/utils/keyboard-avoidance.js'
 
 const { themeStyle } = useThemePage()
+const {
+	keyboardAvoidanceStyle: editorSheetStyle,
+	handleKeyboardHeightChange: handleEditorKeyboardHeightChange,
+	resetKeyboardHeight
+} = useKeyboardAvoidance()
 const countdown = reactive({ days: '00', hours: '00', minutes: '00', seconds: '00' })
 const meetingPlan = reactive({ loverName: '', place: '', note: '', nextMeetingAt: '', lastMeetingAt: '', isAllDay: false })
 const form = reactive({ loverName: '', place: '', note: '', nextDate: '', nextTime: '00:00', lastDate: '', isAllDay: false })
@@ -243,7 +249,7 @@ function handlePageTap(event) { const x = event?.detail?.x; const y = event?.det
 function toggleActionMenu() { showActionMenu.value = !showActionMenu.value }
 function closeActionMenu() { showActionMenu.value = false }
 function openEditorSheet() { showActionMenu.value = false; showEditorSheet.value = true }
-function closeEditorSheet() { showEditorSheet.value = false }
+function closeEditorSheet() { showEditorSheet.value = false; resetKeyboardHeight() }
 function handleMenuEdit() { openEditorSheet() }
 function handleNextDateChange(event) { form.nextDate = event.detail.value }
 function handleNextTimeChange(event) { form.nextTime = event.detail.value }

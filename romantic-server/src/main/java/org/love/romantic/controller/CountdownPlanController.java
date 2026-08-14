@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 共享见面倒计时接口。
+ * 共享见面倒计时接口
  */
 @Api(tags = "见面倒计时")
 @RestController

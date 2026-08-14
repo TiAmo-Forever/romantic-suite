@@ -72,7 +72,7 @@
             <view class="form-card">
               <view class="field-group">
                 <view class="field-label">计划标题</view>
-                <input v-model="form.title" class="field-input" maxlength="120" placeholder="例如：六月见面准备计划" />
+                <input v-model="form.title" class="field-input" maxlength="120" placeholder="例如：六月见面准备计划" :cursor-spacing="120" :adjust-position="true" />
               </view>
 
               <view class="field-group">
@@ -83,6 +83,8 @@
                   maxlength="1000"
                   placeholder="请输入计划说明"
                   placeholder-class="textarea-placeholder"
+                  :cursor-spacing="120"
+                  :adjust-position="true"
                 ></textarea>
               </view>
 
@@ -155,7 +157,7 @@
 
               <view v-if="form.planType === 'interval'" class="field-group">
                 <view class="field-label">间隔天数</view>
-                <input v-model="form.intervalDays" class="field-input" type="number" placeholder="例如：7" />
+                <input v-model="form.intervalDays" class="field-input" type="number" placeholder="例如：7" :cursor-spacing="120" :adjust-position="true" />
               </view>
 
               <view class="field-group">
@@ -173,7 +175,7 @@
                     </view>
                   </view>
                 </scroll-view>
-                <input v-model="form.location" class="field-input field-input-inline" maxlength="120" placeholder="也可以自己补一个地点" />
+                <input v-model="form.location" class="field-input field-input-inline" maxlength="120" placeholder="也可以自己补一个地点" :cursor-spacing="120" :adjust-position="true" />
               </view>
             </view>
           </view>
@@ -193,7 +195,7 @@
                   <view class="item-remove" @click="removeItem(index)">删除</view>
                 </view>
 
-                <input v-model="item.title" class="field-input" maxlength="120" placeholder="例如：订酒店、买礼物" />
+                <input v-model="item.title" class="field-input" maxlength="120" placeholder="例如：订酒店、买礼物" :cursor-spacing="120" :adjust-position="true" />
 
                 <textarea
                   v-model="item.content"
@@ -201,6 +203,8 @@
                   maxlength="1000"
                   placeholder="请输入条目内容"
                   placeholder-class="textarea-placeholder"
+                  :cursor-spacing="120"
+                  :adjust-position="true"
                 ></textarea>
 
                 <view class="datetime-grid">
@@ -218,7 +222,7 @@
                   </view>
                 </view>
 
-                <input v-model="item.location" class="field-input" maxlength="120" placeholder="这一步发生在哪里" />
+                <input v-model="item.location" class="field-input" maxlength="120" placeholder="这一步发生在哪里" :cursor-spacing="120" :adjust-position="true" />
               </view>
             </view>
           </view>

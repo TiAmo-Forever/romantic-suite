@@ -29,8 +29,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 账号资料服务实现。
- * 账号资料按登录账号各自独立维护，不做互相同步。
+ * 账号资料服务实现
+ * 账号资料按登录账号各自独立维护，不做互相同步
  */
 @Slf4j
 @Service

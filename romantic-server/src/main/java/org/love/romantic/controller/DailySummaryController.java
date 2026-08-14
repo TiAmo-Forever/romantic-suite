@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 今日小计接口。
+ * 今日小计接口
  */
 @Api(tags = "今日小计")
 @RestController

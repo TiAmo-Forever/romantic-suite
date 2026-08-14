@@ -74,6 +74,8 @@
               class="avatar-text-input app-field"
               :placeholder="TEXT.textPlaceholder"
               placeholder-class="app-account-input-placeholder"
+              :cursor-spacing="120"
+              :adjust-position="true"
             />
             <view class="avatar-text-hint">
               <text>{{ TEXT.textHint }}</text>

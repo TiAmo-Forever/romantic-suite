@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 恋爱纪念日接口。
+ * 恋爱纪念日接口
  */
 @Api(tags = "纪念日")
 @RestController

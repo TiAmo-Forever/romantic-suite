@@ -26,7 +26,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 /**
- * 上传头像和业务媒体资源。
+ * 上传头像和业务媒体资源
  */
 @Slf4j
 @Api(tags = "文件接口")

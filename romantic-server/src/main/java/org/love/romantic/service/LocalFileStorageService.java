@@ -1,120 +1,122 @@
 package org.love.romantic.service;
 
-import org.love.romantic.config.StorageProperties;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.function.Predicate;
-
 /**
- * 校验和清理项目托管的本地上传文件。
+ * 本地上传文件管理服务
  */
-@Service
-public class LocalFileStorageService {
+public interface LocalFileStorageService {
 
-    private final StorageProperties storageProperties;
+    /**
+     * 判断路径是否为项目托管的头像文件
+     *
+     * @param relativePath 文件相对路径
+     * @return 是否为托管头像文件
+     */
+    boolean isManagedAvatarPath(String relativePath);
 
-    public LocalFileStorageService(StorageProperties storageProperties) {
-        this.storageProperties = storageProperties;
-    }
+    /**
+     * 判断路径是否为项目托管的纪念日媒体文件
+     *
+     * @param relativePath 文件相对路径
+     * @return 是否为托管纪念日媒体文件
+     */
+    boolean isManagedAnniversaryPath(String relativePath);
 
-    public boolean isManagedAvatarPath(String relativePath) {
-        return isManagedPath(relativePath, storageProperties.getAvatarDirectory());
-    }
+    /**
+     * 判断路径是否为项目托管的改进簿媒体文件
+     *
+     * @param relativePath 文件相对路径
+     * @return 是否为托管改进簿媒体文件
+     */
+    boolean isManagedImprovementPath(String relativePath);
 
-    public boolean isManagedAnniversaryPath(String relativePath) {
-        return isManagedPath(relativePath, storageProperties.getAnniversaryDirectory());
-    }
+    /**
+     * 判断路径是否为项目托管的相册媒体文件
+     *
+     * @param relativePath 文件相对路径
+     * @return 是否为托管相册媒体文件
+     */
+    boolean isManagedAlbumPath(String relativePath);
 
-    public boolean isManagedImprovementPath(String relativePath) {
-        return isManagedPath(relativePath, storageProperties.getImprovementDirectory());
-    }
+    /**
+     * 判断路径是否为项目托管的今日小计媒体文件
+     *
+     * @param relativePath 文件相对路径
+     * @return 是否为托管今日小计媒体文件
+     */
+    boolean isManagedDailySummaryPath(String relativePath);
 
-    public boolean isManagedAlbumPath(String relativePath) {
-        return isManagedPath(relativePath, storageProperties.getAlbumDirectory());
-    }
+    /**
+     * 标准化头像文件托管路径
+     *
+     * @param relativePath 文件相对路径
+     * @return 标准化后的托管路径，不符合托管规则时返回 null
+     */
+    String normalizeManagedAvatarPath(String relativePath);
 
-    public boolean isManagedDailySummaryPath(String relativePath) {
-        return isManagedPath(relativePath, storageProperties.getDailySummaryDirectory());
-    }
+    /**
+     * 标准化纪念日媒体文件托管路径
+     *
+     * @param relativePath 文件相对路径
+     * @return 标准化后的托管路径，不符合托管规则时返回 null
+     */
+    String normalizeManagedAnniversaryPath(String relativePath);
 
-    public String normalizeManagedAvatarPath(String relativePath) {
-        return normalizeManagedPath(relativePath, this::isManagedAvatarPath);
-    }
+    /**
+     * 标准化改进簿媒体文件托管路径
+     *
+     * @param relativePath 文件相对路径
+     * @return 标准化后的托管路径，不符合托管规则时返回 null
+     */
+    String normalizeManagedImprovementPath(String relativePath);
 
-    public String normalizeManagedAnniversaryPath(String relativePath) {
-        return normalizeManagedPath(relativePath, this::isManagedAnniversaryPath);
-    }
+    /**
+     * 标准化相册媒体文件托管路径
+     *
+     * @param relativePath 文件相对路径
+     * @return 标准化后的托管路径，不符合托管规则时返回 null
+     */
+    String normalizeManagedAlbumPath(String relativePath);
 
-    public String normalizeManagedImprovementPath(String relativePath) {
-        return normalizeManagedPath(relativePath, this::isManagedImprovementPath);
-    }
+    /**
+     * 标准化今日小计媒体文件托管路径
+     *
+     * @param relativePath 文件相对路径
+     * @return 标准化后的托管路径，不符合托管规则时返回 null
+     */
+    String normalizeManagedDailySummaryPath(String relativePath);
 
-    public String normalizeManagedAlbumPath(String relativePath) {
-        return normalizeManagedPath(relativePath, this::isManagedAlbumPath);
-    }
+    /**
+     * 静默删除托管头像文件
+     *
+     * @param relativePath 文件相对路径
+     */
+    void deleteAvatarQuietly(String relativePath);
 
-    public String normalizeManagedDailySummaryPath(String relativePath) {
-        return normalizeManagedPath(relativePath, this::isManagedDailySummaryPath);
-    }
+    /**
+     * 静默删除托管纪念日媒体文件
+     *
+     * @param relativePath 文件相对路径
+     */
+    void deleteAnniversaryMediaQuietly(String relativePath);
 
-    public void deleteAvatarQuietly(String relativePath) {
-        deleteManagedFileQuietly(relativePath, this::isManagedAvatarPath);
-    }
+    /**
+     * 静默删除托管改进簿媒体文件
+     *
+     * @param relativePath 文件相对路径
+     */
+    void deleteImprovementMediaQuietly(String relativePath);
 
-    public void deleteAnniversaryMediaQuietly(String relativePath) {
-        deleteManagedFileQuietly(relativePath, this::isManagedAnniversaryPath);
-    }
+    /**
+     * 静默删除托管相册媒体文件
+     *
+     * @param relativePath 文件相对路径
+     */
+    void deleteAlbumMediaQuietly(String relativePath);
 
-    public void deleteImprovementMediaQuietly(String relativePath) {
-        deleteManagedFileQuietly(relativePath, this::isManagedImprovementPath);
-    }
-
-    public void deleteAlbumMediaQuietly(String relativePath) {
-        deleteManagedFileQuietly(relativePath, this::isManagedAlbumPath);
-    }
-
-    public void deleteDailySummaryMediaQuietly(String relativePath) {
-        deleteManagedFileQuietly(relativePath, this::isManagedDailySummaryPath);
-    }
-
-    private boolean isManagedPath(String relativePath, String directory) {
-        if (!StringUtils.hasText(relativePath)) {
-            return false;
-        }
-
-        String normalizedPath = relativePath.trim().replace('\\', '/');
-        String prefix = storageProperties.getPublicPathPrefixNormalized() + "/" + directory + "/";
-        return normalizedPath.startsWith(prefix);
-    }
-
-    private String normalizeManagedPath(String relativePath, Predicate<String> checker) {
-        if (!StringUtils.hasText(relativePath) || !checker.test(relativePath)) {
-            return null;
-        }
-        return relativePath.trim().replace('\\', '/');
-    }
-
-    private void deleteManagedFileQuietly(String relativePath, Predicate<String> checker) {
-        if (!checker.test(relativePath)) {
-            return;
-        }
-
-        String normalizedPath = relativePath.trim().replace('\\', '/');
-        String storagePath = normalizedPath.substring(storageProperties.getPublicPathPrefixNormalized().length()).replaceFirst("^/", "");
-        Path targetPath = storageProperties.getRootDirectory().resolve(storagePath).normalize();
-
-        if (!targetPath.startsWith(storageProperties.getRootDirectory())) {
-            return;
-        }
-
-        try {
-            Files.deleteIfExists(targetPath);
-        } catch (IOException ignored) {
-            // 删除旧文件失败时不阻塞主流程。
-        }
-    }
+    /**
+     * 静默删除托管今日小计媒体文件
+     *
+     * @param relativePath 文件相对路径
+     */
+    void deleteDailySummaryMediaQuietly(String relativePath);
 }
